@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
-using lib.Properties;
 
 namespace lib.db
 {
@@ -16,7 +15,7 @@ namespace lib.db
             SheetsService = new SheetsService(
                 new BaseClientService.Initializer
                 {
-                    HttpClientInitializer = GoogleCredential.FromStream(new MemoryStream(Resources.googleapi_credentials_pegovka))
+                    HttpClientInitializer = GoogleCredential.FromJson(new Settings().GoogleAuthJson)
                         .CreateScoped(SheetsService.Scope.Spreadsheets),
                     ApplicationName = "icfpc21-pegovka-client"
                 });

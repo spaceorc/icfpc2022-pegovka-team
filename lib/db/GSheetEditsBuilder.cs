@@ -101,7 +101,7 @@ namespace lib.db
             return this;
         }
 
-        public GSheetEditsBuilder WriteRange(ValueTuple<int, int> topLeft, List<List<string?>> payload)
+        public GSheetEditsBuilder WriteRange(ValueTuple<int, int> topLeft, List<List<string>> payload)
         {
             var (topIndex, leftIndex) = topLeft;
             var rows = new List<RowData>();
@@ -133,7 +133,8 @@ namespace lib.db
                             ColumnIndex = leftIndex
                         },
                         Rows = rows,
-                        Fields = "*"
+                        Fields = "*",
+                        
                     }
                 });
             return this;
@@ -155,7 +156,8 @@ namespace lib.db
                     UserEnteredValue = new ExtendedValue
                     {
                         NumberValue = x
-                    }
+                    },
+                    
                 };
             if (value is double d)
                 return new CellData
