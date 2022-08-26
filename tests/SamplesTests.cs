@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 namespace tests
 {
-    public class GSheetsTests
+    public class SamplesTests
     {
         [Test]
         public async Task YandexPut()
