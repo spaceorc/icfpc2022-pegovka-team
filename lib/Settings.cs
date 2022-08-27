@@ -8,5 +8,8 @@ namespace lib
         public string GoogleAuthJson;
         public string YandexCloudStaticKeyId;
         public string YandexCloudStaticKey;
+        public string YandexCloudKeyFile;
+        public string YdbEndpoint;
+        public string YdbDatabase;
     }
 }
