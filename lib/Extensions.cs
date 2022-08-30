@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 
 namespace lib
@@ -83,7 +84,6 @@ namespace lib
                 if (cost > bestCost)
                     bestCost = cost;
             }
-
             return double.IsNegativeInfinity(bestCost) ? defaultValue : bestCost;
         }
 
@@ -104,6 +104,9 @@ namespace lib
             return best ?? throw new InvalidOperationException("collection is empty");
         }
 
+        /// <summary>
+        /// Inclusive bounds
+        /// </summary>
         public static int BoundTo(this int v, int left, int right)
         {
             if (v < left) return left;
@@ -142,11 +145,17 @@ namespace lib
             return Enumerable.Repeat(item, count);
         }
 
+        /// <summary>
+        /// Inclusive bounds
+        /// </summary>
         public static bool InRange(this int v, int min, int max)
         {
             return v >= min && v <= max;
         }
 
+        /// <summary>
+        /// Inclusive bounds
+        /// </summary>
         public static bool InRange(this double v, double min, double max)
         {
             return v >= min && v <= max;
@@ -191,14 +200,13 @@ namespace lib
             for (var i = 0; i < copy.Count; i++)
             {
                 var nextIndex = random.Next(i, copy.Count);
-                var t = copy[nextIndex];
-                copy[nextIndex] = copy[i];
-                copy[i] = t;
+                (copy[nextIndex], copy[i]) = (copy[i], copy[nextIndex]);
             }
 
             return copy;
         }
 
+        /// <returns>angle in (-pi..pi]</returns>
         public static double NormAngleInRadians(this double angle)
         {
             while (angle > Math.PI) angle -= 2 * Math.PI;
@@ -215,8 +223,17 @@ namespace lib
         {
             return int.Parse(s);
         }
+        public static long ToLong(this string s)
+        {
+            return long.Parse(s);
+        }
 
         public static string StrJoin<T>(this IEnumerable<T> items, string delimiter)
+        {
+            return string.Join(delimiter, items);
+        }
+
+        public static string StrJoin<T>(this IEnumerable<T> items, char delimiter)
         {
             return string.Join(delimiter, items);
         }
@@ -225,5 +242,21 @@ namespace lib
         {
             return items.Select(toString).StrJoin(delimiter);
         }
+
+        public static bool IsOneOf<T>(this T item, params T[] set)
+        {
+            return set.IndexOf(item) >= 0;
+        }
+        public static string ToCompactString(this double x)
+        {
+            if (Math.Abs(x) > 100) return x.ToString("0", CultureInfo.InvariantCulture);
+            if (Math.Abs(x) > 10) return x.ToString("0.#", CultureInfo.InvariantCulture);
+            if (Math.Abs(x) > 1) return x.ToString("0.##", CultureInfo.InvariantCulture);
+            if (Math.Abs(x) > 0.1) return x.ToString("0.###", CultureInfo.InvariantCulture);
+            if (Math.Abs(x) > 0.01) return x.ToString("0.####", CultureInfo.InvariantCulture);
+            return x.ToString(CultureInfo.InvariantCulture);
+        }
+
     }
+
 }

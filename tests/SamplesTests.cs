@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 namespace tests;
 
-public class Samples_Tests
+public class SamplesTests
 {
     [Test]
     public async Task Ydb_SampleInsert()
