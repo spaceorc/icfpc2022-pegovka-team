@@ -151,6 +151,7 @@ export const Playground = (): JSX.Element => {
           ref={canvasRef}
           onClick={onCanvasClick}
         />
+        Cost: {cost}
       </div>
       <CommandsPanel instrument={instrument} setInstrument={setInstrument} />
     </div>
