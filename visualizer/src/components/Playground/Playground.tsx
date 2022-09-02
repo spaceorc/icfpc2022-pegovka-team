@@ -1,23 +1,15 @@
-import React, { HtmlHTMLAttributes, useRef, useState } from "react";
-import { Canvas } from "../../contest-logic/Canvas";
-import { RGBA } from "../../contest-logic/Color";
-import { Interpreter, InterpreterResult } from "../../contest-logic/Interpreter";
-import { instructionToString, InstructionType } from "../../contest-logic/Instruction";
-import { Painter } from "../../contest-logic/Painter";
-import { RandomInstructionGenerator } from "../../contest-logic/RandomInstructionGenerator";
-import { CommandsPanel } from "./commandPanel";
+import React, {useRef, useState} from "react";
+import {RGBA} from "../../contest-logic/Color";
+import {Interpreter, InterpreterResult} from "../../contest-logic/Interpreter";
+import {instructionToString, InstructionType} from "../../contest-logic/Instruction";
+import {Painter} from "../../contest-logic/Painter";
+import {RandomInstructionGenerator} from "../../contest-logic/RandomInstructionGenerator";
+import {CommandsPanel} from "./commandPanel";
 
-function getMousePos(canvas: HTMLCanvasElement | null, event: React.MouseEvent<HTMLCanvasElement>) {
-  if (!canvas) return { x: -1, y: -1 };
-  const rect = canvas.getBoundingClientRect();
-  return {
-    x: event.clientX - rect.left,
-    y: rect.height - (event.clientY - rect.top),
-  };
-}
-import { Point } from "../../contest-logic/Point";
-import { Block } from "../../contest-logic/Block";
+import {Point} from "../../contest-logic/Point";
+import {Block} from "../../contest-logic/Block";
 import {getClickInstruction} from "./canvasCommands";
+import {getMousePos} from "./shared/helpers";
 
 export const Playground = (): JSX.Element => {
   const [width, setWidth] = useState(400);
@@ -101,8 +93,7 @@ export const Playground = (): JSX.Element => {
 
   const [hoveringBlocks, setHoveringBlocks] = useState<Block[]>([]);
   const onCanvasHover = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const pos = getMousePos(canvasRef.current, event);
-    const point = new Point([pos.x, pos.y]);
+    const point = getMousePos(canvasRef.current, event);
     const block = Array.from(interpretedResult?.canvas.blocks.values() ?? []).filter((b) =>
       point.isInside(b.bottomLeft, b.topRight)
     );
@@ -203,12 +194,16 @@ export const Playground = (): JSX.Element => {
           height={height}
           ref={canvasRef}
           onClick={event => {
-              const instruction = getClickInstruction(canvasRef, event, instrument, paintedCanvas.blocks);
-              if (instruction){
-                  const code = `${playgroundCode}\n${instructionToString(instruction)}`;
-                  setPlaygroundCode(code);
-                  handleClickRenderCanvas(code);
+              if (interpretedResult){
+                  const instruction = getClickInstruction(canvasRef, event, instrument,
+                      interpretedResult?.canvas.blocks);
+                  if (instruction){
+                      const code = `${playgroundCode}\n${instructionToString(instruction)}`;
+                      setPlaygroundCode(code);
+                      handleClickRenderCanvas(code);
+                  }
               }
+
           } }
           onMouseMove={onCanvasHover}
           onMouseOver={onCanvasHover}

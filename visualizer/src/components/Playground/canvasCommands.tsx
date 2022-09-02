@@ -2,12 +2,8 @@ import {Instruction, InstructionType, LineNumber} from "../../contest-logic/Inst
 import { MouseEvent } from "react";
 import {Block} from "../../contest-logic/Block";
 import {Point} from "../../contest-logic/Point";
+import {getMousePos} from "./shared/helpers";
 
-
-function getMousePos(canvas: any, event: any) {
-    var rect = canvas.getBoundingClientRect();
-    return new Point([event.clientX - rect.left, event.clientY - rect.top,]);
-}
 
 
 export function getClickInstruction(canvasRef: any, event: MouseEvent<HTMLCanvasElement>,
@@ -20,6 +16,7 @@ export function getClickInstruction(canvasRef: any, event: MouseEvent<HTMLCanvas
             break;
         }
     }
+    console.log(position)
 
     switch (instrument){
         case InstructionType.HorizontalCutInstructionType: {
