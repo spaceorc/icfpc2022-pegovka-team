@@ -176,8 +176,8 @@ namespace lib
             var cos = Math.Cos(-angle * Math.PI / 180);
             var sin = Math.Sin(-angle * Math.PI / 180);
             var centered = p - around;
-            var x = Math.Floor(centered.X * cos - centered.Y * sin);
-            var y = Math.Floor(centered.X * sin + centered.Y * cos);
+            var x = Math.Round(centered.X * cos - centered.Y * sin);
+            var y = Math.Round(centered.X * sin + centered.Y * cos);
             return new V(x, y) + around;
         }
 
@@ -186,8 +186,8 @@ namespace lib
             var cos = Math.Cos(angleInRadians);
             var sin = Math.Sin(angleInRadians);
             var centered = p - around;
-            var x = Math.Floor(centered.X * cos - centered.Y * sin);
-            var y = Math.Floor(centered.X * sin + centered.Y * cos);
+            var x = Math.Round(centered.X * cos - centered.Y * sin);
+            var y = Math.Round(centered.X * sin + centered.Y * cos);
             return new V(x, y) + around;
         }
     }
