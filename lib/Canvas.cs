@@ -1,9 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 namespace lib;
+
+public class BadMoveException : Exception
+{
+    public BadMoveException(string message) : base(message)
+    {
+    }
+}
 
 public class Canvas
 {
@@ -139,7 +145,7 @@ public class Canvas
         var cost = Move.GetCost(ScalarSize, block.ScalarSize, move.BaseCost);
         if (!(block.BottomLeft.X <= move.LineNumber && move.LineNumber <= block.TopRight.X))
         {
-            throw new Exception($"Vertical Line X={move.LineNumber} is out of block {block}");
+            throw new BadMoveException($"Vertical Line X={move.LineNumber} is out of block {block}");
         }
         var (a, b) = PreApplyVCut(block, move.LineNumber);
         Blocks.Remove(block.Id);
@@ -223,7 +229,7 @@ public class Canvas
         var cost = Move.GetCost(ScalarSize, block.ScalarSize, move.BaseCost);
         if (!(block.BottomLeft.Y <= move.LineNumber && move.LineNumber <= block.TopRight.Y))
         {
-            throw new Exception($"Horizontal Line Y={move.LineNumber} is out of block {block}");
+            throw new BadMoveException($"Horizontal Line Y={move.LineNumber} is out of block {block}");
         }
         var (a, b) = PreApplyHCut(block, move.LineNumber);
         Blocks.Remove(block.Id);
@@ -302,7 +308,7 @@ public class Canvas
             return;
         }
 
-        throw new Exception($"Invalid merge {block1} {block2}");
+        throw new BadMoveException($"Invalid merge {block1} {block2}");
     }
 
 
@@ -311,7 +317,7 @@ public class Canvas
         var block1 = Blocks[move.Block1Id];
         var block2 = Blocks[move.Block2Id];
         if (block1.Size != block2.Size)
-            throw new Exception($"Blocks are not the same size, {block1} and {block2}");
+            throw new BadMoveException($"Blocks are not the same size, {block1} and {block2}");
 
         var diffX = block1.BottomLeft.X - block2.BottomLeft.X;
         var diffY = block1.BottomLeft.Y - block2.BottomLeft.Y;
@@ -363,7 +369,7 @@ public class Canvas
         var cost = Move.GetCost(ScalarSize, block.ScalarSize, move.BaseCost);
 
         if (!move.Point.IsStrictlyInside(block.BottomLeft, block.TopRight))
-            throw new Exception($"Point {move.Point} is out of block{block}");
+            throw new BadMoveException($"Point {move.Point} is out of block{block}");
 
         switch (block)
         {
