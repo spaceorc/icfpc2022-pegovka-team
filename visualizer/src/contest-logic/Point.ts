@@ -5,7 +5,7 @@ export class Point {
 
   py: number;
 
-  constructor(point: [number, number] = [0, 0]) {
+  constructor(point: [px: number, py: number] = [0, 0]) {
     [this.px, this.py] = point;
   }
 
@@ -56,5 +56,13 @@ export class Point {
 
   getScalarSize() {
     return this.px * this.py;
+  }
+
+  equals(other: Point) {
+    return this.px === other.px && this.py === other.py;
+  }
+
+  toString() {
+    return `[${this.px}, ${this.py}] (${this.getScalarSize()})`;
   }
 }

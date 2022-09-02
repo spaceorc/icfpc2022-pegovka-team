@@ -550,7 +550,7 @@ export class Interpreter {
         // Scoring Ends
 
         // Processing Starts
-        if(block1.size === block2.size) {
+        if(block1.size.equals(block2.size)) {
             block1.id = blockId2;
             block2.id = blockId1;
             context.blocks.set(blockId1, block2);
