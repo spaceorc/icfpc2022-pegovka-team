@@ -42,7 +42,11 @@ export const Playground = (): JSX.Element => {
     sessionStorage.setItem("opacity", opacity.toString());
     _setExpectedOpacity(opacity);
   };
-  const [exampleId, setExampleId] = useState(1);
+  const [exampleId, _setExampleId] = useState(sessionStorage.getItem("exampleId") ? Number(sessionStorage.getItem("exampleId")) : 1);
+  const setExampleId = (exampleId: number) => {
+    sessionStorage.setItem("exampleId", exampleId.toString());
+    _setExampleId(exampleId);
+  }
   const [similarity, setSimilarity] = useState(0);
   const [oldTotal, setOldTotal] = useState(0);
 
