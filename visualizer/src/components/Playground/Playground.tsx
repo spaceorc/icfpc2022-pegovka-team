@@ -1,5 +1,5 @@
-import React, { HtmlHTMLAttributes, useEffect, useRef, useState } from "react";
 import { Canvas } from "../../contest-logic/Canvas";
+import React, { useRef, useState } from "react";
 import { RGBA } from "../../contest-logic/Color";
 import { Interpreter, InterpreterResult } from "../../contest-logic/Interpreter";
 import { instructionToString, InstructionType } from "../../contest-logic/Instruction";
@@ -39,7 +39,11 @@ export const Playground = (): JSX.Element => {
   const [exampleId, setExampleId] = useState(1);
   const [similarity, setSimilarity] = useState(0);
 
-  const [playgroundCode, setPlaygroundCode] = useState("");
+  const [playgroundCode, _setPlaygroundCode] = useState(sessionStorage.getItem("code") ?? "");
+  const setPlaygroundCode = (code: string) => {
+    sessionStorage.setItem("code", code);
+    _setPlaygroundCode(code);
+  };
   const [instrument, setInstrument] = useState<InstructionType>(InstructionType.NopInstructionType);
   const [interpretedResult, setInterpreterResult] = useState<InterpreterResult>(
     new InterpreterResult(new Canvas(400, 400, new RGBA([255, 255, 255, 255])), 0)
@@ -137,7 +141,6 @@ export const Playground = (): JSX.Element => {
     setHoveringBlocks(block);
     setHoveringPoint(point);
   };
-
   return (
     <div
       style={{
@@ -214,7 +217,7 @@ export const Playground = (): JSX.Element => {
                   value={playgroundCode}
                   onChange={handlePlaygroundCode}
                 />
-                <div>
+                  <div style={{ width: "5ch" }}>
                   {interpretedResult?.instructionCosts.map((cost, index) => (
                     <div key={index}>{cost}</div>
                   ))}
@@ -231,6 +234,7 @@ export const Playground = (): JSX.Element => {
           flexDirection: "column",
           gap: 10,
           position: "relative",
+          maxWidth: width,
         }}
       >
         <canvas
