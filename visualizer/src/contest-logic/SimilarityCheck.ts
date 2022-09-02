@@ -14,6 +14,16 @@ export class SimilarityChecker {
     return frame;
   }
 
+  static bufferToFrame(data: Uint8ClampedArray): Frame {
+    let frame: Frame = [];
+
+    for (let i = 0; i += 4; i < data.length) {
+        frame.push(new RGBA([data[i], data[i + 1], data[i + 2], data[i + 3]]));
+    }
+
+    return frame;
+  }
+
   static imageDiff(f1: Frame, f2: Frame): number {
     let diff = 0;
     let alpha = 0.005;

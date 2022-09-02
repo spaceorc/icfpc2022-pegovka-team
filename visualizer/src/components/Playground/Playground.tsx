@@ -1,15 +1,35 @@
-import React, {useRef, useState} from "react";
-import {RGBA} from "../../contest-logic/Color";
-import {Interpreter, InterpreterResult} from "../../contest-logic/Interpreter";
-import {instructionToString, InstructionType} from "../../contest-logic/Instruction";
-import {Painter} from "../../contest-logic/Painter";
-import {RandomInstructionGenerator} from "../../contest-logic/RandomInstructionGenerator";
-import {CommandsPanel} from "./commandPanel";
+import React, { HtmlHTMLAttributes, useRef, useState } from "react";
+import { Canvas } from "../../contest-logic/Canvas";
+import { RGBA } from "../../contest-logic/Color";
+import { Interpreter, InterpreterResult } from "../../contest-logic/Interpreter";
+import { instructionToString, InstructionType } from "../../contest-logic/Instruction";
+import { Painter } from "../../contest-logic/Painter";
+import { RandomInstructionGenerator } from "../../contest-logic/RandomInstructionGenerator";
+import { CommandsPanel } from "./commandPanel";
 
 import {Point} from "../../contest-logic/Point";
 import {Block} from "../../contest-logic/Block";
 import {getClickInstruction} from "./canvasCommands";
 import {getMousePos} from "./shared/helpers";
+import { SimilarityChecker } from "../../contest-logic/SimilarityCheck";
+
+
+function getImageData(imgRef: HTMLImageElement) {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  const height = canvas.height = imgRef.naturalHeight || imgRef.offsetHeight || imgRef.height;
+  const width = canvas.width = imgRef.naturalWidth || imgRef.offsetWidth || imgRef.width;
+
+  if (!context) {
+    return null;
+  }
+
+  context.drawImage(imgRef, 0, 0);
+
+  const data = context.getImageData(0, 0, width, height);
+
+  return data.data;
+}
 
 export const Playground = (): JSX.Element => {
   const [width, setWidth] = useState(400);
@@ -21,6 +41,7 @@ export const Playground = (): JSX.Element => {
   const [instrument, setInstrument] = useState<InstructionType>(InstructionType.NopInstructionType);
   const [interpretedResult, setInterpreterResult] = useState<InterpreterResult | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
   const handlePlaygroundCode = (e: any) => {
     setPlaygroundCode(e.target.value as string);
   };
@@ -57,7 +78,6 @@ export const Playground = (): JSX.Element => {
     const context = canvas.getContext("2d")!;
 
     console.log(result.canvas.blocks);
-    console.log(result);
 
     canvas.width = result.canvas.width;
     canvas.height = result.canvas.height;
@@ -69,6 +89,14 @@ export const Playground = (): JSX.Element => {
       imgData.data[index * 4 + 3] = pixel.a;
     });
     context.putImageData(imgData, 0, 0);
+
+    if (imgRef.current) {
+        const expectedData = getImageData(imgRef.current)!;
+        const expectedFrame = SimilarityChecker.bufferToFrame(expectedData);
+        const actualFrame = SimilarityChecker.bufferToFrame(imgData.data)
+
+        console.log(SimilarityChecker.imageDiff(expectedFrame, actualFrame));
+    }
   };
   const handleReset = () => {
     setPlaygroundCode("");
@@ -170,8 +198,8 @@ export const Playground = (): JSX.Element => {
                   onChange={handlePlaygroundCode}
                 />
                 <div>
-                  {interpretedResult?.instructionCosts.map((cost) => (
-                    <div>{cost}</div>
+                  {interpretedResult?.instructionCosts.map((cost, index) => (
+                    <div key={index}>{cost}</div>
                   ))}
                 </div>
               </div>
@@ -210,6 +238,7 @@ export const Playground = (): JSX.Element => {
           onMouseLeave={() => setHoveringBlocks([])}
         />
         <img
+          ref={imgRef}
           style={{
             position: "absolute",
             top: 0,
