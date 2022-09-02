@@ -92,7 +92,7 @@ export function getClickInstruction(
     case InstructionType.MergeInstructionType: {
       if (!prevSelectedBlockId) {
         // @ts-ignore
-        setPrevSelectedBlockId(currentBlock.id);
+        prevSelectedBlockId = currentBlock.id;
         return;
       }
 
