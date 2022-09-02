@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -30,7 +31,14 @@ public class CutEnchancer : ISolutionEnchancer
                 {
                     var copy2 = copy.Copy();
                     copy2.Apply(cut);
-                    ApplyRange(copy2, moves, cutIndex + 1, moves.Count - 1);
+                    try
+                    {
+                        ApplyRange(copy2, moves, cutIndex + 1, moves.Count - 1);
+                    }
+                    catch (BadBlockException)
+                    {
+                        continue;
+                    }
                     var score = copy2.GetScore(problem);
                     if (score < bestScore)
                     {
@@ -54,22 +62,22 @@ public class CutEnchancer : ISolutionEnchancer
     {
         var cut = (CutMove)move;
         var block = canvas.Blocks[cut.BlockId];
-        if (cut is HCutMove hCut)
+        if (cut is VCutMove vCut)
         {
             for (int dx = -LCUT_DELTA; dx <= LCUT_DELTA; dx++)
             {
-                var x = hCut.LineNumber + dx;
+                var x = vCut.LineNumber + dx;
                 if (x > block.Left && x < block.Right)
-                    yield return hCut with { LineNumber = x };
+                    yield return vCut with { LineNumber = x };
             }
         }
-        else if (cut is VCutMove vCut)
+        else if (cut is HCutMove hCut)
         {
             for (int dy = -LCUT_DELTA; dy <= LCUT_DELTA; dy++)
             {
-                var y = vCut.LineNumber + dy;
+                var y = hCut.LineNumber + dy;
                 if (y > block.Bottom && y < block.Top)
-                    yield return vCut with { LineNumber = y };
+                    yield return hCut with { LineNumber = y };
             }
         }
         else if (cut is PCutMove pCut)

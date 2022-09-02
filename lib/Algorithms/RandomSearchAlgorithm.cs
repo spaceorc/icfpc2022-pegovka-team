@@ -6,9 +6,9 @@ namespace lib.Algorithms;
 
 public class RandomSearchAlgorithm
 {
-    private int moveSequencesCount = 10;
-    private int depth = 5;
-    private int movesWithoutImprovements = 10;
+    private int moveSequencesCount = 1400;
+    private int depth = 4;
+    private int movesWithoutImprovements = 200;
     private RandomInstructionGenerator instructionGenerator;
 
     public RandomSearchAlgorithm(int? seed = null)

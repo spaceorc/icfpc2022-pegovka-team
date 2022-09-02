@@ -10,39 +10,35 @@ namespace submitter
         private static void Main(string[] args)
         {
             var api = new Api();
-            var r = api.FetchProblem(1);
-            // Console.WriteLine(r.Result);
-            var submissionRepo = new SubmissionRepo(new Settings());
-
             while (true)
             {
-                var logMessages = new List<string>();
-
-                var footerTable = new Table().HideHeaders();
-                footerTable.Border = TableBorder.None;
-                footerTable.AddColumns("", "");
-                footerTable.AddRow(
-                    new Markup(string.Join("\n", logMessages)),
-                    new FigletText("Pegovka Solutions").Color(Color.Aqua).Alignment(Justify.Right));
-                AnsiConsole.Write(footerTable);
-
-                AnsiConsole.Progress()
-                    .Columns(
-                        new SpinnerColumn(),
-                        new TaskDescriptionColumn(),
-                        new ProgressBarColumn())
-                    .Start(ctx =>
+                var submissionsInfos = api.GetSubmissionsInfo();
+                var problemIdToInfo = submissionsInfos!.Submissions.ToDictionary(s => s.Id, s => s);
+                var scoreByProblemId = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
+                foreach (var (problemId, score) in scoreByProblemId)
+                {
+                    var solution = SolutionRepo.GetSolutionByIdAndScore(problemId, score).GetAwaiter().GetResult();
+                    if (solution.SubmissionId == null)
                     {
-                        var wait = ctx.AddTask("Waiting for submission timeout to expire");
+                        var submissionResult = api.PostSolution(solution.ProblemId, solution.Solution);
+                        solution.SubmittedAt = DateTime.UtcNow;
+                        solution.SubmissionId = submissionResult?.Submission_Id;
+                        Console.WriteLine($"Submit solution for problem {problemId} with score {score} by {solution.SolverId}");
+                        SolutionRepo.Submit(solution).GetAwaiter().GetResult();
+                        continue;
+                    }
 
-                        for (var i = 0; i < 100; i++)
-                        {
-                            Thread.Sleep(TimeSpan.FromSeconds(3));
-                            wait.Increment(1);
-                        }
-                    });
+                    if (solution.ScoreServer == null && problemIdToInfo.ContainsKey((long)solution.SubmissionId))
+                    {
+                        solution.ScoreServer = problemIdToInfo[solution.SubmissionId.Value].Score;
+                        Console.WriteLine($"Add ScoreServer for problem {problemId} - score: {score}, serverScore: {solution.ScoreServer}, submissionId {solution.SubmissionId}");
+                        SolutionRepo.Submit(solution).GetAwaiter().GetResult();
+                    }
+                }
+                Thread.Sleep(60_000);
             }
         }
+
         private static void RefreshDashboard(List<string> logMessages, Api api, SubmissionRepo submissionRepo)
         {
             // var worldBestDislikes = new ProblemTableApi().FetchDislikesAsync().Result.ToDictionary(t => t.ProblemId);
@@ -56,7 +52,8 @@ namespace submitter
                 var problem = ScreenRepo.GetProblem(id);
                 // var state = new State();
 
-                var result = api.PostSolution(id, "");
+                var result = api.PostSolution(id, " ");
+                // submissionRepo.PutFile()
                 Console.WriteLine(result);
 
             }

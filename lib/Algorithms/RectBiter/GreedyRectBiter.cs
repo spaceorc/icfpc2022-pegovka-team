@@ -54,6 +54,7 @@ public class SolutionPart
 public class GreedyRectBiter
 {
     private readonly Random random;
+    private Dictionary<string, double> blockPenalties = new Dictionary<string, double>();
 
     public GreedyRectBiter(Random random)
     {
@@ -130,7 +131,7 @@ public class GreedyRectBiter
     private double GetStatePenalty(BiterState state)
     {
         var fixedBlocks = state.FixedBlockIds.Select(id => state.Canvas.Blocks[id]).ToList();
-        var fixedSimilarityPenalty = fixedBlocks.Sum(b => state.Screen.DiffTo(b));
+        var fixedSimilarityPenalty = fixedBlocks.Sum(b => blockPenalties.GetOrCreate(b.Id, id => state.Screen.DiffTo(b)));
         var movesCost = state.Canvas.TotalCost;
         var fixedPixelsCount = fixedBlocks.Sum(b => b.ScalarSize);
         return (fixedSimilarityPenalty);

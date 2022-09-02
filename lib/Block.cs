@@ -3,6 +3,14 @@ using System.Collections.Generic;
 
 namespace lib;
 
+public class BadBlockException : Exception
+{
+    public BadBlockException(string message)
+        : base(message)
+    {
+    }
+}
+
 public abstract record Block
 {
     public string Id { get; set; }
@@ -15,7 +23,7 @@ public abstract record Block
         BottomLeft = bottomLeft;
         TopRight = topRight;
         if (bottomLeft.X >= topRight.X || bottomLeft.Y >= topRight.Y)
-            throw new Exception($"Bad block {bottomLeft} {topRight}");
+            throw new BadBlockException($"Bad block {bottomLeft} {topRight}");
     }
 
     public V Size => TopRight - BottomLeft;

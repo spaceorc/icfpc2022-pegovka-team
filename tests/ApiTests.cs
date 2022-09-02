@@ -40,10 +40,20 @@ public class ApiTests
     {
         var api = new Api();
 
-        for (var i = 1; i <= 15; i++)
+        for (var i = 1; i <= 20; i++)
         {
+            Console.WriteLine(i);
             var problem = api.FetchProblem(i).Result;
             ScreenRepo.SaveProblem(i, problem);
         }
+    }
+
+    [Test]
+    [Explicit]
+    public void TestGetSubmissionsInfo()
+    {
+        var api = new Api();
+        var ans = api.GetSubmissionsInfo();
+        Console.WriteLine(ans);
     }
 }
