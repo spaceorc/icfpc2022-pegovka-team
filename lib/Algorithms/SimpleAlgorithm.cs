@@ -17,7 +17,7 @@ public class SimpleAlgorithm : IAlgorithm
     {
         var (bestResult, bestScore) = (new List<Move>(), double.MaxValue);
 
-        for (var size = 1; size <= CanvasSize; size += 1)
+        for (var size = 25; size <= CanvasSize; size *= 2)
         {
             var (result, score) = GetResult(screen, size);
             if (score < bestScore)
@@ -46,15 +46,28 @@ public class SimpleAlgorithm : IAlgorithm
             resultMoves.Add(cutMove);
         }
 
-        foreach (var block in canvas.Blocks.Values)
+        var blocks = canvas.Blocks.Values.ToList();
+        foreach (var block in blocks)
         {
             var averageBlockColor = GetAverageColor(screen, block);
             var colorMove = new ColorMove(block.Id, averageBlockColor);
+
+            var currentScore = canvas.GetScore(screen);
+            var currentBlocks = canvas.Blocks;
             canvas.ApplyColor(colorMove);
-            resultMoves.Add(colorMove);
+
+            var newScore = canvas.GetScore(screen);
+            if (newScore < currentScore)
+            {
+                resultMoves.Add(colorMove);
+            }
+            else
+            {
+                canvas.Blocks = currentBlocks;
+            }
         }
 
-        var totalScore = canvas.GetSimilarity(screen) + canvas.TotalCost;
+        var totalScore = canvas.GetScore(screen);
         return (resultMoves, totalScore);
     }
 
