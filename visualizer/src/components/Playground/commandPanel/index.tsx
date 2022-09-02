@@ -13,7 +13,7 @@ export const CommandsPanel: FC<ICommandsPanel> = ({ instrument, setInstrument })
       {Object.values(InstructionType).map((value, key) => {
         const style = value === instrument ? "commandPanel__active" : "commandPanel__item";
         return (
-          <span className={style} onClick={() => setInstrument(value)}>
+          <span key={key} className={style} onClick={() => setInstrument(value)}>
             {value}
           </span>
         );

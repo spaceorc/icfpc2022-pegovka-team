@@ -17,6 +17,7 @@ function getMousePos(canvas: HTMLCanvasElement | null, event: React.MouseEvent<H
 }
 import { Point } from "../../contest-logic/Point";
 import { Block } from "../../contest-logic/Block";
+import {getClickInstruction} from "./canvasCommands";
 
 export const Playground = (): JSX.Element => {
   const [width, setWidth] = useState(400);
@@ -51,11 +52,11 @@ export const Playground = (): JSX.Element => {
     });
   };
 
-  const handleClickRenderCanvas = () => {
+  const handleClickRenderCanvas = (code: string) => {
     clearCanvas();
 
     const interpreter = new Interpreter();
-    const result = interpreter.run(playgroundCode);
+    const result = interpreter.run(code);
     setInterpreterResult(result);
 
     const painter = new Painter();
@@ -97,9 +98,6 @@ export const Playground = (): JSX.Element => {
       context.strokeRect(frameTopLeft.px, frameTopLeft.py, sizeX, sizeY);
     }
   };
-  const onCanvasClick = (event: any) => {
-    console.log(getMousePos(canvasRef.current, event));
-  };
 
   const [hoveringBlocks, setHoveringBlocks] = useState<Block[]>([]);
   const onCanvasHover = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -133,7 +131,7 @@ export const Playground = (): JSX.Element => {
         </div>
         <div>
           <button onClick={handleClickGenerateInstruction}>Generate Instruction</button>
-          <button onClick={handleClickRenderCanvas}>Render Canvas</button>
+          <button onClick={() => handleClickRenderCanvas(playgroundCode)}>Render Canvas</button>
           <button onClick={handleReset}>Reset</button>
           <button onClick={drawBlocks}>Draw borders</button>
         </div>
@@ -204,7 +202,14 @@ export const Playground = (): JSX.Element => {
           width={width}
           height={height}
           ref={canvasRef}
-          onClick={onCanvasClick}
+          onClick={event => {
+              const instruction = getClickInstruction(canvasRef, event, instrument, paintedCanvas.blocks);
+              if (instruction){
+                  const code = `${playgroundCode}\n${instructionToString(instruction)}`;
+                  setPlaygroundCode(code);
+                  handleClickRenderCanvas(code);
+              }
+          } }
           onMouseMove={onCanvasHover}
           onMouseOver={onCanvasHover}
           onMouseLeave={() => setHoveringBlocks([])}
