@@ -29,7 +29,7 @@ public class Canvas
     }
 
     public Canvas(Screen problem)
-        :this(problem.Width, problem.Height, new Rgba(0, 0, 0, 0))
+        :this(problem.Width, problem.Height, new Rgba(255, 255, 255, 255))
     {
     }
 
@@ -103,13 +103,13 @@ public class Canvas
                 if (subBlock.BottomLeft.X >= move.LineNumber)
                 {
                     rightBlocks.Add(subBlock);
-                    break;
+                    continue;
                 }
 
                 if (subBlock.TopRight.X <= move.LineNumber)
                 {
                     leftBlocks.Add(subBlock);
-                    break;
+                    continue;
                 }
 
                 leftBlocks.Add(new SimpleBlock(
@@ -188,13 +188,13 @@ public class Canvas
                 if (subBlock.BottomLeft.Y >= move.LineNumber)
                 {
                     topBlocks.Add(subBlock);
-                    break;
+                    continue;
                 }
 
                 if (subBlock.TopRight.Y <= move.LineNumber)
                 {
                     bottomBlocks.Add(subBlock);
-                    break;
+                    continue;
                 }
 
                 bottomBlocks.Add(new SimpleBlock(
@@ -267,6 +267,7 @@ public class Canvas
             Blocks.Remove(block1.Id);
             Blocks.Remove(block2.Id);
             TotalCost += cost;
+            return;
         }
 
         var leftToRight = (block1.BottomLeft.X == block2.TopRight.X ||
@@ -298,6 +299,7 @@ public class Canvas
             Blocks.Remove(block1.Id);
             Blocks.Remove(block2.Id);
             TotalCost += cost;
+            return;
         }
 
         throw new Exception($"Invalid merge {block1} {block2}");
@@ -383,28 +385,28 @@ public class Canvas
                     if (subBlock.BottomLeft.X >= move.Point.X && subBlock.BottomLeft.Y >= move.Point.Y)
                     {
                         topRightBlocks.Add(subBlock);
-                        break;
+                        continue;
                     }
 
                     // Case 7
                     if (subBlock.TopRight.X <= move.Point.X && subBlock.TopRight.Y <= move.Point.Y)
                     {
                         bottomLeftBlocks.Add(subBlock);
-                        break;
+                        continue;
                     }
 
                     // Case 1
                     if (subBlock.TopRight.X <= move.Point.X && subBlock.BottomLeft.Y >= move.Point.Y)
                     {
                         topLeftBlocks.Add(subBlock);
-                        break;
+                        continue;
                     }
 
                     // Case 9
                     if (subBlock.BottomLeft.X >= move.Point.X && subBlock.TopRight.Y <= move.Point.Y)
                     {
                         bottomRightBlocks.Add(subBlock);
-                        break;
+                        continue;
                     }
 
                     // Case 5
@@ -434,7 +436,7 @@ public class Canvas
                             new V(move.Point.X, subBlock.TopRight.Y),
                             subBlock.Color
                         ));
-                        break;
+                        continue;
                     }
 
                     // Case 2
@@ -454,7 +456,7 @@ public class Canvas
                             subBlock.TopRight,
                             subBlock.Color
                         ));
-                        break;
+                        continue;
                     }
 
                     // Case 8
@@ -474,7 +476,7 @@ public class Canvas
                             subBlock.TopRight,
                             subBlock.Color
                         ));
-                        break;
+                        continue;
                     }
 
                     // Case 4
@@ -494,7 +496,7 @@ public class Canvas
                             subBlock.TopRight,
                             subBlock.Color
                         ));
-                        break;
+                        continue;
                     }
 
                     // Case 6
@@ -514,7 +516,7 @@ public class Canvas
                             subBlock.TopRight,
                             subBlock.Color
                         ));
-                        break;
+                        continue;
                     }
                 }
 

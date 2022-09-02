@@ -15,7 +15,7 @@ enum InstructionType
 
 public class RandomInstructionGenerator
 {
-    private readonly Random random = new();
+    private readonly Random random;
 
     private readonly InstructionType[] instructionTypesDistribution =
     {
@@ -29,6 +29,14 @@ public class RandomInstructionGenerator
         InstructionType.SwapInstructionType,
         InstructionType.MergeInstructionType,
     };
+
+    public RandomInstructionGenerator(int? seed)
+    {
+        var localRandom = new Random();
+        seed ??= localRandom.Next();
+        Console.WriteLine($"Seed: {seed}");
+        random = new(seed.Value);
+    }
 
     public Move GenerateRandomInstruction(Canvas state)
     {
@@ -61,8 +69,8 @@ public class RandomInstructionGenerator
         if (instructionType == InstructionType.VerticalCutInstructionType)
         {
             var block = state.Blocks.Values.Sample(random);
-            var min = block.BottomLeft.Y + 1;
-            var max = block.TopRight.Y - 1;
+            var min = block.BottomLeft.X + 1;
+            var max = block.TopRight.X - 1;
 
             if (max - min <= 1)
             {

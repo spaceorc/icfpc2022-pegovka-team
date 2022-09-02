@@ -34,7 +34,7 @@ public class SimpleAlgorithm : IAlgorithm
     {
         var resultMoves = new List<Move>();
 
-        var canvas = new Canvas(screen.Width, screen.Height, new Rgba(255, 255, 255, 255));
+        var canvas = new Canvas(screen);
 
         while (true)
         {
