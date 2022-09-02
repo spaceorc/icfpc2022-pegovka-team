@@ -37,6 +37,7 @@ export const Playground = (): JSX.Element => {
   const [height, setHeight] = useState(400);
   const [expectedOpacity, setExpectedOpacity] = useState(0);
   const [exampleId, setExampleId] = useState(1);
+  const [similarity, setSimilarity] = useState(0);
 
   const [playgroundCode, setPlaygroundCode] = useState("");
   const [instrument, setInstrument] = useState<InstructionType>(InstructionType.NopInstructionType);
@@ -97,7 +98,7 @@ export const Playground = (): JSX.Element => {
       const expectedFrame = SimilarityChecker.bufferToFrame(expectedData);
       const actualFrame = SimilarityChecker.bufferToFrame(imgData.data);
 
-      console.log(SimilarityChecker.imageDiff(expectedFrame, actualFrame));
+      setSimilarity(SimilarityChecker.imageDiff(expectedFrame, actualFrame));
     }
   };
   const handleReset = () => {
@@ -280,6 +281,7 @@ export const Playground = (): JSX.Element => {
           {hoveringBlocks.map((b) => b.id).join(", ")}
         </div>
         <div>Cost: {interpretedResult?.cost}</div>
+        <div>Similarity: {similarity}</div>
       </div>
       <CommandsPanel instrument={instrument} setInstrument={setInstrument} />
     </div>

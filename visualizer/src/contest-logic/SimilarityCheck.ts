@@ -17,7 +17,7 @@ export class SimilarityChecker {
   static bufferToFrame(data: Uint8ClampedArray): Frame {
     let frame: Frame = [];
 
-    for (let i = 0; i += 4; i < data.length) {
+    for (let i = 0; i < data.length; i += 4) {
         frame.push(new RGBA([data[i], data[i + 1], data[i + 2], data[i + 3]]));
     }
 
