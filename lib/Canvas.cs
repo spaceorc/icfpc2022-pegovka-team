@@ -9,22 +9,26 @@ public class Canvas
     public int Width;
     public int Height;
     public Dictionary<string, Block> Blocks;
-    public int TopLevelIdCounter = 0;
+    public int TopLevelIdCounter;
+    public int TotalCost;
+
+    public V Size => new(Width, Height);
+    public int ScalarSize => Width * Height;
 
     public Canvas(int width, int height, Rgba backgroundColor)
     {
         Width = width;
         Height = height;
-        Blocks = new Dictionary<string, Block>()
+        Blocks = new Dictionary<string, Block>
         {
             { "0", new SimpleBlock("0", V.Zero, new V(width, height), backgroundColor) }
         };
     }
 
-    public int ApplyColor(ColorMove move)
+    public void ApplyColor(ColorMove move)
     {
         var block = Blocks[move.BlockId];
-        var cost = (int)Math.Round(5.0 * Width * Height / block.TopRight.Dist2To(block.BottomLeft));
+        var cost = move.GetCost(ScalarSize, block.ScalarSize);
 
         switch (block)
         {
@@ -40,14 +44,13 @@ public class Canvas
                 throw new Exception($"Unexpected block {block}");
         }
 
-        return cost;
+        TotalCost += cost;
     }
 
-    public int ApplyVCut(LCutMove move)
+    public void ApplyVCut(VCutMove move)
     {
-        if (move.Orientation != Orientation.X) throw new Exception(move.ToString());
         var block = Blocks[move.BlockId];
-        var cost = (int)Math.Round(7.0 * Width * Height / block.TopRight.Dist2To(block.BottomLeft));
+        var cost = move.GetCost(ScalarSize, block.ScalarSize);
         if (!(block.BottomLeft.X <= move.LineNumber && move.LineNumber <= block.TopRight.X))
         {
             throw new Exception($"Vertical Line X={move.LineNumber} is out of block {block}");
@@ -70,7 +73,7 @@ public class Canvas
             Blocks.Remove(block.Id);
             Blocks[block.Id + ".0"] = leftBlock;
             Blocks[block.Id + ".1"] = rightBlock;
-            return cost;
+            TotalCost += cost;
         }
 
         if (block is ComplexBlock complexBlock)
@@ -120,16 +123,15 @@ public class Canvas
             );
             Blocks[block.Id + ".0"] = leftBlock2;
             Blocks[block.Id + ".1"] = rightBlock2;
-            return cost;
+            TotalCost += cost;
         }
         throw new Exception($"Unexpected block {block}");
     }
 
-    public int ApplyHCut(LCutMove move)
+    public void ApplyHCut(HCutMove move)
     {
-        if (move.Orientation != Orientation.Y) throw new Exception(move.ToString());
         var block = Blocks[move.BlockId];
-        var cost = (int)Math.Round(7.0 * Width * Height / block.TopRight.Dist2To(block.BottomLeft));
+        var cost = move.GetCost(ScalarSize, block.ScalarSize);
         if (!(block.BottomLeft.Y <= move.LineNumber && move.LineNumber <= block.TopRight.Y))
         {
             throw new Exception($"Horizontal Line Y={move.LineNumber} is out of block {block}");
@@ -152,7 +154,7 @@ public class Canvas
             Blocks.Remove(block.Id);
             Blocks[block.Id + ".0"] = bottomBlock;
             Blocks[block.Id + ".1"] = topBlock;
-            return cost;
+            TotalCost += cost;
         }
 
         if (block is ComplexBlock complexBlock)
@@ -202,16 +204,16 @@ public class Canvas
             );
             Blocks[block.Id + ".0"] = bottomBlock2;
             Blocks[block.Id + ".1"] = topBlock2;
-            return cost;
+            TotalCost += cost;
         }
         throw new Exception($"Unexpected block {block}");
     }
 
-    public int ApplyMerge(MergeMove move)
+    public void ApplyMerge(MergeMove move)
     {
         var block1 = Blocks[move.Block1Id];
         var block2 = Blocks[move.Block2Id];
-        var cost = (int)Math.Round(1.0 * Width * Height / Math.Max(block1.Size.Len2, block2.Size.Len2));
+        var cost = move.GetCost(ScalarSize, Math.Max(block1.ScalarSize, block2.ScalarSize));
         var bottomToTop = (block1.BottomLeft.Y == block2.TopRight.Y ||
                              block1.TopRight.Y == block2.BottomLeft.Y) &&
                              block1.BottomLeft.X == block2.BottomLeft.X &&
@@ -239,7 +241,7 @@ public class Canvas
             Blocks[newBlock.Id] = newBlock;
             Blocks.Remove(block1.Id);
             Blocks.Remove(block2.Id);
-            return cost;
+            TotalCost += cost;
         }
 
         var leftToRight = (block1.BottomLeft.X == block2.TopRight.X ||
@@ -269,29 +271,29 @@ public class Canvas
             Blocks[newBlock.Id] = newBlock;
             Blocks.Remove(block1.Id);
             Blocks.Remove(block2.Id);
-            return cost;
+            TotalCost += cost;
         }
 
         throw new Exception($"Invalid merge {block1} {block2}");
     }
 
 
-    public int ApplySwap(SwapMove move)
+    public void ApplySwap(SwapMove move)
     {
         var block1 = Blocks[move.Block1Id];
         var block2 = Blocks[move.Block2Id];
         if (block1.Size != block2.Size) throw new Exception($"Blocks are not the same size, {block1} and {block2}");
 
-        var cost = (int)Math.Round(7.0 * Width * Height / block1.TopRight.Dist2To(block1.BottomLeft));
+        var cost = move.GetCost(ScalarSize, block1.ScalarSize);
         Blocks[block1.Id] = block2 with {Id = block1.Id};
         Blocks[block2.Id] = block1 with { Id = block2.Id };
-        return cost;
+        TotalCost += cost;
     }
 
-    public int ApplyPCut(PCutMove move)
+    public void ApplyPCut(PCutMove move)
     {
         var block = Blocks[move.BlockId];
-        var cost = (int)Math.Round(10.0 * Width * Height / block.TopRight.Dist2To(block.BottomLeft));
+        var cost = move.GetCost(ScalarSize, block.ScalarSize);
 
         if (!move.Point.IsStrictlyInside(block.BottomLeft, block.TopRight))
             throw new Exception($"Point {move.Point} is out of block{block}");
@@ -524,6 +526,6 @@ public class Canvas
                 throw new Exception($"Unexpected block {block}");
         }
 
-        return cost;
+        TotalCost += cost;
     }
 }

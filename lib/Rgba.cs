@@ -1,4 +1,5 @@
 using System;
+using Yandex.Cloud.Ai.Vision.V1;
 
 namespace lib;
 
@@ -13,4 +14,6 @@ public record Rgba(int R, int G, int B, int A)
         var distance = Math.Sqrt(rDist + gDist + bDist + aDist);
         return distance;
     }
+
+    public override string ToString() => $"[{R}, {G}, {B}, {A}]";
 }

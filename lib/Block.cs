@@ -9,6 +9,7 @@ namespace lib;
 public abstract record Block(string Id, V BottomLeft, V TopRight)
 {
     public V Size => TopRight - BottomLeft;
+    public int ScalarSize => Size.GetScalarSize();
     public abstract IEnumerable<SimpleBlock> GetChildren();
 }
 
