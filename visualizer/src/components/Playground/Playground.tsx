@@ -153,6 +153,19 @@ console.log(result.canvas.blocks)
     setHoveringPoint(point);
   };
 
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+        if (event.key === 'Enter' && event.shiftKey) {
+            handleClickRenderCanvas(playgroundCode);
+            event.preventDefault();
+        }
+    };
+
+    document.addEventListener('keydown', handler);
+
+    return () => document.removeEventListener('keydown', handler);
+  }, [handleClickRenderCanvas, playgroundCode]);
+
   const total = interpretedResult?.cost + similarity;
   const diff = total - oldTotal;
 
