@@ -18,13 +18,14 @@ public class YdbMembersRepo : IDisposable
     {
         this.settings = settings;
     }
+
     public async Task UpsertMember(string username, string machineName, DateTime timestamp)
     {
         var client = await CreateTableClient();
         // YQL reference https://ydb.tech/ru/docs/yql/reference/
-        // Примеры: https://github.com/ydb-platform/ydb-dotnet-examples/tree/main/src/BasicExample 
+        // Примеры: https://github.com/ydb-platform/ydb-dotnet-examples/tree/main/src/BasicExample
         var response = await client.SessionExec(async session =>
-            
+
             await session.ExecuteDataQuery(
                 query: @"
                 DECLARE $username AS Utf8;

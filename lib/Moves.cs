@@ -20,6 +20,11 @@ public abstract record Move(int BaseCost)
 public record NopMove() : Move(0)
 {
     protected override int GetBlockScalarSize(Canvas canvas) => 1;
+
+    public override string ToString()
+    {
+        return "";
+    }
 }
 
 public record ColorMove(string BlockId, Rgba Color) : Move(5)
