@@ -27,6 +27,11 @@ public class Canvas
         };
     }
 
+    public Canvas(Screen problem)
+        :this(problem.Width, problem.Height, new Rgba(0, 0, 0, 0))
+    {
+    }
+
     public void ApplyColor(ColorMove move)
     {
         var block = Blocks[move.BlockId];
@@ -49,7 +54,7 @@ public class Canvas
         TotalCost += cost;
     }
 
-    public void ApplyVCut(VCutMove move)
+    public (Block leftBlock, Block rightBlock) ApplyVCut(VCutMove move)
     {
         var block = Blocks[move.BlockId];
         var cost = move.GetCost(ScalarSize, block.ScalarSize);
@@ -76,6 +81,7 @@ public class Canvas
             Blocks[block.Id + ".0"] = leftBlock;
             Blocks[block.Id + ".1"] = rightBlock;
             TotalCost += cost;
+            return (leftBlock, rightBlock);
         }
 
         if (block is ComplexBlock complexBlock)
@@ -126,12 +132,13 @@ public class Canvas
             Blocks[block.Id + ".0"] = leftBlock2;
             Blocks[block.Id + ".1"] = rightBlock2;
             TotalCost += cost;
+            return (leftBlock2, rightBlock2);
         }
 
         throw new Exception($"Unexpected block {block}");
     }
 
-    public void ApplyHCut(HCutMove move)
+    public (Block bottomBlock, Block topBlock) ApplyHCut(HCutMove move)
     {
         var block = Blocks[move.BlockId];
         var cost = move.GetCost(ScalarSize, block.ScalarSize);
@@ -158,6 +165,8 @@ public class Canvas
             Blocks[block.Id + ".0"] = bottomBlock;
             Blocks[block.Id + ".1"] = topBlock;
             TotalCost += cost;
+            return (bottomBlock, topBlock);
+
         }
 
         if (block is ComplexBlock complexBlock)
@@ -208,6 +217,7 @@ public class Canvas
             Blocks[block.Id + ".0"] = bottomBlock2;
             Blocks[block.Id + ".1"] = topBlock2;
             TotalCost += cost;
+            return (bottomBlock2, topBlock2);
         }
 
         throw new Exception($"Unexpected block {block}");
