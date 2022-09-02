@@ -14,7 +14,7 @@ public class EnchancerTests
     public void Run()
     {
         var problem = Screen.LoadProblem(1);
-        var moves = Moves.Parse(File.ReadAllText(FileHelper.FindFilenameUpwards("hand-solutions/problem1.txt")));
+        var moves = Moves.Parse(File.ReadAllText(FileHelper.FindFilenameUpwards("hand-solutions/problem1-biter.txt")));
         var canvas = new Canvas(problem);
         foreach (var move in moves)
         {
