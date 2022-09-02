@@ -20,7 +20,7 @@ export const CommandsPanel: FC<ICommandsPanel> = ({
     <div className={"commandPanel"}>
       {Object.values(InstructionType).map((value, key) => {
         const style = value === instrument ? "commandPanel__active-item" : "commandPanel__item";
-        if (value === InstructionType.ColorInstructionType) {
+        if (value === InstructionType.ColorInstructionType || value === InstructionType.Rectangle) {
           return (
             <div key={key} className={"commandPanel__item-with-color"}>
               <span className={style} onClick={() => setInstrument(value)}>

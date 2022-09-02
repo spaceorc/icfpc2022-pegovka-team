@@ -10,7 +10,7 @@ import { CommandsPanel } from "./commandPanel";
 import { Point } from "../../contest-logic/Point";
 import { Block } from "../../contest-logic/Block";
 import { getClickInstruction } from "./canvasCommands";
-import { getMousePos } from "./shared/helpers";
+import { getMousePoint } from "./shared/helpers";
 import { SimilarityChecker } from "../../contest-logic/SimilarityCheck";
 
 const modules = import.meta.glob("../../../../problems/*.png", { as: "url", eager: true });
@@ -57,7 +57,6 @@ export const Playground = (): JSX.Element => {
   );
 
   const [color, setColor] = useState<RGBA>(new RGBA([0, 0, 0, 255]));
-  const [prevSelectedBlockId, setPrevSelectedBlockId] = useState<string>()
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
@@ -145,7 +144,7 @@ console.log(result.canvas.blocks)
   const [hoveringPoint, setHoveringPoint] = useState<Point | null>(null);
   const [hoveringBlocks, setHoveringBlocks] = useState<Block[]>([]);
   const onCanvasHover = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    const point = getMousePos(canvasRef.current, event);
+    const point = getMousePoint(canvasRef.current, event);
     const block = Array.from(interpretedResult?.canvas.blocks.values() ?? []).filter((b) =>
       point.isInside(b.bottomLeft, b.topRight)
     );
@@ -156,8 +155,8 @@ console.log(result.canvas.blocks)
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
         if (event.key === 'Enter' && event.shiftKey) {
-            handleClickRenderCanvas(playgroundCode);
             event.preventDefault();
+            handleClickRenderCanvas(playgroundCode);
         }
     };
 
@@ -277,11 +276,12 @@ console.log(result.canvas.blocks)
               instrument,
               interpretedResult.canvas.blocks,
               color,
-              prevSelectedBlockId,
-              setPrevSelectedBlockId,
+              playgroundCode
             );
             if (instruction) {
-              const code = `${playgroundCode}\n${instructionToString(instruction)}`;
+              const code = Array.isArray(instruction) ?
+                `${playgroundCode}\n${instruction.map(i => instructionToString(i)).join('\n')}` :
+                `${playgroundCode}\n${instructionToString(instruction)}`;
               setPlaygroundCode(code);
               handleClickRenderCanvas(code);
             }

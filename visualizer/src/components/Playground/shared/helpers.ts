@@ -1,7 +1,7 @@
 import React from "react";
 import { Point } from "../../../contest-logic/Point";
 
-export function getMousePos(
+export function getMousePoint(
   canvas: HTMLCanvasElement | null,
   event: React.MouseEvent<HTMLCanvasElement>
 ) {
