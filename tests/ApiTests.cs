@@ -40,7 +40,7 @@ public class ApiTests
     {
         var api = new Api();
 
-        for (var i = 1; i <= 10; i++)
+        for (var i = 1; i <= 15; i++)
         {
             var problem = api.FetchProblem(i).Result;
             ScreenRepo.SaveProblem(i, problem);
