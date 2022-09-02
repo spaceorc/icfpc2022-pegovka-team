@@ -71,7 +71,7 @@ export const Playground = (): JSX.Element => {
       imgData.data[index * 4 + 3] = pixel.a;
     });
     context.putImageData(imgData, 0, 0);
-    drawBlocks();
+    drawBlocks(result);
   };
   const handleReset = () => {
     setPlaygroundCode("");
@@ -80,11 +80,10 @@ export const Playground = (): JSX.Element => {
       new InterpreterResult(new Canvas(400, 400, new RGBA([255, 255, 255, 255])), 0)
     );
   };
-  const [drawBorder, setDrawBorder] = useState(false);
-  const drawBlocks = () => {
+  const [drawBorder, setDrawBorder] = useState(true);
+  const drawBlocks = (interpretedResult: InterpreterResult) => {
     if (!drawBorder) return;
     const context = canvasRef.current!.getContext("2d")!;
-    if (!interpretedResult) return;
     const canvas = interpretedResult.canvas;
     const blocks = canvas.blocks;
     context.strokeStyle = "rgba(0, 0, 0, 0.25)";
