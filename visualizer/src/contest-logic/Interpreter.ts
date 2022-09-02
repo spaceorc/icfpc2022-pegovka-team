@@ -66,7 +66,8 @@ export class Interpreter {
 
   interpret(lineNumber: number, context: Canvas, instruction: Instruction): InterpreterResult {
     switch (instruction.typ) {
-      case InstructionType.NopInstructionType || InstructionType.CommentInstructionType: {
+      case InstructionType.CommentInstructionType:
+      case InstructionType.NopInstructionType: {
         return new InterpreterResult(context, 0);
       }
       case InstructionType.ColorInstructionType: {
