@@ -22,5 +22,4 @@ public class ScreenTests
     {
         var screen = Screen.LoadProblem(1);
     }
-
 }
