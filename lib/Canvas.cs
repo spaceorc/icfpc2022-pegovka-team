@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace lib;
 
@@ -574,5 +575,34 @@ public class Canvas
         }
 
         return diff;
+    }
+
+    public void Apply(Move move)
+    {
+        switch (move)
+        {
+            case ColorMove cm:
+                ApplyColor(cm);
+                break;
+            case VCutMove vcm:
+                ApplyVCut(vcm);
+                break;
+            case HCutMove hcm:
+                ApplyHCut(hcm);
+                break;
+            case PCutMove pcm:
+                ApplyPCut(pcm);
+                break;
+            case MergeMove mm:
+                ApplyMerge(mm);
+                break;
+            case SwapMove sm:
+                ApplySwap(sm);
+                break;
+            case NopMove:
+                break;
+            default:
+                throw new Exception(move.ToString());
+        }
     }
 }
