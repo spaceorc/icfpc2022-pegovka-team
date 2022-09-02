@@ -314,7 +314,7 @@ console.log(result.canvas.blocks)
         />
         <div>
           Hovering: {hoveringPoint ? `(${hoveringPoint.px},${hoveringPoint.py})` : ""}{" "}
-          {hoveringBlocks.map((b) => b.id).join(", ")}
+          {hoveringBlocks.map((b) => [b.id, `size: ${b.size.px}x${b.size.py}`, `bottomLeft: ${b.bottomLeft.px} ${b.bottomLeft.py}`].join('; ')).join(", ")}
         </div>
         <div>Cost: {interpretedResult?.cost}</div>
         <div>Similarity: {similarity}</div>
