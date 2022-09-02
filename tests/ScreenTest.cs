@@ -1,3 +1,4 @@
+using FluentAssertions;
 using lib;
 using NUnit.Framework;
 using SixLabors.ImageSharp;
@@ -22,4 +23,23 @@ public class ScreenTests
     {
         var screen = Screen.LoadProblem(1);
     }
+
+    [Test]
+    public void TestDiffTo()
+    {
+        var screen1 = Screen.LoadProblem(1);
+        var screen2 = Screen.LoadProblem(1);
+        screen1.DiffTo(screen2).Should().Be(0);
+    }
+
+    [Test]
+    public void TestDiffTo2()
+    {
+        var screen1 = Screen.LoadProblem(1);
+        var screen2 = Screen.LoadProblem(1);
+        screen1.Pixels[0, 0] = new Rgba(255, 0, 0, 0);
+        screen2.Pixels[0, 0] = new Rgba(0, 0, 0, 0);
+        screen1.DiffTo(screen2).Should().Be(255 * 0.05);
+    }
+
 }

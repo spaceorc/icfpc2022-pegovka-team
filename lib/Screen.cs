@@ -1,4 +1,3 @@
-
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
@@ -8,6 +7,9 @@ namespace lib;
 public class Screen
 {
     public Rgba[,] Pixels;
+
+    public int Width => Pixels.GetLength(0);
+    public int Height => Pixels.GetLength(1);
 
     public static Screen LoadProblem(int problem)
     {
@@ -31,5 +33,19 @@ public class Screen
     public Screen(Rgba[,] pixels)
     {
         Pixels = pixels;
+    }
+
+    public double DiffTo(Screen other)
+    {
+        var diff = 0.0;
+        var alpha = 0.05;
+        for (int x = 0; x < Width; x++)
+        for (int y = 0; y < Height; y++)
+        {
+            var p1 = Pixels[x, y];
+            var p2 = other.Pixels[x, y];
+            diff += p1.DiffTo(p2);
+        }
+        return diff * alpha;
     }
 }
