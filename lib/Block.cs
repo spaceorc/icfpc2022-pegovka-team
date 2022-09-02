@@ -1,8 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using SixLabors.ImageSharp.ColorSpaces;
-using static Yandex.Cloud.Mdb.Clickhouse.V1.Config.ClickhouseConfig.Types.ExternalDictionary.Types.Structure.Types;
 
 namespace lib;
 
@@ -11,6 +7,10 @@ public abstract record Block(string Id, V BottomLeft, V TopRight)
     public V Size => TopRight - BottomLeft;
     public int Height => TopRight.Y - BottomLeft.Y;
     public int Width => TopRight.X - BottomLeft.X;
+    public int Left => BottomLeft.X;
+    public int Right => TopRight.X;
+    public int Bottom => BottomLeft.Y;
+    public int Top => TopRight.Y;
     public int ScalarSize => Size.GetScalarSize();
     public abstract IEnumerable<SimpleBlock> GetChildren();
 }
