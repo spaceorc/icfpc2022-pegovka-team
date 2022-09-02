@@ -206,6 +206,18 @@ namespace lib
             return copy;
         }
 
+        public static T Sample<T>(this IList<T> items, Random random)
+        {
+            var index = random.Next(items.Count);
+            return items[index];
+        }
+
+        public static T Sample<T>(this ICollection<T> items, Random random)
+        {
+            var index = random.Next(items.Count);
+            return items.ElementAt(index);
+        }
+
         /// <returns>angle in (-pi..pi]</returns>
         public static double NormAngleInRadians(this double angle)
         {
