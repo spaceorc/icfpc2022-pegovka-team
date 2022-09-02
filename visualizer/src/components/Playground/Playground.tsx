@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import React, { HtmlHTMLAttributes, useRef, useState } from "react";
 import { Canvas } from "../../contest-logic/Canvas";
 import { RGBA } from "../../contest-logic/Color";
 import { Interpreter, InterpreterResult } from "../../contest-logic/Interpreter";
@@ -7,14 +7,16 @@ import { Painter } from "../../contest-logic/Painter";
 import { RandomInstructionGenerator } from "../../contest-logic/RandomInstructionGenerator";
 import { CommandsPanel } from "./commandPanel";
 
-function getMousePos(canvas: any, event: any) {
-  var rect = canvas.getBoundingClientRect();
+function getMousePos(canvas: HTMLCanvasElement | null, event: React.MouseEvent<HTMLCanvasElement>) {
+  if (!canvas) return { x: -1, y: -1 };
+  const rect = canvas.getBoundingClientRect();
   return {
     x: event.clientX - rect.left,
-    y: event.clientY - rect.top,
+    y: rect.height - (event.clientY - rect.top),
   };
 }
 import { Point } from "../../contest-logic/Point";
+import { Block } from "../../contest-logic/Block";
 
 export const Playground = (): JSX.Element => {
   const [width, setWidth] = useState(400);
@@ -99,6 +101,16 @@ export const Playground = (): JSX.Element => {
     console.log(getMousePos(canvasRef.current, event));
   };
 
+  const [hoveringBlocks, setHoveringBlocks] = useState<Block[]>([]);
+  const onCanvasHover = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    const pos = getMousePos(canvasRef.current, event);
+    const point = new Point([pos.x, pos.y]);
+    const block = Array.from(interpretedResult?.canvas.blocks.values() ?? []).filter((b) =>
+      point.isInside(b.bottomLeft, b.topRight)
+    );
+    setHoveringBlocks(block);
+  };
+
   return (
     <div
       style={{
@@ -110,10 +122,14 @@ export const Playground = (): JSX.Element => {
     >
       <div>
         <div>
-            <label>
-                Example id
-                <input type="number" value={exampleId} onChange={event => setExampleId(Number(event.target.value))} />
-            </label>
+          <label>
+            Example id
+            <input
+              type="number"
+              value={exampleId}
+              onChange={(event) => setExampleId(Number(event.target.value))}
+            />
+          </label>
         </div>
         <div>
           <button onClick={handleClickGenerateInstruction}>Generate Instruction</button>
@@ -146,24 +162,28 @@ export const Playground = (): JSX.Element => {
             <label>
               code
               <br />
-              <div style={{
-                display: 'flex',
-                fontSize: '14px',
-                lineHeight: '18px'
-              }}>
+              <div
+                style={{
+                  display: "flex",
+                  fontSize: "14px",
+                  lineHeight: "18px",
+                }}
+              >
                 <textarea
-                    style={{
-                      width: "500px",
-                      height: "400px",
-                      fontSize: '14px',
-                      lineHeight: '18px'
-                    }}
-                    placeholder="Code to be submitted"
-                    value={playgroundCode}
-                    onChange={handlePlaygroundCode}
+                  style={{
+                    width: "500px",
+                    height: "400px",
+                    fontSize: "14px",
+                    lineHeight: "18px",
+                  }}
+                  placeholder="Code to be submitted"
+                  value={playgroundCode}
+                  onChange={handlePlaygroundCode}
                 />
                 <div>
-                    {interpretedResult?.instructionCosts.map(cost => <div>{cost}</div>)}
+                  {interpretedResult?.instructionCosts.map((cost) => (
+                    <div>{cost}</div>
+                  ))}
                 </div>
               </div>
             </label>
@@ -176,7 +196,7 @@ export const Playground = (): JSX.Element => {
           display: "flex",
           flexDirection: "column",
           gap: 10,
-          position: 'relative'
+          position: "relative",
         }}
       >
         <canvas
@@ -185,16 +205,30 @@ export const Playground = (): JSX.Element => {
           height={height}
           ref={canvasRef}
           onClick={onCanvasClick}
+          onMouseMove={onCanvasHover}
+          onMouseOver={onCanvasHover}
+          onMouseLeave={() => setHoveringBlocks([])}
         />
-        <img style={{
-            position: 'absolute',
+        <img
+          style={{
+            position: "absolute",
             top: 0,
             left: 0,
             opacity: expectedOpacity,
-            pointerEvents: 'none'
-        }} src={`https://cdn.robovinci.xyz/imageframes/${exampleId}.png`} />
-        Cost: {interpretedResult?.cost}
-        <input type="range" min={0} max={1} step={0.01} value={expectedOpacity} onChange={event => setExpectedOpacity(Number(event.target.value))}/>
+            pointerEvents: "none",
+          }}
+          src={`https://cdn.robovinci.xyz/imageframes/${exampleId}.png`}
+        />
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.01}
+          value={expectedOpacity}
+          onChange={(event) => setExpectedOpacity(Number(event.target.value))}
+        />
+        <div>Hovering: {hoveringBlocks.map((b) => b.id).join(", ")}</div>
+        <div>Cost: {interpretedResult?.cost}</div>
       </div>
       <CommandsPanel instrument={instrument} setInstrument={setInstrument} />
     </div>
