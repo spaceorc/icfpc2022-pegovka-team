@@ -36,14 +36,7 @@ export class Parser {
         return parseResult;
       }
       const instruction = parseResult.result as Instruction;
-      if (
-        !(
-          instruction.typ === InstructionType.NopInstructionType ||
-          instruction.typ === InstructionType.CommentInstructionType
-        )
-      ) {
-        instructions.push(instruction);
-      }
+      instructions.push(instruction);
     }
     let metaData = { width: 400, height: 400, backgroundColor: new RGBA([255, 255, 255, 255]) };
 

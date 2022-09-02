@@ -21,7 +21,7 @@ export class InterpreterResult {
     constructor(canvas: Canvas, cost: Cost, instructionCosts?: Cost[]) {
         this.canvas = canvas;
         this.cost = cost;
-        this.instructionCosts = [];
+        this.instructionCosts = instructionCosts ?? [];
     }
 }
 

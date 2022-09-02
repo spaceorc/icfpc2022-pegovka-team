@@ -60,6 +60,7 @@ export const Playground = (): JSX.Element => {
     const context = canvas.getContext("2d")!;
 
     console.log(result.canvas.blocks);
+    console.log(result);
 
     canvas.width = result.canvas.width;
     canvas.height = result.canvas.height;
@@ -137,15 +138,26 @@ export const Playground = (): JSX.Element => {
             <label>
               code
               <br />
-              <textarea
-                style={{
-                  width: "500px",
-                  height: "400px",
-                }}
-                placeholder="Code to be submitted"
-                value={playgroundCode}
-                onChange={handlePlaygroundCode}
-              />
+              <div style={{
+                display: 'flex',
+                fontSize: '14px',
+                lineHeight: '18px'
+              }}>
+                <textarea
+                    style={{
+                      width: "500px",
+                      height: "400px",
+                      fontSize: '14px',
+                      lineHeight: '18px'
+                    }}
+                    placeholder="Code to be submitted"
+                    value={playgroundCode}
+                    onChange={handlePlaygroundCode}
+                />
+                <div>
+                    {interpretedResult?.instructionCosts.map(cost => <div>{cost}</div>)}
+                </div>
+              </div>
             </label>
           </div>
         </div>
