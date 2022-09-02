@@ -1,9 +1,11 @@
 using FluentAssertions;
 using lib;
+using lib.Algorithms;
 using NUnit.Framework;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
+using System.Linq;
 
 namespace tests;
 
@@ -22,6 +24,10 @@ public class ScreenTests
     public void TestLoadProblem()
     {
         var screen = Screen.LoadProblem(1);
+        var algorithm = new SimpleAlgorithm();
+
+        var result = algorithm.GetResult(screen).ToList();
+
     }
 
     [Test]
