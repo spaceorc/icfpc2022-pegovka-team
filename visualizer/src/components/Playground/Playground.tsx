@@ -1,5 +1,5 @@
 import { Canvas } from "../../contest-logic/Canvas";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { RGBA } from "../../contest-logic/Color";
 import { Interpreter, InterpreterResult } from "../../contest-logic/Interpreter";
 import { instructionToString, InstructionType } from "../../contest-logic/Instruction";
@@ -38,6 +38,7 @@ export const Playground = (): JSX.Element => {
   const [expectedOpacity, setExpectedOpacity] = useState(0);
   const [exampleId, setExampleId] = useState(1);
   const [similarity, setSimilarity] = useState(0);
+  const [oldTotal, setOldTotal] = useState(0);
 
   const [playgroundCode, _setPlaygroundCode] = useState(sessionStorage.getItem("code") ?? "");
   const setPlaygroundCode = (code: string) => {
@@ -78,6 +79,7 @@ export const Playground = (): JSX.Element => {
   };
 
   const handleClickRenderCanvas = (code: string) => {
+    setOldTotal(interpretedResult.cost + similarity);
     clearCanvas();
 
     const interpreter = new Interpreter();
@@ -142,6 +144,10 @@ export const Playground = (): JSX.Element => {
     setHoveringBlocks(block);
     setHoveringPoint(point);
   };
+
+  const total = interpretedResult?.cost + similarity;
+  const diff = total - oldTotal;
+
   return (
     <div
       style={{
@@ -291,6 +297,8 @@ export const Playground = (): JSX.Element => {
         </div>
         <div>Cost: {interpretedResult?.cost}</div>
         <div>Similarity: {similarity}</div>
+        <div>Total: {total}</div>
+        <div style={{ color: diff > 0 ? 'red' : 'green' }}>Diff: {diff}</div>
       </div>
       <CommandsPanel
         color={color}
