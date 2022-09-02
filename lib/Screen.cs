@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+using lib.Origami;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
@@ -6,6 +9,7 @@ namespace lib;
 
 public class Screen
 {
+    private const double Alpha = 0.005;
     public Rgba[,] Pixels;
 
     public int Width => Pixels.GetLength(0);
@@ -40,10 +44,21 @@ public class Screen
         Pixels = pixels;
     }
 
+    public double DiffTo(V bottomLeft, V topRight, Rgba color)
+    {
+        var diff = 0.0;
+        for (int x = bottomLeft.X; x < topRight.X; x++)
+        for (int y = bottomLeft.Y; y < topRight.Y; y++)
+        {
+            var p1 = Pixels[x, y];
+            diff += p1.DiffTo(color);
+        }
+        return diff * Alpha;
+    }
+
     public double DiffTo(Screen other)
     {
         var diff = 0.0;
-        var alpha = 0.005;
         for (int x = 0; x < Width; x++)
         for (int y = 0; y < Height; y++)
         {
@@ -51,20 +66,50 @@ public class Screen
             var p2 = other.Pixels[x, y];
             diff += p1.DiffTo(p2);
         }
-        return diff * alpha;
+        return diff * Alpha;
     }
 
     public double DiffTo(SimpleBlock block)
     {
-        var diff = 0.0;
-        var alpha = 0.005;
+        return DiffTo(block.BottomLeft, block.TopRight, block.Color);
+    }
+
+    public double DiffTo(Block block)
+    {
+        return block switch
+        {
+            SimpleBlock sb => DiffTo(sb),
+            ComplexBlock cb => DiffTo(cb),
+            _ => throw new Exception(block.ToString())
+        };
+    }
+
+    public double DiffTo(ComplexBlock block)
+    {
+        return block.Children.Sum(DiffTo);
+    }
+
+    public Rgba GetAverageColor(Block block)
+    {
+        var pixelsCount = block.ScalarSize;
+
+        var (r, g, b, a) = (0, 0, 0, 0);
+
         for (int x = block.BottomLeft.X; x < block.TopRight.X; x++)
         for (int y = block.BottomLeft.Y; y < block.TopRight.Y; y++)
         {
-            var p1 = Pixels[x, y];
-            diff += p1.DiffTo(block.Color);
+            var pixel = Pixels[x, y];
+            r += pixel.R;
+            g += pixel.G;
+            b += pixel.B;
+            a += pixel.A;
         }
-        return diff * alpha;
+
+        return new Rgba(
+            r / pixelsCount,
+            g / pixelsCount,
+            b / pixelsCount,
+            a / pixelsCount);
     }
 
     public void ToImage(string pngPath)

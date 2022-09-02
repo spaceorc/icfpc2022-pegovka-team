@@ -49,7 +49,7 @@ public class SimpleAlgorithm : IAlgorithm
         var blocks = canvas.Blocks.Values.ToList();
         foreach (var block in blocks)
         {
-            var averageBlockColor = GetAverageColor(screen, block);
+            var averageBlockColor = screen.GetAverageColor(block);
             var colorMove = new ColorMove(block.Id, averageBlockColor);
 
             var currentScore = canvas.GetScore(screen);
@@ -69,29 +69,6 @@ public class SimpleAlgorithm : IAlgorithm
 
         var totalScore = canvas.GetScore(screen);
         return (resultMoves, totalScore);
-    }
-
-    public Rgba GetAverageColor(Screen screen, Block block)
-    {
-        var pixelsCount = screen.Height * screen.Width;
-
-        var (r, g, b, a) = (0, 0, 0, 0);
-
-        for (int x = block.BottomLeft.X; x < block.TopRight.X; x++)
-            for (int y = block.BottomLeft.Y; y < block.TopRight.Y; y++)
-            {
-                var pixel = screen.Pixels[x, y];
-                r += pixel.R;
-                g += pixel.G;
-                b += pixel.B;
-                a += pixel.A;
-            }
-
-        return new Rgba(
-            r / pixelsCount,
-            g / pixelsCount,
-            b / pixelsCount,
-            a / pixelsCount);
     }
 
     private Block? GetBlock(Canvas canvas, int minSize)
