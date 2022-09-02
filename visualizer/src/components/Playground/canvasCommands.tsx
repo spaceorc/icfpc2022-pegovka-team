@@ -15,7 +15,7 @@ function getBlockByPoint(blocks: Map<string, Block>, point: Point) {
 
 function getNewBlocks(code: string, instructions: Instruction[]) {
     const interpreter = new Interpreter();
-    const result = interpreter.run(`${code}${instructions.map(i => instructionToString(i)).join('\n')}`);
+    const result = interpreter.run(`${code}\n${instructions.map(i => instructionToString(i)).join('\n')}`);
 
     return result.canvas.blocks;
 }
