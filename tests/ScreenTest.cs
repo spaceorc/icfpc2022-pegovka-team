@@ -23,14 +23,15 @@ public class ScreenTests
     [Test]
     public void TestLoadProblem()
     {
-        var screen = Screen.LoadProblem(1);
-        var algorithm = new SimpleAlgorithm();
+        for (var problemId = 1; problemId <= 10; problemId++)
+        {
+            var screen = Screen.LoadProblem(1);
+            var algorithm = new SimpleAlgorithm();
 
-        var (moves, score) = algorithm.GetBestResult(screen);
+            var (moves, score) = algorithm.GetBestResult(screen);
 
-        var commands = string.Join('\n', moves.Select(m => m.ToString()));
-        
-
+            var commands = string.Join('\n', moves.Select(m => m.ToString()));
+        }
     }
 
     [Test]

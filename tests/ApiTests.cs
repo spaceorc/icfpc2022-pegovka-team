@@ -7,8 +7,6 @@ namespace tests;
 
 public class ApiTests
 {
-    private const string Solution = "";
-
     [Test]
     [Explicit]
     public void TestGetAll()
@@ -23,18 +21,18 @@ public class ApiTests
     public void TestPostSubmission()
     {
         var api = new Api();
-        var response = api.PostSolution(8, Solution);
+        var response = api.PostSolution(8, " ");
         Console.WriteLine(response);
     }
 
-    [Test]
-    [Explicit]
-    public void TestDownloadProblem()
-    {
-        var api = new Api();
-        var response = api.DownloadProblem(8);
-        Console.WriteLine(response);
-    }
+    // [Test]
+    // [Explicit]
+    // public void TestDownloadProblem()
+    // {
+    //     var api = new Api();
+    //     var response = api.DownloadProblem(8);
+    //     Console.WriteLine(response);
+    // }
 
     [Test]
     [Explicit]
@@ -42,7 +40,7 @@ public class ApiTests
     {
         var api = new Api();
 
-        for (var i = 1; i <= 10; i++)
+        for (var i = 1; i <= 15; i++)
         {
             var problem = api.FetchProblem(i).Result;
             ScreenRepo.SaveProblem(i, problem);

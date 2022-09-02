@@ -18,7 +18,7 @@ public static class ScreenRepo
         File.Exists(GetProblemFileName(index));
 
     private static string GetProblemFileName(int index) =>
-        FileHelper.PatchFilename($"problems/problem{index}.json");
+        FileHelper.PatchFilename($"problems/problem{index}.png");
 
     public static Screen GetProblem(int index)
     {
@@ -30,7 +30,7 @@ public static class ScreenRepo
     public static void SaveProblem(int index, byte[] problem)
     {
         var dir = FileHelper.PatchDirectoryName("problems");
-        var filename = Path.Combine(dir, $"problem{index}.json");
+        var filename = Path.Combine(dir, $"problem{index}.png");
         File.WriteAllBytes(filename, problem);
     }
 }

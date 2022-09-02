@@ -8,6 +8,9 @@ import {getMousePos} from "./shared/helpers";
 
 export function getClickInstruction(canvasRef: any, event: MouseEvent<HTMLCanvasElement>,
                               instrument: InstructionType, blocks: Map<string, Block>): Instruction|undefined {
+    if (!blocks){
+
+    }
     const position = getMousePos(canvasRef.current, event);
     let currentBlock: Block;
     for (const block of blocks.values()){
@@ -24,7 +27,7 @@ export function getClickInstruction(canvasRef: any, event: MouseEvent<HTMLCanvas
                 // @ts-ignore
                 blockId: currentBlock.id,
                 typ: InstructionType.HorizontalCutInstructionType,
-                lineNumber: position.py,
+                lineNumber: Math.trunc(position.py),
             } as Instruction;
         }
         case InstructionType.VerticalCutInstructionType: {
@@ -32,7 +35,7 @@ export function getClickInstruction(canvasRef: any, event: MouseEvent<HTMLCanvas
                 // @ts-ignore
                 blockId: currentBlock.id,
                 typ: InstructionType.VerticalCutInstructionType,
-                lineNumber: position.px,
+                lineNumber: Math.trunc(position.px),
             } as Instruction;
         }
         case InstructionType.PointCutInstructionType: {
@@ -40,7 +43,7 @@ export function getClickInstruction(canvasRef: any, event: MouseEvent<HTMLCanvas
                 // @ts-ignore
                 blockId: currentBlock.id,
                 typ: InstructionType.PointCutInstructionType,
-                point: position,
+                point: new Point([Math.trunc(position.px), Math.trunc(position.py)]),
             } as Instruction;
         }
 
