@@ -363,47 +363,36 @@ public class Canvas
         TotalCost += cost;
     }
 
-    public void ApplyPCut(PCutMove move)
+    public static (Block bl, Block br, Block tl, Block tr) PreApplyPCut(Block block, V point)
     {
-        var block = Blocks[move.BlockId];
-        var cost = Move.GetCost(ScalarSize, block.ScalarSize, move.BaseCost);
-
-        if (!move.Point.IsStrictlyInside(block.BottomLeft, block.TopRight))
-            throw new BadMoveException($"Point {move.Point} is out of block{block}");
-
         switch (block)
         {
             case SimpleBlock simpleBlock:
                 var bottomLeftBlock = new SimpleBlock(
                     block.Id + ".0",
                     block.BottomLeft,
-                    move.Point,
+                    point,
                     simpleBlock.Color
                 );
                 var bottomRightBlock = new SimpleBlock(
                     block.Id + ".1",
-                    new V(move.Point.X, block.BottomLeft.Y),
-                    new V(block.TopRight.X, move.Point.Y),
+                    new V(point.X, block.BottomLeft.Y),
+                    new V(block.TopRight.X, point.Y),
                     simpleBlock.Color
                 );
                 var topRightBlock = new SimpleBlock(
                     block.Id + ".2",
-                    move.Point,
+                    point,
                     block.TopRight,
                     simpleBlock.Color
                 );
                 var topLeftBlock = new SimpleBlock(
                     block.Id + ".3",
-                    new V(block.BottomLeft.X, move.Point.Y),
-                    new V(move.Point.X, block.TopRight.Y),
+                    new V(block.BottomLeft.X, point.Y),
+                    new V(point.X, block.TopRight.Y),
                     simpleBlock.Color
                 );
-                Blocks.Remove(block.Id);
-                Blocks[bottomLeftBlock.Id] = bottomLeftBlock;
-                Blocks[bottomRightBlock.Id] = bottomRightBlock;
-                Blocks[topRightBlock.Id] = topRightBlock;
-                Blocks[topLeftBlock.Id] = topLeftBlock;
-                break;
+                return (bottomLeftBlock, bottomRightBlock, topLeftBlock, topRightBlock);
 
             case ComplexBlock complexBlock:
                 var bottomLeftBlocks = new List<SimpleBlock>();
@@ -426,83 +415,83 @@ public class Canvas
                      * |________|_______|_______|
                      */
                     // Case 3
-                    if (subBlock.BottomLeft.X >= move.Point.X && subBlock.BottomLeft.Y >= move.Point.Y)
+                    if (subBlock.BottomLeft.X >= point.X && subBlock.BottomLeft.Y >= point.Y)
                     {
                         topRightBlocks.Add(subBlock);
                         continue;
                     }
 
                     // Case 7
-                    if (subBlock.TopRight.X <= move.Point.X && subBlock.TopRight.Y <= move.Point.Y)
+                    if (subBlock.TopRight.X <= point.X && subBlock.TopRight.Y <= point.Y)
                     {
                         bottomLeftBlocks.Add(subBlock);
                         continue;
                     }
 
                     // Case 1
-                    if (subBlock.TopRight.X <= move.Point.X && subBlock.BottomLeft.Y >= move.Point.Y)
+                    if (subBlock.TopRight.X <= point.X && subBlock.BottomLeft.Y >= point.Y)
                     {
                         topLeftBlocks.Add(subBlock);
                         continue;
                     }
 
                     // Case 9
-                    if (subBlock.BottomLeft.X >= move.Point.X && subBlock.TopRight.Y <= move.Point.Y)
+                    if (subBlock.BottomLeft.X >= point.X && subBlock.TopRight.Y <= point.Y)
                     {
                         bottomRightBlocks.Add(subBlock);
                         continue;
                     }
 
                     // Case 5
-                    if (move.Point.IsInside(subBlock.BottomLeft, subBlock.TopRight))
+                    if (point.IsInside(subBlock.BottomLeft, subBlock.TopRight))
                     {
-                        if (subBlock.BottomLeft.X != move.Point.X && subBlock.BottomLeft.Y != move.Point.Y)
+                        if (subBlock.BottomLeft.X != point.X && subBlock.BottomLeft.Y != point.Y)
                             bottomLeftBlocks.Add(new SimpleBlock(
                                 "bl_child",
                                 subBlock.BottomLeft,
-                                move.Point,
+                                point,
                                 subBlock.Color
                             ));
-                        if (subBlock.TopRight.X != move.Point.X && subBlock.BottomLeft.Y != move.Point.Y)
+                        if (subBlock.TopRight.X != point.X && subBlock.BottomLeft.Y != point.Y)
                             bottomRightBlocks.Add(new SimpleBlock(
                                 "br_child",
-                                new V(move.Point.X, subBlock.BottomLeft.Y),
-                                new V(subBlock.TopRight.X, move.Point.Y),
+                                new V(point.X, subBlock.BottomLeft.Y),
+                                new V(subBlock.TopRight.X, point.Y),
                                 subBlock.Color
                             ));
-                        if (subBlock.TopRight.X != move.Point.X && subBlock.TopRight.Y != move.Point.Y)
+                        if (subBlock.TopRight.X != point.X && subBlock.TopRight.Y != point.Y)
                             topRightBlocks.Add(new SimpleBlock(
                                 "tr_child",
-                                move.Point,
+                                point,
                                 subBlock.TopRight,
                                 subBlock.Color
                             ));
-                        if (subBlock.BottomLeft.X != move.Point.X && subBlock.TopRight.Y != move.Point.Y)
+                        if (subBlock.BottomLeft.X != point.X && subBlock.TopRight.Y != point.Y)
                             topLeftBlocks.Add(new SimpleBlock(
                                 "tl_child",
-                                new V(subBlock.BottomLeft.X, move.Point.Y),
-                                new V(move.Point.X, subBlock.TopRight.Y),
+                                new V(subBlock.BottomLeft.X, point.Y),
+                                new V(point.X, subBlock.TopRight.Y),
                                 subBlock.Color
                             ));
                         continue;
                     }
 
                     // Case 2
-                    if (subBlock.BottomLeft.X <= move.Point.X
-                        && move.Point.X <= subBlock.TopRight.X
-                        && move.Point.Y < subBlock.BottomLeft.Y)
+                    if (subBlock.BottomLeft.X <= point.X
+                        && point.X <= subBlock.TopRight.X
+                        && point.Y < subBlock.BottomLeft.Y)
                     {
-                        if (subBlock.BottomLeft.X != move.Point.X)
+                        if (subBlock.BottomLeft.X != point.X)
                             topLeftBlocks.Add(new SimpleBlock(
                                 "case2_tl_child",
                                 subBlock.BottomLeft,
-                                new V(move.Point.X, subBlock.TopRight.Y),
+                                new V(point.X, subBlock.TopRight.Y),
                                 subBlock.Color
                             ));
-                        if (subBlock.TopRight.X != move.Point.X)
+                        if (subBlock.TopRight.X != point.X)
                             topRightBlocks.Add(new SimpleBlock(
                                 "case2_tr_child",
-                                new V(move.Point.X, subBlock.BottomLeft.Y),
+                                new V(point.X, subBlock.BottomLeft.Y),
                                 subBlock.TopRight,
                                 subBlock.Color
                             ));
@@ -510,21 +499,21 @@ public class Canvas
                     }
 
                     // Case 8
-                    if (subBlock.BottomLeft.X <= move.Point.X
-                        && move.Point.X <= subBlock.TopRight.X
-                        && move.Point.Y > subBlock.TopRight.Y)
+                    if (subBlock.BottomLeft.X <= point.X
+                        && point.X <= subBlock.TopRight.X
+                        && point.Y > subBlock.TopRight.Y)
                     {
-                        if (subBlock.BottomLeft.X != move.Point.X)
+                        if (subBlock.BottomLeft.X != point.X)
                             bottomLeftBlocks.Add(new SimpleBlock(
                                 "case8_bl_child",
                                 subBlock.BottomLeft,
-                                new V(move.Point.X, subBlock.TopRight.Y),
+                                new V(point.X, subBlock.TopRight.Y),
                                 subBlock.Color
                             ));
-                        if (subBlock.TopRight.X != move.Point.X)
+                        if (subBlock.TopRight.X != point.X)
                             bottomRightBlocks.Add(new SimpleBlock(
                                 "case8_br_child",
-                                new V(move.Point.X, subBlock.BottomLeft.Y),
+                                new V(point.X, subBlock.BottomLeft.Y),
                                 subBlock.TopRight,
                                 subBlock.Color
                             ));
@@ -532,21 +521,21 @@ public class Canvas
                     }
 
                     // Case 4
-                    if (subBlock.BottomLeft.Y <= move.Point.Y
-                        && move.Point.Y <= subBlock.TopRight.Y
-                        && move.Point.X < subBlock.BottomLeft.X)
+                    if (subBlock.BottomLeft.Y <= point.Y
+                        && point.Y <= subBlock.TopRight.Y
+                        && point.X < subBlock.BottomLeft.X)
                     {
-                        if (subBlock.BottomLeft.Y != move.Point.Y)
+                        if (subBlock.BottomLeft.Y != point.Y)
                             bottomRightBlocks.Add(new SimpleBlock(
                                 "case4_br_child",
                                 subBlock.BottomLeft,
-                                new V(subBlock.TopRight.X, move.Point.Y),
+                                new V(subBlock.TopRight.X, point.Y),
                                 subBlock.Color
                             ));
-                        if (subBlock.TopRight.Y != move.Point.Y)
+                        if (subBlock.TopRight.Y != point.Y)
                             topRightBlocks.Add(new SimpleBlock(
                                 "case4_tr_child",
-                                new V(subBlock.BottomLeft.X, move.Point.Y),
+                                new V(subBlock.BottomLeft.X, point.Y),
                                 subBlock.TopRight,
                                 subBlock.Color
                             ));
@@ -554,21 +543,21 @@ public class Canvas
                     }
 
                     // Case 6
-                    if (subBlock.BottomLeft.Y <= move.Point.Y
-                        && move.Point.Y <= subBlock.TopRight.Y
-                        && move.Point.X > subBlock.TopRight.X)
+                    if (subBlock.BottomLeft.Y <= point.Y
+                        && point.Y <= subBlock.TopRight.Y
+                        && point.X > subBlock.TopRight.X)
                     {
-                        if (subBlock.BottomLeft.Y != move.Point.Y)
+                        if (subBlock.BottomLeft.Y != point.Y)
                             bottomLeftBlocks.Add(new SimpleBlock(
                                 "case6_bl_child",
                                 subBlock.BottomLeft,
-                                new V(subBlock.TopRight.X, move.Point.Y),
+                                new V(subBlock.TopRight.X, point.Y),
                                 subBlock.Color
                             ));
-                        if (subBlock.TopRight.Y != move.Point.Y)
+                        if (subBlock.TopRight.Y != point.Y)
                             topLeftBlocks.Add(new SimpleBlock(
                                 "case6_br_child",
-                                new V(subBlock.BottomLeft.X, move.Point.Y),
+                                new V(subBlock.BottomLeft.X, point.Y),
                                 subBlock.TopRight,
                                 subBlock.Color
                             ));
@@ -579,38 +568,46 @@ public class Canvas
                 var bottomLeftBlockC = new ComplexBlock(
                     block.Id + ".0",
                     block.BottomLeft,
-                    move.Point,
+                    point,
                     bottomLeftBlocks.ToArray()
                 );
                 var bottomRightBlockC = new ComplexBlock(
                     block.Id + ".1",
-                    new V(move.Point.X, block.BottomLeft.Y),
-                    new V(block.TopRight.X, move.Point.Y),
+                    new V(point.X, block.BottomLeft.Y),
+                    new V(block.TopRight.X, point.Y),
                     bottomRightBlocks.ToArray()
                 );
                 var topRightBlockC = new ComplexBlock(
                     block.Id + ".2",
-                    move.Point,
+                    point,
                     block.TopRight,
                     topRightBlocks.ToArray()
                 );
                 var topLeftBlockC = new ComplexBlock(
                     block.Id + ".3",
-                    new V(block.BottomLeft.X, move.Point.Y),
-                    new V(move.Point.X, block.TopRight.Y),
+                    new V(block.BottomLeft.X, point.Y),
+                    new V(point.X, block.TopRight.Y),
                     topLeftBlocks.ToArray()
                 );
-                Blocks.Remove(block.Id);
-                Blocks[bottomLeftBlockC.Id] = bottomLeftBlockC;
-                Blocks[bottomRightBlockC.Id] = bottomRightBlockC;
-                Blocks[topRightBlockC.Id] = topRightBlockC;
-                Blocks[topLeftBlockC.Id] = topLeftBlockC;
-                break;
-
+                return (bottomLeftBlockC, bottomRightBlockC, topLeftBlockC, topRightBlockC);
             default:
                 throw new Exception($"Unexpected block {block}");
         }
+    }
 
+    public void ApplyPCut(PCutMove move)
+    {
+        var block = Blocks[move.BlockId];
+        var cost = Move.GetCost(ScalarSize, block.ScalarSize, move.BaseCost);
+
+        if (!move.Point.IsStrictlyInside(block.BottomLeft, block.TopRight))
+            throw new BadMoveException($"Point {move.Point} is out of block{block}");
+        var (bottomLeftBlock, bottomRightBlock, topRightBlock, topLeftBlock) = PreApplyPCut(block, move.Point);
+        Blocks.Remove(block.Id);
+        Blocks[bottomLeftBlock.Id] = bottomLeftBlock;
+        Blocks[bottomRightBlock.Id] = bottomRightBlock;
+        Blocks[topRightBlock.Id] = topRightBlock;
+        Blocks[topLeftBlock.Id] = topLeftBlock;
         TotalCost += cost;
     }
 

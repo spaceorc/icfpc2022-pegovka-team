@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using lib;
 using lib.Algorithms;
 using lib.Algorithms.RectBiter;
 using lib.api;
+using lib.db;
 using NUnit.Framework;
 
 namespace tests;
@@ -46,16 +48,19 @@ public class BiterTests
         return score;
     }
 
-    [TestCase(1)]
-    public void RunGreedyRectBiter(int problemId)
+    [Test]
+    public async Task RunGreedyRectBiter([Range(1, 20)]int problemId)
     {
         var solver = new GreedyRectBiter(new Random());
         var problem = Screen.LoadProblem(problemId);
         var canvas = new Canvas(problem);
         var state = new BiterState(canvas, new HashSet<string>(), problem);
-        var moves = solver.Solve(state, 200).ToList();
-        Console.WriteLine(moves.StrJoin("\n"));
-        //Console.WriteLine(state.Canvas.GetScore(problem));
+        var (moves, score) = solver.Solve(state, 1000);
+        var res = moves.StrJoin("\n");
+        Console.WriteLine(res);
+        await SolutionRepo.Submit(new ContestSolution(problemId, score, res, new SolverMeta(), DateTime.Now, solver.ToString()!));
+        //var response = new Api().PostSolution(problemId, res);
+        //Console.WriteLine(response?.Submission_Id);
 
     }
 }
