@@ -190,6 +190,11 @@ namespace lib
             return X >= 0 && X < width && Y >= 0 && Y < height;
         }
 
+        public bool IsStrictlyInside(Block block)
+        {
+            return IsStrictlyInside(block.BottomLeft, block.TopRight);
+        }
+
         public bool IsStrictlyInside(V bottomLeft, V topRight)
         {
             return bottomLeft.X < X && X < topRight.X && bottomLeft.Y < Y && Y < topRight.Y;
