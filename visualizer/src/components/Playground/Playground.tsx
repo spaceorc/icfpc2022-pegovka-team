@@ -44,6 +44,9 @@ export const Playground = (): JSX.Element => {
   const [interpretedResult, setInterpreterResult] = useState<InterpreterResult>(
     new InterpreterResult(new Canvas(400, 400, new RGBA([255, 255, 255, 255])), 0)
   );
+
+  const [color, setColor] = useState<RGBA>(new RGBA([0, 0, 0, 255]));
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const handlePlaygroundCode = (e: any) => {
@@ -236,18 +239,17 @@ export const Playground = (): JSX.Element => {
           height={height}
           ref={canvasRef}
           onClick={(event) => {
-            if (interpretedResult) {
-              const instruction = getClickInstruction(
-                canvasRef,
-                event,
-                instrument,
-                interpretedResult?.canvas.blocks
-              );
-              if (instruction) {
-                const code = `${playgroundCode}\n${instructionToString(instruction)}`;
-                setPlaygroundCode(code);
-                handleClickRenderCanvas(code);
-              }
+            const instruction = getClickInstruction(
+              canvasRef,
+              event,
+              instrument,
+              interpretedResult.canvas.blocks,
+              color
+            );
+            if (instruction) {
+              const code = `${playgroundCode}\n${instructionToString(instruction)}`;
+              setPlaygroundCode(code);
+              handleClickRenderCanvas(code);
             }
           }}
           onMouseMove={onCanvasHover}
@@ -283,7 +285,12 @@ export const Playground = (): JSX.Element => {
         <div>Cost: {interpretedResult?.cost}</div>
         <div>Similarity: {similarity}</div>
       </div>
-      <CommandsPanel instrument={instrument} setInstrument={setInstrument} />
+      <CommandsPanel
+        color={color}
+        setColor={setColor}
+        instrument={instrument}
+        setInstrument={setInstrument}
+      />
     </div>
   );
 };

@@ -33,6 +33,15 @@ public class Canvas
     {
     }
 
+    private Canvas(int width, int height, Dictionary<string, Block> blocks, int topLevelIdCounter, int totalCost)
+    {
+        Width = width;
+        Height = height;
+        Blocks = blocks;
+        TopLevelIdCounter = topLevelIdCounter;
+        TotalCost = totalCost;
+    }
+
     public void ApplyColor(ColorMove move)
     {
         var block = Blocks[move.BlockId];
@@ -604,5 +613,10 @@ public class Canvas
             default:
                 throw new Exception(move.ToString());
         }
+    }
+
+    public Canvas Copy()
+    {
+        return new(Width, Height, Blocks.ToDictionary(t => t.Key, t => t.Value), TopLevelIdCounter, TotalCost);
     }
 }
