@@ -19,7 +19,6 @@ export function getClickInstruction(canvasRef: any, event: MouseEvent<HTMLCanvas
             break;
         }
     }
-    console.log(position)
 
     switch (instrument){
         case InstructionType.HorizontalCutInstructionType: {

@@ -58,9 +58,6 @@ export const Playground = (): JSX.Element => {
     const canvas = canvasRef.current!;
     const context = canvas.getContext("2d")!;
 
-    console.log(result.canvas.blocks);
-    console.log(result);
-
     canvas.width = result.canvas.width;
     canvas.height = result.canvas.height;
     const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
