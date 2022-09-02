@@ -61,10 +61,10 @@ public class GreedyRectBiter
         this.random = random;
     }
 
-    public IEnumerable<Move> Solve(BiterState state, int countdownPerSolutionPart)
+    public (Move[] moves, long score) Solve(BiterState state, int countdownPerSolutionPart)
     {
         var moves = new List<Move>();
-        var minPenalty = double.PositiveInfinity;
+        var minPenalty = long.MaxValue;
         var bestMovesCount = 0;
         while (!state.Canvas.Blocks.Keys.All(state.FixedBlockIds.Contains))
         {
@@ -79,8 +79,7 @@ public class GreedyRectBiter
             }
         }
 
-        Console.WriteLine(minPenalty);
-        return moves.Take(bestMovesCount);
+        return (moves.Take(bestMovesCount).ToArray(), minPenalty);
     }
 
     public SolutionPart SearchBestSolutionPart(BiterState state, Countdown countdown)
@@ -134,26 +133,26 @@ public class GreedyRectBiter
         var fixedSimilarityPenalty = fixedBlocks.Sum(b => blockPenalties.GetOrCreate(b.Id, id => state.Screen.DiffTo(b)));
         var movesCost = state.Canvas.TotalCost;
         var fixedPixelsCount = fixedBlocks.Sum(b => b.ScalarSize);
-        return (fixedSimilarityPenalty);
+        return movesCost + fixedSimilarityPenalty;
     }
 
     private SolutionPart GenerateRandomSolutionPart(BiterState state)
     {
-        SolutionPart CreateSolutionPart(Block a, Block b, string s, Move cut)
+        SolutionPart CreateSolutionPart(Block a, Block b, string blockId, Move cut)
         {
             var colorA = state.Screen.GetAverageColor(a);
             var colorB = state.Screen.GetAverageColor(b);
             var penaltyA = state.Screen.DiffTo(a.BottomLeft, a.TopRight, colorA) / a.ScalarSize;
             var penaltyB = state.Screen.DiffTo(b.BottomLeft, b.TopRight, colorB) / b.ScalarSize;
             return penaltyA <= penaltyB
-                ? new SolutionPart(new List<Move> { new ColorMove(s, colorA), cut }, new List<string> { a.Id })
-                : new SolutionPart(new List<Move> { new ColorMove(s, colorB), cut }, new List<string> { b.Id });
+                ? new SolutionPart(new List<Move> { new ColorMove(blockId, colorA), cut }, new List<string> { a.Id })
+                : new SolutionPart(new List<Move> { new ColorMove(blockId, colorB), cut }, new List<string> { b.Id });
         }
 
         var activeBlocks = state.Canvas.Blocks.Keys.Where(id => !state.FixedBlockIds.Contains(id)).ToList();
         var blockId = random.SelectOne(activeBlocks);
         var block = state.Canvas.Blocks[blockId];
-        var caseIndex = random.Next(2);
+        var caseIndex = random.Next(3);
         if (caseIndex == 0)
         {
             var y = random.Next(block.BottomLeft.Y+1, block.TopRight.Y-1);
@@ -161,12 +160,23 @@ public class GreedyRectBiter
             var (a, b) = Canvas.PreApplyHCut(block, y);
             return CreateSolutionPart(a, b, blockId, hCut);
         }
-        else
+        if (caseIndex == 1)
         {
             var x = random.Next(block.BottomLeft.X+1, block.TopRight.X-1);
             var vCut = new VCutMove(blockId, x);
             var (a, b) = Canvas.PreApplyVCut(block, x);
             return CreateSolutionPart(a, b, blockId, vCut);
+        }
+        else
+        {
+            var x = random.Next(block.BottomLeft.X + 1, block.TopRight.X - 1);
+            var y = random.Next(block.BottomLeft.Y + 1, block.TopRight.Y - 1);
+            var pCut = new PCutMove(blockId, new V(x, y));
+            var (a, b, c, d) = Canvas.PreApplyPCut(block, new V(x, y));
+            var blocks = new[] { a, b, c, d };
+            var minBlock = blocks.MinBy(subBlock => subBlock.ScalarSize);
+            var color = state.Screen.GetAverageColor(minBlock);
+            return new SolutionPart(new List<Move> { new ColorMove(block.Id, color), pCut }, new List<string> { minBlock.Id });
         }
     }
 }
