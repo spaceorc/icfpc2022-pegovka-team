@@ -19,13 +19,8 @@ import { Point } from "../../contest-logic/Point";
 export const Playground = (): JSX.Element => {
   const [width, setWidth] = useState(400);
   const [height, setHeight] = useState(400);
-  const [cost, setCost] = useState(0);
-  const [result, setResut] = useState();
 
   const [playgroundCode, setPlaygroundCode] = useState("");
-  const [paintedCanvas, setPaintedCanvas] = useState(
-    new Canvas(width, height, new RGBA([255, 255, 255, 255]))
-  );
   const [instrument, setInstrument] = useState<InstructionType>(InstructionType.NopInstructionType);
   const [interpretedResult, setInterpreterResult] = useState<InterpreterResult | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -65,7 +60,6 @@ export const Playground = (): JSX.Element => {
     const context = canvas.getContext("2d")!;
 
     console.log(result.canvas.blocks);
-    setCost(result.cost);
 
     canvas.width = result.canvas.width;
     canvas.height = result.canvas.height;
@@ -171,7 +165,7 @@ export const Playground = (): JSX.Element => {
           ref={canvasRef}
           onClick={onCanvasClick}
         />
-        Cost: {cost}
+        Cost: {interpretedResult?.cost}
       </div>
       <CommandsPanel instrument={instrument} setInstrument={setInstrument} />
     </div>
