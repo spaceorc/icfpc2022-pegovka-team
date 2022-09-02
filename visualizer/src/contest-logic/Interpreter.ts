@@ -1,21 +1,21 @@
 /* eslint-disable */
 
-import {BlockType, ComplexBlock, SimpleBlock} from "./Block";
-import {Canvas} from "./Canvas";
+import { BlockType, ComplexBlock, SimpleBlock } from "./Block";
+import { Canvas } from "./Canvas";
 import {
-    ColorInstruction,
-    HorizontalCutInstruction,
-    Instruction,
-    InstructionType,
-    MergeInstruction,
-    PointCutInstruction,
-    SwapInstruction,
-    VerticalCutInstruction,
+  ColorInstruction,
+  HorizontalCutInstruction,
+  Instruction,
+  InstructionType,
+  MergeInstruction,
+  PointCutInstruction,
+  SwapInstruction,
+  VerticalCutInstruction,
 } from "./Instruction";
-import {InstructionCostCalculator} from "./InstructionCostCalculator";
-import {Parser} from "./Parser";
-import {Point} from "./Point";
-import {Program} from "./Program";
+import { InstructionCostCalculator } from "./InstructionCostCalculator";
+import { Parser } from "./Parser";
+import { Point } from "./Point";
+import { Program } from "./Program";
 
 export type Cost = number;
 
@@ -606,21 +606,38 @@ export class Interpreter {
 
     // Processing Starts
     if (block1.size.equals(block2.size)) {
-        block1.id = blockId2;
-        block2.id = blockId1;
-      if (block1.typ === BlockType.SimpleBlockType && block2.typ === BlockType.SimpleBlockType)  {
-          const temp1 = block1.bottomLeft;
-          const temp2 = block1.topRight;
+      block1.id = blockId2;
+      block2.id = blockId1;
 
-          block1.bottomLeft = block2.bottomLeft;
-          block2.bottomLeft = temp1;
+      const diffX = block1.bottomLeft.px - block2.bottomLeft.px;
+      const diffY = block1.bottomLeft.py - block2.bottomLeft.py;
 
-          block1.topRight = block2.topRight;
-          block2.topRight = temp2;
+      const temp1 = block1.bottomLeft;
+      const temp2 = block1.topRight;
+
+      block1.bottomLeft = block2.bottomLeft;
+      block2.bottomLeft = temp1;
+
+      block1.topRight = block2.topRight;
+      block2.topRight = temp2;
+
+      if (block1.typ === BlockType.ComplexBlockType) {
+        (block1 as ComplexBlock).subBlocks.forEach(subBlock => {
+            subBlock.bottomLeft = new Point([subBlock.bottomLeft.px - diffX, subBlock.bottomLeft.py - diffY]);
+            subBlock.topRight = new Point([subBlock.topRight.px - diffX, subBlock.topRight.py - diffY]);
+        });
       }
-        context.blocks.set(blockId1, block2);
-        context.blocks.set(blockId2, block1);
-        return new InterpreterResult(context, cost);
+
+      if (block2.typ === BlockType.ComplexBlockType) {
+        (block2 as ComplexBlock).subBlocks.forEach(subBlock => {
+            subBlock.bottomLeft = new Point([subBlock.bottomLeft.px + diffX, subBlock.bottomLeft.py + diffY]);
+            subBlock.topRight = new Point([subBlock.topRight.px + diffX, subBlock.topRight.py + diffY]);
+        });
+      }
+
+      context.blocks.set(blockId1, block2);
+      context.blocks.set(blockId2, block1);
+      return new InterpreterResult(context, cost);
     } else {
       throw Error(
         `At ${line}, encountered: Blocks are not the same size, [${blockId1}] has size [${block1.size}] while [${blockId2}] has size [${block2.size}]`
