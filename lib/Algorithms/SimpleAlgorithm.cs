@@ -8,12 +8,6 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace lib.Algorithms;
 
-public enum OrientationType
-{
-    X,
-    Y
-}
-
 public class SimpleAlgorithm : IAlgorithm
 {
     public IEnumerable<string> GetResult(Screen screen)
@@ -23,7 +17,7 @@ public class SimpleAlgorithm : IAlgorithm
         var averageColor = GetAverageColor(screen);
 
         var move = new ColorMove("0", averageColor);
-        var totalCost = canvas.ApplyColor(move);
+        var totalCost = move.GetCost(canvas);
 
         yield return move.ToString();
     }
