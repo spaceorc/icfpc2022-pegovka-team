@@ -29,7 +29,7 @@ public class Canvas
     }
 
     public Canvas(Screen problem)
-        :this(problem.Width, problem.Height, new Rgba(255, 255, 255, 255))
+        : this(problem.Width, problem.Height, new Rgba(255, 255, 255, 255))
     {
     }
 
@@ -176,7 +176,6 @@ public class Canvas
             Blocks[block.Id + ".1"] = topBlock;
             TotalCost += cost;
             return (bottomBlock, topBlock);
-
         }
 
         if (block is ComplexBlock complexBlock)
@@ -412,30 +411,34 @@ public class Canvas
                     // Case 5
                     if (move.Point.IsInside(subBlock.BottomLeft, subBlock.TopRight))
                     {
-                        bottomLeftBlocks.Add(new SimpleBlock(
-                            "bl_child",
-                            subBlock.BottomLeft,
-                            move.Point,
-                            subBlock.Color
-                        ));
-                        bottomRightBlocks.Add(new SimpleBlock(
-                            "br_child",
-                            new V(move.Point.X, subBlock.BottomLeft.Y),
-                            new V(subBlock.TopRight.X, move.Point.Y),
-                            subBlock.Color
-                        ));
-                        topRightBlocks.Add(new SimpleBlock(
-                            "tr_child",
-                            move.Point,
-                            subBlock.TopRight,
-                            subBlock.Color
-                        ));
-                        topLeftBlocks.Add(new SimpleBlock(
-                            "tl_child",
-                            new V(subBlock.BottomLeft.X, move.Point.Y),
-                            new V(move.Point.X, subBlock.TopRight.Y),
-                            subBlock.Color
-                        ));
+                        if (subBlock.BottomLeft.X != move.Point.X && subBlock.BottomLeft.Y != move.Point.Y)
+                            bottomLeftBlocks.Add(new SimpleBlock(
+                                "bl_child",
+                                subBlock.BottomLeft,
+                                move.Point,
+                                subBlock.Color
+                            ));
+                        if (subBlock.TopRight.X != move.Point.X && subBlock.BottomLeft.Y != move.Point.Y)
+                            bottomRightBlocks.Add(new SimpleBlock(
+                                "br_child",
+                                new V(move.Point.X, subBlock.BottomLeft.Y),
+                                new V(subBlock.TopRight.X, move.Point.Y),
+                                subBlock.Color
+                            ));
+                        if (subBlock.TopRight.X != move.Point.X && subBlock.TopRight.Y != move.Point.Y)
+                            topRightBlocks.Add(new SimpleBlock(
+                                "tr_child",
+                                move.Point,
+                                subBlock.TopRight,
+                                subBlock.Color
+                            ));
+                        if (subBlock.BottomLeft.X != move.Point.X && subBlock.TopRight.Y != move.Point.Y)
+                            topLeftBlocks.Add(new SimpleBlock(
+                                "tl_child",
+                                new V(subBlock.BottomLeft.X, move.Point.Y),
+                                new V(move.Point.X, subBlock.TopRight.Y),
+                                subBlock.Color
+                            ));
                         continue;
                     }
 
@@ -444,18 +447,20 @@ public class Canvas
                         && move.Point.X <= subBlock.TopRight.X
                         && move.Point.Y < subBlock.BottomLeft.Y)
                     {
-                        topLeftBlocks.Add(new SimpleBlock(
-                            "case2_tl_child",
-                            subBlock.BottomLeft,
-                            new V(move.Point.X, subBlock.TopRight.Y),
-                            subBlock.Color
-                        ));
-                        topRightBlocks.Add(new SimpleBlock(
-                            "case2_tr_child",
-                            new V(move.Point.X, subBlock.BottomLeft.Y),
-                            subBlock.TopRight,
-                            subBlock.Color
-                        ));
+                        if (subBlock.BottomLeft.X != move.Point.X)
+                            topLeftBlocks.Add(new SimpleBlock(
+                                "case2_tl_child",
+                                subBlock.BottomLeft,
+                                new V(move.Point.X, subBlock.TopRight.Y),
+                                subBlock.Color
+                            ));
+                        if (subBlock.TopRight.X != move.Point.X)
+                            topRightBlocks.Add(new SimpleBlock(
+                                "case2_tr_child",
+                                new V(move.Point.X, subBlock.BottomLeft.Y),
+                                subBlock.TopRight,
+                                subBlock.Color
+                            ));
                         continue;
                     }
 
@@ -464,18 +469,20 @@ public class Canvas
                         && move.Point.X <= subBlock.TopRight.X
                         && move.Point.Y > subBlock.TopRight.Y)
                     {
-                        bottomLeftBlocks.Add(new SimpleBlock(
-                            "case8_bl_child",
-                            subBlock.BottomLeft,
-                            new V(move.Point.X, subBlock.TopRight.Y),
-                            subBlock.Color
-                        ));
-                        bottomRightBlocks.Add(new SimpleBlock(
-                            "case8_br_child",
-                            new V(move.Point.X, subBlock.BottomLeft.Y),
-                            subBlock.TopRight,
-                            subBlock.Color
-                        ));
+                        if (subBlock.BottomLeft.X != move.Point.X)
+                            bottomLeftBlocks.Add(new SimpleBlock(
+                                "case8_bl_child",
+                                subBlock.BottomLeft,
+                                new V(move.Point.X, subBlock.TopRight.Y),
+                                subBlock.Color
+                            ));
+                        if (subBlock.TopRight.X != move.Point.X)
+                            bottomRightBlocks.Add(new SimpleBlock(
+                                "case8_br_child",
+                                new V(move.Point.X, subBlock.BottomLeft.Y),
+                                subBlock.TopRight,
+                                subBlock.Color
+                            ));
                         continue;
                     }
 
@@ -484,18 +491,20 @@ public class Canvas
                         && move.Point.Y <= subBlock.TopRight.Y
                         && move.Point.X < subBlock.BottomLeft.X)
                     {
-                        bottomRightBlocks.Add(new SimpleBlock(
-                            "case4_br_child",
-                            subBlock.BottomLeft,
-                            new V(subBlock.TopRight.X, move.Point.Y),
-                            subBlock.Color
-                        ));
-                        topRightBlocks.Add(new SimpleBlock(
-                            "case4_tr_child",
-                            new V(subBlock.BottomLeft.X, move.Point.Y),
-                            subBlock.TopRight,
-                            subBlock.Color
-                        ));
+                        if (subBlock.BottomLeft.Y != move.Point.Y)
+                            bottomRightBlocks.Add(new SimpleBlock(
+                                "case4_br_child",
+                                subBlock.BottomLeft,
+                                new V(subBlock.TopRight.X, move.Point.Y),
+                                subBlock.Color
+                            ));
+                        if (subBlock.TopRight.Y != move.Point.Y)
+                            topRightBlocks.Add(new SimpleBlock(
+                                "case4_tr_child",
+                                new V(subBlock.BottomLeft.X, move.Point.Y),
+                                subBlock.TopRight,
+                                subBlock.Color
+                            ));
                         continue;
                     }
 
@@ -504,18 +513,20 @@ public class Canvas
                         && move.Point.Y <= subBlock.TopRight.Y
                         && move.Point.X > subBlock.TopRight.X)
                     {
-                        bottomLeftBlocks.Add(new SimpleBlock(
-                            "case6_bl_child",
-                            subBlock.BottomLeft,
-                            new V(subBlock.TopRight.X, move.Point.Y),
-                            subBlock.Color
-                        ));
-                        topLeftBlocks.Add(new SimpleBlock(
-                            "case6_br_child",
-                            new V(subBlock.BottomLeft.X, move.Point.Y),
-                            subBlock.TopRight,
-                            subBlock.Color
-                        ));
+                        if (subBlock.BottomLeft.Y != move.Point.Y)
+                            bottomLeftBlocks.Add(new SimpleBlock(
+                                "case6_bl_child",
+                                subBlock.BottomLeft,
+                                new V(subBlock.TopRight.X, move.Point.Y),
+                                subBlock.Color
+                            ));
+                        if (subBlock.TopRight.Y != move.Point.Y)
+                            topLeftBlocks.Add(new SimpleBlock(
+                                "case6_br_child",
+                                new V(subBlock.BottomLeft.X, move.Point.Y),
+                                subBlock.TopRight,
+                                subBlock.Color
+                            ));
                         continue;
                     }
                 }

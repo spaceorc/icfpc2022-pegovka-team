@@ -1,9 +1,23 @@
+using System;
 using System.Collections.Generic;
 
 namespace lib;
 
-public abstract record Block(string Id, V BottomLeft, V TopRight)
+public abstract record Block
 {
+    public string Id { get; set; }
+    public V BottomLeft { get; set; }
+    public V TopRight { get; set; }
+
+    protected Block(string id, V bottomLeft, V topRight)
+    {
+        Id = id;
+        BottomLeft = bottomLeft;
+        TopRight = topRight;
+        if (bottomLeft.X >= topRight.X || bottomLeft.Y >= topRight.Y)
+            throw new Exception($"Bad block {bottomLeft} {topRight}");
+    }
+
     public V Size => TopRight - BottomLeft;
     public int Height => TopRight.Y - BottomLeft.Y;
     public int Width => TopRight.X - BottomLeft.X;
