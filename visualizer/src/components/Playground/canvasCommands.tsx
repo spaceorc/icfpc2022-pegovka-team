@@ -10,7 +10,9 @@ export function getClickInstruction(
   event: MouseEvent<HTMLCanvasElement>,
   instrument: InstructionType,
   blocks: Map<string, Block>,
-  color: RGBA
+  color: RGBA,
+  prevSelectedBlockId: string | undefined,
+  setPrevSelectedBlockId: (value: string | undefined) => void,
 ): Instruction | undefined {
   if (!blocks) {
   }
@@ -22,7 +24,6 @@ export function getClickInstruction(
       break;
     }
   }
-  console.log(position);
 
   switch (instrument) {
     case InstructionType.HorizontalCutInstructionType: {
@@ -55,7 +56,23 @@ export function getClickInstruction(
         // @ts-ignore
         blockId: currentBlock.id,
         color,
-      };
+      } as Instruction;
     }
+      case InstructionType.SwapInstructionType: {
+          if (!prevSelectedBlockId){
+              // @ts-ignore
+              setPrevSelectedBlockId(currentBlock.id)
+              return;
+          }
+
+          const res = {
+              typ: InstructionType.SwapInstructionType,
+              blockId1: prevSelectedBlockId,
+              // @ts-ignore
+              blockId2: currentBlock.id
+          } as Instruction;
+          setPrevSelectedBlockId(undefined);
+          return res;
+      }
   }
 }

@@ -50,6 +50,7 @@ export const Playground = (): JSX.Element => {
   );
 
   const [color, setColor] = useState<RGBA>(new RGBA([0, 0, 0, 255]));
+  const [prevSelectedBlockId, setPrevSelectedBlockId] = useState<string>()
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
@@ -248,7 +249,9 @@ export const Playground = (): JSX.Element => {
               event,
               instrument,
               interpretedResult.canvas.blocks,
-              color
+              color,
+              prevSelectedBlockId,
+              setPrevSelectedBlockId,
             );
             if (instruction) {
               const code = `${playgroundCode}\n${instructionToString(instruction)}`;
