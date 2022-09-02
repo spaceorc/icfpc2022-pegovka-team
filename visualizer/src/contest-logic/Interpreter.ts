@@ -16,9 +16,12 @@ export class InterpreterResult {
 
     cost: Cost;
 
-    constructor(canvas: Canvas, cost: Cost) {
+    instructionCosts: Cost[];
+
+    constructor(canvas: Canvas, cost: Cost, instructionCosts?: Cost[]) {
         this.canvas = canvas;
         this.cost = cost;
+        this.instructionCosts = [];
     }
 }
 
@@ -43,12 +46,14 @@ export class Interpreter {
             program.metaData.backgroundColor
         );
         let totalCost = 0;
+        const instructionCosts = [];
         for(let index = 0; index < program.instructions.length; index++) {
             const result = this.interpret(index, canvas, program.instructions[index]);
             canvas = result.canvas;
+            instructionCosts.push(result.cost);
             totalCost += result.cost;
         }
-        return new InterpreterResult(canvas, totalCost);
+        return new InterpreterResult(canvas, totalCost, instructionCosts);
     }
 
     interpret(lineNumber: number, context: Canvas, instruction: Instruction): InterpreterResult {
