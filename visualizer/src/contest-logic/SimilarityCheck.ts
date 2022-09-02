@@ -8,7 +8,7 @@ export class SimilarityChecker {
     let frame: Frame = [];
 
     for (const item of data) {
-        frame.push(new RGBA(item));
+      frame.push(new RGBA(item));
     }
 
     return frame;
@@ -18,9 +18,9 @@ export class SimilarityChecker {
     let diff = 0;
     let alpha = 0.005;
     for (let index = 0; index < f1.length; index++) {
-        const p1 = f1[index];
-        const p2 = f2[index];
-        diff += this.pixelDiff(p1, p2);
+      const p1 = f1[index];
+      const p2 = f2[index];
+      diff += this.pixelDiff(p1, p2);
     }
     return Math.round(diff * alpha);
   }

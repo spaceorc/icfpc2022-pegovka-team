@@ -1,16 +1,15 @@
 /* eslint-disable */
 
 export class RGBA {
-    r: number;
+  r: number;
 
-    g: number;
+  g: number;
 
-    b: number;
+  b: number;
 
-    a: number;
+  a: number;
 
-    constructor(rgba: [number, number, number, number] = [0, 0, 0, 0]) {
-      [this.r, this.g, this.b, this.a] = rgba;
-    }
+  constructor(rgba: [number, number, number, number] = [0, 0, 0, 0]) {
+    [this.r, this.g, this.b, this.a] = rgba;
   }
-
+}

@@ -1,11 +1,11 @@
-import { Playground } from './components/Playground/Playground';
+import { Playground } from "./components/Playground/Playground";
 
 function App() {
-    return (
-        <>
-            <Playground />
-        </>
-    );
+  return (
+    <>
+      <Playground />
+    </>
+  );
 }
 
 export default App;

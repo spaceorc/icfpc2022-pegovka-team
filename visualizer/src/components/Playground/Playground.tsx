@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Canvas } from "../../contest-logic/Canvas";
 import { RGBA } from "../../contest-logic/Color";
-import { Interpreter } from "../../contest-logic/Interpreter";
+import { Interpreter, InterpreterResult } from "../../contest-logic/Interpreter";
 import { instructionToString, InstructionType } from "../../contest-logic/Instruction";
 import { Painter } from "../../contest-logic/Painter";
 import { RandomInstructionGenerator } from "../../contest-logic/RandomInstructionGenerator";
@@ -14,6 +14,7 @@ function getMousePos(canvas: any, event: any) {
     y: event.clientY - rect.top,
   };
 }
+import { Point } from "../../contest-logic/Point";
 
 export const Playground = (): JSX.Element => {
   const [width, setWidth] = useState(400);
@@ -26,6 +27,7 @@ export const Playground = (): JSX.Element => {
     new Canvas(width, height, new RGBA([255, 255, 255, 255]))
   );
   const [instrument, setInstrument] = useState<InstructionType>(InstructionType.NopInstructionType);
+  const [interpretedResult, setInterpreterResult] = useState<InterpreterResult | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const handlePlaygroundCode = (e: any) => {
     setPlaygroundCode(e.target.value as string);
@@ -55,6 +57,7 @@ export const Playground = (): JSX.Element => {
 
     const interpreter = new Interpreter();
     const result = interpreter.run(playgroundCode);
+    setInterpreterResult(result);
 
     const painter = new Painter();
     const renderedData = painter.draw(result.canvas);
@@ -78,6 +81,22 @@ export const Playground = (): JSX.Element => {
   const handleReset = () => {
     setPlaygroundCode("");
     clearCanvas();
+    setInterpreterResult(null);
+  };
+  const drawBlocks = () => {
+    const context = canvasRef.current!.getContext("2d")!;
+    if (!interpretedResult) return;
+    const canvas = interpretedResult.canvas;
+    const blocks = canvas.blocks;
+    context.font = "12px sans-serif";
+    context.strokeStyle = "rgba(0, 0, 0, 0.25)";
+    for (const [id, block] of blocks) {
+      const frameTopLeft = new Point([block.bottomLeft.px, canvas.height - block.topRight.py]);
+      const frameBottomRight = new Point([block.topRight.px, canvas.height - block.bottomLeft.py]);
+      const sizeX = frameBottomRight.px - frameTopLeft.px;
+      const sizeY = frameBottomRight.py - frameTopLeft.py;
+      context.strokeRect(frameTopLeft.px, frameTopLeft.py, sizeX, sizeY);
+    }
   };
   const onCanvasClick = (event: any) => {
     console.log(getMousePos(canvasRef.current, event));
@@ -89,7 +108,7 @@ export const Playground = (): JSX.Element => {
         display: "flex",
         maxWidth: "100vw",
         gap: "20px",
-        marginTop: 10
+        marginTop: 10,
       }}
     >
       <div>
@@ -97,6 +116,7 @@ export const Playground = (): JSX.Element => {
           <button onClick={handleClickGenerateInstruction}>Generate Instruction</button>
           <button onClick={handleClickRenderCanvas}>Render Canvas</button>
           <button onClick={handleReset}>Reset</button>
+          <button onClick={drawBlocks}>Draw borders</button>
         </div>
         <div>
           <div>
@@ -139,9 +159,9 @@ export const Playground = (): JSX.Element => {
       <div
         style={{
           flexShrink: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 10
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
         }}
       >
         <canvas
