@@ -5,16 +5,6 @@ namespace lib
 {
     public class FileHelper
     {
-        public static string PatchFilename(string filename, string? baseDirectoryPath = null)
-        {
-            return Path.GetFullPath(Path.IsPathRooted(filename) ? filename : WalkDirectoryTree(filename, File.Exists, baseDirectoryPath));
-        }
-
-        public static string PatchDirectoryName(string dirName, string? baseDirectoryPath = null)
-        {
-            return Path.GetFullPath(Path.IsPathRooted(dirName) ? dirName : WalkDirectoryTree(dirName, Directory.Exists, baseDirectoryPath));
-        }
-
         public static string FindFilenameUpwards(string filename, string? baseDirectoryPath = null)
         {
             return Path.GetFullPath(Path.IsPathRooted(filename) ? filename : WalkDirectoryTree(filename, File.Exists, baseDirectoryPath));
