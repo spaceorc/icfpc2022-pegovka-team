@@ -7,14 +7,14 @@ using NUnit.Framework;
 
 namespace tests;
 
-public class SolutionTests
+public class SolutionRepoTests
 {
     [Test]
-    public void SubmitProblem()
+    public void SubmitProblemTest()
     {
         try
         {
-            for (var problemId = 1; problemId <= 1; problemId++)
+            for (var problemId = 1; problemId <= 15; problemId++)
             {
                 var screen = Screen.LoadProblem(1);
                 var algorithm = new SimpleAlgorithm();
@@ -23,9 +23,27 @@ public class SolutionTests
 
                 var commands = string.Join('\n', moves.Select(m => m.ToString()));
 
-                var solution = new ContestSolution(problemId, score,
+                var solution = new ContestSolution(problemId, (long)score,
                     commands, new SolverMeta(), DateTime.UtcNow, nameof(SimpleAlgorithm));
                 SolutionRepo.Submit(solution).GetAwaiter().GetResult();
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    [Test]
+    public void GetBestScoreByTupleIdsTest()
+    {
+        try
+        {
+            for (var problemId = 1; problemId <= 1; problemId++)
+            {
+                var ans = SolutionRepo.GetBestScoreByTupleIds().GetAwaiter().GetResult();
+                Console.WriteLine(string.Join(" ", ans));
             }
         }
         catch (Exception e)
