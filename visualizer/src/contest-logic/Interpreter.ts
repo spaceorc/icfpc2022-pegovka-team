@@ -191,7 +191,7 @@ export class Interpreter {
                  * |   7    |   8   |   9   |
                  * |________|_______|_______|
                  */
-                // Case 2
+                // Case 3
                 if (subBlock.bottomLeft.px >= point.px && subBlock.bottomLeft.py >= point.py) {
                     topRightBlocks.push(subBlock);
                     return;
