@@ -8,6 +8,15 @@ namespace tests;
 
 public class BiterTests
 {
+    [Test]
+    public void RunAll()
+    {
+        for (int i = 1; i <= 15; i++)
+        {
+            Run(i);
+        }
+    }
+
     [TestCase(1)]
     public void Run(int problemNumber)
     {
@@ -21,7 +30,7 @@ public class BiterTests
         }
 
         Console.WriteLine(canvas.GetScore(problem));
-        canvas.ToScreen().ToImage("res.png");
+        canvas.ToScreen().ToImage($"res{problemNumber}.png");
 
     }
 }

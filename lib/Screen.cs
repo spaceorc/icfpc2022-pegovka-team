@@ -13,7 +13,7 @@ public class Screen
 
     public static Screen LoadProblem(int problem)
     {
-        var file = FileHelper.FindFilenameUpwards($"problems/{problem}.png");
+        var file = FileHelper.FindFilenameUpwards($"problems/problem{problem}.png");
         using var image = (Image<Rgba32>)Image.Load(file, new PngDecoder());
         return LoadFrom(image);
     }
