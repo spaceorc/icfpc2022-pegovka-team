@@ -528,4 +528,34 @@ public class Canvas
 
         TotalCost += cost;
     }
+
+    public Screen ToScreen()
+    {
+        var screen = new Screen(Width, Height);
+        foreach (var block in Blocks.Values)
+        {
+            foreach (var simpleBlock in block.GetChildren())
+            {
+                for (int x = simpleBlock.BottomLeft.X; x < simpleBlock.TopRight.X; x++)
+                for (int y = simpleBlock.BottomLeft.Y; y < simpleBlock.TopRight.Y; y++)
+                {
+                    screen.Pixels[x, y] = simpleBlock.Color;
+                }
+            }
+        }
+
+        return screen;
+    }
+
+    public double GetSimilarity(Screen screen2)
+    {
+        var diff = 0.0;
+        foreach (var block in Blocks.Values)
+        {
+            foreach (var simpleBlock in block.GetChildren())
+                diff += screen2.DiffTo(simpleBlock);
+        }
+
+        return diff;
+    }
 }
