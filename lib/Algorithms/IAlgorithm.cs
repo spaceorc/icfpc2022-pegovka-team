@@ -6,7 +6,5 @@ namespace lib.Algorithms;
 
 public interface IAlgorithm
 {
-    public IEnumerable<string> GetResult(Screen screen);
-
-    public int Score(Image<Rgba32> image);
+    //public (IList<Move>, double Score) GetBestResult(Screen screen);
 }

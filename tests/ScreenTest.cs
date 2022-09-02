@@ -26,7 +26,10 @@ public class ScreenTests
         var screen = Screen.LoadProblem(1);
         var algorithm = new SimpleAlgorithm();
 
-        var result = algorithm.GetResult(screen).ToList();
+        var (moves, score) = algorithm.GetBestResult(screen);
+
+        var commands = string.Join('\n', moves.Select(m => m.ToString()));
+        
 
     }
 

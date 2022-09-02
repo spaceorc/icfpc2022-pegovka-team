@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Linq;
 using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -10,26 +11,61 @@ namespace lib.Algorithms;
 
 public class SimpleAlgorithm : IAlgorithm
 {
-    public IEnumerable<string> GetResult(Screen screen)
+    public const int CanvasSize = 400;
+
+    public (IList<Move>, double Score) GetBestResult(Screen screen)
     {
-        var canvas = new Canvas(screen.Width, screen.Height, new Rgba(255, 255, 255, 255));
+        var (bestResult, bestScore) = (new List<Move>(), double.MaxValue);
 
-        var averageColor = GetAverageColor(screen);
+        for (var size = 1; size <= CanvasSize; size += 1)
+        {
+            var (result, score) = GetResult(screen, size);
+            if (score < bestScore)
+            {
+                bestResult = result;
+                bestScore = score;
+            }
+        }
 
-        var move = new ColorMove("0", averageColor);
-        var totalCost = move.GetCost(canvas);
-
-        yield return move.ToString();
+        return (bestResult, bestScore);
     }
 
-    public Rgba GetAverageColor(Screen screen)
+    private (List<Move> Moves, double Score) GetResult(Screen screen, int maxBlockSize)
+    {
+        var resultMoves = new List<Move>();
+
+        var canvas = new Canvas(screen.Width, screen.Height, new Rgba(255, 255, 255, 255));
+
+        while (true)
+        {
+            var block = GetBlock(canvas, maxBlockSize * 2);
+            if (block is null) break;
+
+            var cutMove = new PCutMove(block.Id, block.BottomLeft + block.Size / 2);
+            canvas.ApplyPCut(cutMove);
+            resultMoves.Add(cutMove);
+        }
+
+        foreach (var block in canvas.Blocks.Values)
+        {
+            var averageBlockColor = GetAverageColor(screen, block);
+            var colorMove = new ColorMove(block.Id, averageBlockColor);
+            canvas.ApplyColor(colorMove);
+            resultMoves.Add(colorMove);
+        }
+
+        var totalScore = canvas.GetSimilarity(screen) + canvas.TotalCost;
+        return (resultMoves, totalScore);
+    }
+
+    public Rgba GetAverageColor(Screen screen, Block block)
     {
         var pixelsCount = screen.Height * screen.Width;
 
         var (r, g, b, a) = (0, 0, 0, 0);
 
-        for (int y = 0; y < screen.Height; y++)
-        for (int x = 0; x < screen.Width; x++)
+        for (int x = block.BottomLeft.X; x < block.TopRight.X; x++)
+            for (int y = block.BottomLeft.Y; y < block.TopRight.Y; y++)
             {
                 var pixel = screen.Pixels[x, y];
                 r += pixel.R;
@@ -45,8 +81,10 @@ public class SimpleAlgorithm : IAlgorithm
             a / pixelsCount);
     }
 
-    public int Score(Image<Rgba32> image)
+    private Block? GetBlock(Canvas canvas, int minSize)
     {
-        throw new NotImplementedException();
+        return canvas.Blocks.Values
+            .Where(x => x.Size.X >= minSize && x.Size.Y >= minSize)
+            .FirstOrDefault();
     }
 }
