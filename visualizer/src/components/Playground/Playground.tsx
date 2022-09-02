@@ -19,6 +19,8 @@ import { Point } from "../../contest-logic/Point";
 export const Playground = (): JSX.Element => {
   const [width, setWidth] = useState(400);
   const [height, setHeight] = useState(400);
+  const [expectedOpacity, setExpectedOpacity] = useState(0);
+  const [exampleId, setExampleId] = useState(1);
 
   const [playgroundCode, setPlaygroundCode] = useState("");
   const [instrument, setInstrument] = useState<InstructionType>(InstructionType.NopInstructionType);
@@ -108,6 +110,12 @@ export const Playground = (): JSX.Element => {
     >
       <div>
         <div>
+            <label>
+                Example id
+                <input type="number" value={exampleId} onChange={event => setExampleId(Number(event.target.value))} />
+            </label>
+        </div>
+        <div>
           <button onClick={handleClickGenerateInstruction}>Generate Instruction</button>
           <button onClick={handleClickRenderCanvas}>Render Canvas</button>
           <button onClick={handleReset}>Reset</button>
@@ -168,6 +176,7 @@ export const Playground = (): JSX.Element => {
           display: "flex",
           flexDirection: "column",
           gap: 10,
+          position: 'relative'
         }}
       >
         <canvas
@@ -177,7 +186,15 @@ export const Playground = (): JSX.Element => {
           ref={canvasRef}
           onClick={onCanvasClick}
         />
+        <img style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            opacity: expectedOpacity,
+            pointerEvents: 'none'
+        }} src={`https://cdn.robovinci.xyz/imageframes/${exampleId}.png`} />
         Cost: {interpretedResult?.cost}
+        <input type="range" min={0} max={1} step={0.01} value={expectedOpacity} onChange={event => setExpectedOpacity(Number(event.target.value))}/>
       </div>
       <CommandsPanel instrument={instrument} setInstrument={setInstrument} />
     </div>
