@@ -51,9 +51,6 @@ export const Playground = (): JSX.Element => {
     sessionStorage.setItem("code", code);
     _setPlaygroundCode(code);
   };
-  useEffect(() => {
-    handleClickRenderCanvas(playgroundCode);
-  }, []);
   const [instrument, setInstrument] = useState<InstructionType>(InstructionType.NopInstructionType);
   const [interpretedResult, setInterpreterResult] = useState<InterpreterResult>(
     new InterpreterResult(new Canvas(400, 400, new RGBA([255, 255, 255, 255])), 0)
@@ -94,6 +91,8 @@ export const Playground = (): JSX.Element => {
     const interpreter = new Interpreter();
     const result = interpreter.run(code);
     setInterpreterResult(result);
+
+    console.log(result.canvas.blocks);
 
     const painter = new Painter();
     const renderedData = painter.draw(result.canvas);

@@ -58,21 +58,38 @@ export function getClickInstruction(
         color,
       } as Instruction;
     }
-      case InstructionType.SwapInstructionType: {
-          if (!prevSelectedBlockId){
-              // @ts-ignore
-              setPrevSelectedBlockId(currentBlock.id)
-              return;
-          }
+    case InstructionType.SwapInstructionType: {
+        if (!prevSelectedBlockId){
+            // @ts-ignore
+            setPrevSelectedBlockId(currentBlock.id)
+            return;
+        }
 
-          const res = {
-              typ: InstructionType.SwapInstructionType,
-              blockId1: prevSelectedBlockId,
-              // @ts-ignore
-              blockId2: currentBlock.id
-          } as Instruction;
-          setPrevSelectedBlockId(undefined);
-          return res;
-      }
+        const res = {
+            typ: InstructionType.SwapInstructionType,
+            blockId1: prevSelectedBlockId,
+            // @ts-ignore
+            blockId2: currentBlock.id
+        } as Instruction;
+        setPrevSelectedBlockId(undefined);
+        return res;
+    }
+    case InstructionType.MergeInstructionType: {
+        if (!prevSelectedBlockId){
+            // @ts-ignore
+            setPrevSelectedBlockId(currentBlock.id)
+            return;
+        }
+
+        const res = {
+            typ: InstructionType.MergeInstructionType,
+            blockId1: prevSelectedBlockId,
+            // @ts-ignore
+            blockId2: currentBlock.id
+        } as Instruction;
+        setPrevSelectedBlockId(undefined);
+        return res;
+
+    }
   }
 }
