@@ -67,7 +67,7 @@ public class HRibbonBiter
             var color = new Rgba(sr / n, sg / n, sb / n, sa / n);
             var ribbon = new SimpleBlock("", block.BottomLeft, new V(block.TopRight.X, block.BottomLeft.Y + h), color);
             var similarityCost = problem.DiffTo(ribbon);
-            if (h > 1 && similarityCost > moveCost && color != prevColor)
+            if (h > 1 && similarityCost > moveCost*2 && color != prevColor)
                 return (h - 1, prevColor);
             prevColor = color;
         }

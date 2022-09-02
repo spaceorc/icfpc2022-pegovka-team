@@ -16,7 +16,7 @@ public class Canvas
     public V Size => new(Width, Height);
     public int ScalarSize => Width * Height;
 
-    public double GetScore(Screen screen) => GetSimilarity(screen) + TotalCost;
+    public int GetScore(Screen screen) => GetSimilarity(screen) + TotalCost;
 
     public Canvas(int width, int height, Rgba backgroundColor)
     {
@@ -33,7 +33,7 @@ public class Canvas
     {
     }
 
-    private Canvas(int width, int height, Dictionary<string, Block> blocks, int topLevelIdCounter, int totalCost)
+    public Canvas(int width, int height, Dictionary<string, Block> blocks, int topLevelIdCounter, int totalCost)
     {
         Width = width;
         Height = height;
@@ -574,7 +574,7 @@ public class Canvas
         return screen;
     }
 
-    public double GetSimilarity(Screen screen)
+    public int GetSimilarity(Screen screen)
     {
         var diff = 0.0;
         foreach (var block in Blocks.Values)
@@ -583,7 +583,7 @@ public class Canvas
                 diff += screen.DiffTo(simpleBlock);
         }
 
-        return diff;
+        return (int)Math.Round(diff);
     }
 
     public void Apply(Move move)
