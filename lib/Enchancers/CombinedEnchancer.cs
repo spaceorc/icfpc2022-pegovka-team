@@ -3,6 +3,14 @@ using System.Collections.Generic;
 
 namespace lib.Enchancers;
 
+public static class Enchancer
+{
+    public static List<Move> Enchance(Screen problem, List<Move> moves)
+    {
+        return new CombinedEnchancer(new CutEnchancer(), new ColorEnchancer()).Enchance(problem, moves);
+    }
+}
+
 public class CombinedEnchancer : ISolutionEnchancer
 {
     private readonly ISolutionEnchancer[] enchancers;

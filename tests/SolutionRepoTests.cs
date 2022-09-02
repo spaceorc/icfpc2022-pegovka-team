@@ -77,7 +77,7 @@ public class SolutionRepoTests
             }
 
             var score = canvas.GetScore(screen);
-            SolutionRepo.Submit(new ContestSolution(problemId, score, program, new SolverMeta(), DateTime.UtcNow, "manual"));
+            SolutionRepo.Submit(new ContestSolution(problemId, score, program, new SolverMeta(), DateTime.UtcNow, "manual")).GetAwaiter().GetResult();
             // api.PostSolution(int.Parse(nameParts[1]), File.ReadAllText(filename));
         }
         var scoresById = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
