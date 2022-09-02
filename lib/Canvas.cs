@@ -15,6 +15,8 @@ public class Canvas
     public V Size => new(Width, Height);
     public int ScalarSize => Width * Height;
 
+    public double GetScore(Screen screen) => GetSimilarity(screen) + TotalCost;
+
     public Canvas(int width, int height, Rgba backgroundColor)
     {
         Width = width;
@@ -125,6 +127,7 @@ public class Canvas
             Blocks[block.Id + ".1"] = rightBlock2;
             TotalCost += cost;
         }
+
         throw new Exception($"Unexpected block {block}");
     }
 
@@ -206,6 +209,7 @@ public class Canvas
             Blocks[block.Id + ".1"] = topBlock2;
             TotalCost += cost;
         }
+
         throw new Exception($"Unexpected block {block}");
     }
 
@@ -215,9 +219,9 @@ public class Canvas
         var block2 = Blocks[move.Block2Id];
         var cost = move.GetCost(ScalarSize, Math.Max(block1.ScalarSize, block2.ScalarSize));
         var bottomToTop = (block1.BottomLeft.Y == block2.TopRight.Y ||
-                             block1.TopRight.Y == block2.BottomLeft.Y) &&
-                             block1.BottomLeft.X == block2.BottomLeft.X &&
-                             block1.TopRight.X == block2.TopRight.X;
+                           block1.TopRight.Y == block2.BottomLeft.Y) &&
+                          block1.BottomLeft.X == block2.BottomLeft.X &&
+                          block1.TopRight.X == block2.TopRight.X;
         if (bottomToTop)
         {
             TopLevelIdCounter++;
@@ -232,6 +236,7 @@ public class Canvas
                 newBottomLeft = block2.BottomLeft;
                 newTopRight = block1.TopRight;
             }
+
             var newBlock = new ComplexBlock(
                 TopLevelIdCounter.ToString(),
                 newBottomLeft,
@@ -262,6 +267,7 @@ public class Canvas
                 newBottomLeft = block2.BottomLeft;
                 newTopRight = block1.TopRight;
             }
+
             var newBlock = new ComplexBlock(
                 TopLevelIdCounter.ToString(),
                 newBottomLeft,
@@ -282,10 +288,11 @@ public class Canvas
     {
         var block1 = Blocks[move.Block1Id];
         var block2 = Blocks[move.Block2Id];
-        if (block1.Size != block2.Size) throw new Exception($"Blocks are not the same size, {block1} and {block2}");
+        if (block1.Size != block2.Size)
+            throw new Exception($"Blocks are not the same size, {block1} and {block2}");
 
         var cost = move.GetCost(ScalarSize, block1.ScalarSize);
-        Blocks[block1.Id] = block2 with {Id = block1.Id};
+        Blocks[block1.Id] = block2 with { Id = block1.Id };
         Blocks[block2.Id] = block1 with { Id = block2.Id };
         TotalCost += cost;
     }
@@ -527,5 +534,35 @@ public class Canvas
         }
 
         TotalCost += cost;
+    }
+
+    public Screen ToScreen()
+    {
+        var screen = new Screen(Width, Height);
+        foreach (var block in Blocks.Values)
+        {
+            foreach (var simpleBlock in block.GetChildren())
+            {
+                for (int x = simpleBlock.BottomLeft.X; x < simpleBlock.TopRight.X; x++)
+                for (int y = simpleBlock.BottomLeft.Y; y < simpleBlock.TopRight.Y; y++)
+                {
+                    screen.Pixels[x, y] = simpleBlock.Color;
+                }
+            }
+        }
+
+        return screen;
+    }
+
+    public double GetSimilarity(Screen screen)
+    {
+        var diff = 0.0;
+        foreach (var block in Blocks.Values)
+        {
+            foreach (var simpleBlock in block.GetChildren())
+                diff += screen.DiffTo(simpleBlock);
+        }
+
+        return diff;
     }
 }

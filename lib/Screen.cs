@@ -25,9 +25,14 @@ public class Screen
         for (int y = 0; y < bitmap.Height; y++)
         {
             var p = bitmap[x, y];
-            ps[x, y] = new Rgba(p.R, p.G, p.B, p.A);
+            ps[x, bitmap.Height - y - 1] = new Rgba(p.R, p.G, p.B, p.A);
         }
         return new Screen(ps);
+    }
+
+    public Screen(int width, int height)
+        : this(new Rgba[width, height])
+    {
     }
 
     public Screen(Rgba[,] pixels)
@@ -38,13 +43,26 @@ public class Screen
     public double DiffTo(Screen other)
     {
         var diff = 0.0;
-        var alpha = 0.05;
+        var alpha = 0.005;
         for (int x = 0; x < Width; x++)
         for (int y = 0; y < Height; y++)
         {
             var p1 = Pixels[x, y];
             var p2 = other.Pixels[x, y];
             diff += p1.DiffTo(p2);
+        }
+        return diff * alpha;
+    }
+
+    public double DiffTo(SimpleBlock block)
+    {
+        var diff = 0.0;
+        var alpha = 0.005;
+        for (int x = block.BottomLeft.X; x < block.TopRight.X; x++)
+        for (int y = block.BottomLeft.Y; y < block.TopRight.Y; y++)
+        {
+            var p1 = Pixels[x, y];
+            diff += p1.DiffTo(block.Color);
         }
         return diff * alpha;
     }
