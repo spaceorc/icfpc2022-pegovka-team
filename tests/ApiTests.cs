@@ -47,4 +47,13 @@ public class ApiTests
             ScreenRepo.SaveProblem(i, problem);
         }
     }
+
+    [Test]
+    [Explicit]
+    public void TestGetSubmissionsInfo()
+    {
+        var api = new Api();
+        var ans = api.GetSubmissionsInfo();
+        Console.WriteLine(ans);
+    }
 }

@@ -55,7 +55,16 @@ namespace lib.api
             return await Client.GetByteArrayAsync($"{basicHost}/imageframes/{problemId}.png");
         }
 
-        public SubmissionResult? PostSolution(int problemId, string text)
+        public FullSubmissionResults? GetSubmissionsInfo()
+        {
+            var response = Client.GetAsync($"{sendingHost}/api/submissions").GetAwaiter().GetResult();
+            Console.WriteLine(response);
+            var g = response.Content.ReadAsStringAsync();
+            return response.Content.ReadFromJsonAsync<FullSubmissionResults>().GetAwaiter().GetResult();
+        }
+
+
+        public SubmissionResult? PostSolution(long problemId, string text)
         {
 
             using var content = new MultipartFormDataContent("------WebKitFormBoundaryLBbYAgAJs3gT1Isi");
@@ -69,7 +78,6 @@ namespace lib.api
 
         public record SubmissionResult(int Submission_Id);
 
-        // public record SubmissionResult(int Id, string ProblemId, int Score, string Status, DateTime SubmittedAt);
 
         public record ProblemsInfo(ProblemInfo[] Problems)
         {
@@ -80,5 +88,15 @@ namespace lib.api
         }
 
         public record ProblemInfo(int Id, string Name, string Description, string Canvas_Link, string Target_Link, string Initial_Config_File);
+
+        public record FullSubmissionResults(FullSubmissionResult[] Submissions)
+        {
+            public override string ToString()
+            {
+                return $"{nameof(Submissions)}: {string.Join(" ", Submissions.ToList())}";
+            }
+        }
+
+        public record FullSubmissionResult(long Id, long Problem_id, long Score, string Status, DateTime Submitted_at);
     }
 }
