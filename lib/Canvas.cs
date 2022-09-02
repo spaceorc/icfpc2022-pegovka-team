@@ -10,6 +10,7 @@ public class Canvas
     public int Height;
     public Dictionary<string, Block> Blocks;
     public int TopLevelIdCounter;
+    public int TotalCost;
 
     public V Size => new(Width, Height);
     public int ScalarSize => Width * Height;
@@ -24,7 +25,7 @@ public class Canvas
         };
     }
 
-    public int ApplyColor(ColorMove move)
+    public void ApplyColor(ColorMove move)
     {
         var block = Blocks[move.BlockId];
         var cost = move.GetCost(ScalarSize, block.ScalarSize);
@@ -43,10 +44,10 @@ public class Canvas
                 throw new Exception($"Unexpected block {block}");
         }
 
-        return cost;
+        TotalCost += cost;
     }
 
-    public int ApplyVCut(VCutMove move)
+    public void ApplyVCut(VCutMove move)
     {
         var block = Blocks[move.BlockId];
         var cost = move.GetCost(ScalarSize, block.ScalarSize);
@@ -72,7 +73,7 @@ public class Canvas
             Blocks.Remove(block.Id);
             Blocks[block.Id + ".0"] = leftBlock;
             Blocks[block.Id + ".1"] = rightBlock;
-            return cost;
+            TotalCost += cost;
         }
 
         if (block is ComplexBlock complexBlock)
@@ -122,12 +123,12 @@ public class Canvas
             );
             Blocks[block.Id + ".0"] = leftBlock2;
             Blocks[block.Id + ".1"] = rightBlock2;
-            return cost;
+            TotalCost += cost;
         }
         throw new Exception($"Unexpected block {block}");
     }
 
-    public int ApplyHCut(HCutMove move)
+    public void ApplyHCut(HCutMove move)
     {
         var block = Blocks[move.BlockId];
         var cost = move.GetCost(ScalarSize, block.ScalarSize);
@@ -153,7 +154,7 @@ public class Canvas
             Blocks.Remove(block.Id);
             Blocks[block.Id + ".0"] = bottomBlock;
             Blocks[block.Id + ".1"] = topBlock;
-            return cost;
+            TotalCost += cost;
         }
 
         if (block is ComplexBlock complexBlock)
@@ -203,12 +204,12 @@ public class Canvas
             );
             Blocks[block.Id + ".0"] = bottomBlock2;
             Blocks[block.Id + ".1"] = topBlock2;
-            return cost;
+            TotalCost += cost;
         }
         throw new Exception($"Unexpected block {block}");
     }
 
-    public int ApplyMerge(MergeMove move)
+    public void ApplyMerge(MergeMove move)
     {
         var block1 = Blocks[move.Block1Id];
         var block2 = Blocks[move.Block2Id];
@@ -240,7 +241,7 @@ public class Canvas
             Blocks[newBlock.Id] = newBlock;
             Blocks.Remove(block1.Id);
             Blocks.Remove(block2.Id);
-            return cost;
+            TotalCost += cost;
         }
 
         var leftToRight = (block1.BottomLeft.X == block2.TopRight.X ||
@@ -270,14 +271,14 @@ public class Canvas
             Blocks[newBlock.Id] = newBlock;
             Blocks.Remove(block1.Id);
             Blocks.Remove(block2.Id);
-            return cost;
+            TotalCost += cost;
         }
 
         throw new Exception($"Invalid merge {block1} {block2}");
     }
 
 
-    public int ApplySwap(SwapMove move)
+    public void ApplySwap(SwapMove move)
     {
         var block1 = Blocks[move.Block1Id];
         var block2 = Blocks[move.Block2Id];
@@ -286,10 +287,10 @@ public class Canvas
         var cost = move.GetCost(ScalarSize, block1.ScalarSize);
         Blocks[block1.Id] = block2 with {Id = block1.Id};
         Blocks[block2.Id] = block1 with { Id = block2.Id };
-        return cost;
+        TotalCost += cost;
     }
 
-    public int ApplyPCut(PCutMove move)
+    public void ApplyPCut(PCutMove move)
     {
         var block = Blocks[move.BlockId];
         var cost = move.GetCost(ScalarSize, block.ScalarSize);
@@ -525,6 +526,6 @@ public class Canvas
                 throw new Exception($"Unexpected block {block}");
         }
 
-        return cost;
+        TotalCost += cost;
     }
 }
