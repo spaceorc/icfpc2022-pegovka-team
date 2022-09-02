@@ -16,14 +16,14 @@ public class SolutionRepoTests
         {
             for (var problemId = 1; problemId <= 15; problemId++)
             {
-                var screen = Screen.LoadProblem(1);
+                var screen = Screen.LoadProblem(problemId);
                 var algorithm = new SimpleAlgorithm();
 
                 var (moves, score) = algorithm.GetBestResult(screen);
 
                 var commands = string.Join('\n', moves.Select(m => m.ToString()));
 
-                var solution = new ContestSolution(problemId, (long)score,
+                var solution = new ContestSolution(problemId, (long) score,
                     commands, new SolverMeta(), DateTime.UtcNow, nameof(SimpleAlgorithm));
                 SolutionRepo.Submit(solution).GetAwaiter().GetResult();
             }
@@ -36,20 +36,20 @@ public class SolutionRepoTests
     }
 
     [Test]
-    public void GetBestScoreByTupleIdsTest()
+    public void GetBestScoreByProblemIdTest()
     {
-        try
+        var ans = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
+        Console.WriteLine(string.Join(" ", ans));
+    }
+
+    [Test]
+    public void GetSolutionByIdAndScoreTest()
+    {
+        var scoresById = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
+        foreach (var (problemId, score) in scoresById)
         {
-            for (var problemId = 1; problemId <= 1; problemId++)
-            {
-                var ans = SolutionRepo.GetBestScoreByTupleIds().GetAwaiter().GetResult();
-                Console.WriteLine(string.Join(" ", ans));
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
+            var solution = SolutionRepo.GetSolutionByIdAndScore(problemId, score).GetAwaiter().GetResult();
+            Console.WriteLine(solution);
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Ydb.Sdk;
@@ -31,6 +32,28 @@ public class ContestSolution
         SolverMeta = solverMeta;
         SolvedAt = solvedAt;
         SolverId = solverId;
+    }
+
+    public override string ToString()
+    {
+        return $"{nameof(Id)}: {Id}, {nameof(SubmissionId)}: {SubmissionId}, {nameof(ProblemId)}: {ProblemId}, {nameof(SolverId)}: {SolverId}, {nameof(ScoreEstimated)}: {ScoreEstimated}, {nameof(ScoreServer)}: {ScoreServer}, {nameof(Solution)}: {Solution}, {nameof(SolverMeta)}: {SolverMeta}, {nameof(SolvedAt)}: {SolvedAt}, {nameof(SubmittedAt)}: {SubmittedAt}";
+    }
+
+    public ContestSolution(ResultSet.Row row)
+    {
+        var id = (string?) row["id"] ?? throw new ArgumentException();
+        var solverMeta = (string?) row["solver_meta"] ?? throw new ArgumentException();
+        Id = Guid.Parse(id);
+        ProblemId = (long?) row["problem_id"] ?? throw new ArgumentException();
+        ScoreEstimated = (long?) row["score_estimated"] ?? throw new ArgumentException();
+        Solution = (string?) row["solution"] ?? throw new ArgumentException();
+        SolverMeta = new SolverMeta();
+        SolvedAt = (DateTime?) row["solved_at"] ?? throw new ArgumentException();
+        SolverId = (string?) row["solver_id"] ?? throw new ArgumentException();
+
+        SubmissionId = (long?) row["submission_id"];
+        ScoreServer = (long?) row["score_server"];
+        SubmittedAt = (DateTime?) row["submitted_at"];
     }
 }
 
@@ -65,7 +88,7 @@ public static class SolutionRepo
                     { "$id", YdbValue.MakeUtf8(solution.Id.ToString())},
                     { "$problem_id", YdbValue.MakeInt64(solution.ProblemId)},
                     { "$score_estimated", YdbValue.MakeInt64(solution.ScoreEstimated)},
-                    { "$score_server", solution.ScoreServer == null ? YdbValue.MakeEmptyOptional(YdbTypeId.Double) : YdbValue.MakeOptional(YdbValue.MakeInt64((long) solution.ScoreServer))},
+                    { "$score_server", solution.ScoreServer == null ? YdbValue.MakeEmptyOptional(YdbTypeId.Int64) : YdbValue.MakeOptional(YdbValue.MakeInt64((long) solution.ScoreServer))},
                     { "$solution", YdbValue.MakeUtf8(solution.Solution)},
                     { "$solved_at", YdbValue.MakeDatetime(solution.SolvedAt)},
                     { "$solver_id", YdbValue.MakeUtf8(solution.SolverId)},
@@ -77,22 +100,19 @@ public static class SolutionRepo
         response.Status.EnsureSuccess();
     }
 
-    public static async Task<List<(long problemId, double score)>> GetBestScoreByTupleIds()
+    public static async Task<List<(long problemId, long score)>> GetBestScoreByProblemId()
     {
 
-        var ans = new List<(long, double)>();
+        var ans = new List<(long, long)>();
         var client = await CreateTableClient();
         var response = await client.SessionExec(async session =>
 
             await session.ExecuteDataQuery(
                 query: @"
-                DECLARE $id AS Utf8;
                 DECLARE $problem_id AS Int64;
                 DECLARE $score_estimated AS Double;
-                DECLARE $solver_id AS Utf8;
 
-                SELECT problem_id, max(score_estimated) as score from Solutions
-Group by problem_id;",
+                SELECT problem_id, max(score_estimated) as score from Solutions Group by problem_id;",
                 txControl: TxControl.BeginSerializableRW().Commit(),
                 parameters: new Dictionary<string, YdbValue> {}
 
@@ -102,44 +122,39 @@ Group by problem_id;",
         foreach (var row in queryResponse.Result.ResultSets[0].Rows)
         {
             var problemId = (long?) row["problem_id"] ?? throw new ArgumentException();
-            var scoreEstimated = (double?) row["score"] ?? throw new ArgumentException();
+            var scoreEstimated = (long?) row["score"] ?? throw new ArgumentException();
             ans.Add(new (problemId, scoreEstimated));
         }
 
         return ans;
     }
 
-    // public static async Task<string> GetSolutionByIdAndScore(long id, long score)
-    // {
+    public static async Task<ContestSolution> GetSolutionByIdAndScore(long problemId, long scoreEstimated)
+    {
+        var client = await CreateTableClient();
+        var response = await client.SessionExec(async session =>
 
-//         var ans = new List<(long, long)>();
-//         var client = await CreateTableClient();
-//         var response = await client.SessionExec(async session =>
-//
-//             await session.ExecuteDataQuery(
-//                 query: @"
-//                 DECLARE $id AS Utf8;
-//                 DECLARE $problem_id AS Int64;
-//                 DECLARE $score_estimated AS Double;
-//                 DECLARE $solver_id AS Utf8;
-//
-//                 SELECT problem_id, max(score_estimated) as score from Solutions
-// Group by problem_id;",
-//                 txControl: TxControl.BeginSerializableRW().Commit(),
-//                 parameters: new Dictionary<string, YdbValue> {}
-//
-//             ));
-//         response.Status.EnsureSuccess();
-//         var queryResponse = (ExecuteDataQueryResponse)response;
-//         foreach (var row in queryResponse.Result.ResultSets[0].Rows)
-//         {
-//             var problemId = (long?) row["problem_id"] ?? throw new ArgumentException();
-//             var scoreEstimated = (long?) row["score"] ?? throw new ArgumentException();
-//             ans.Add(new (problemId, scoreEstimated));
-//         }
-//
-//         return ans;
-        // }
+            await session.ExecuteDataQuery(
+                query: @"
+                DECLARE $problem_id AS Int64;
+                DECLARE $score_estimated AS Int64;
+
+                SELECT * from Solutions where problem_id=$problem_id and score_estimated=$score_estimated limit 1",
+                txControl: TxControl.BeginSerializableRW().Commit(),
+                parameters: new Dictionary<string, YdbValue>
+                {
+                    { "$problem_id", YdbValue.MakeInt64(problemId)},
+                    { "$score_estimated", YdbValue.MakeInt64(scoreEstimated)},
+                }
+
+            ));
+        response.Status.EnsureSuccess();
+        var queryResponse = (ExecuteDataQueryResponse) response;
+        var row = queryResponse.Result.ResultSets[0].Rows.First();
+
+        var ans = new ContestSolution(row);
+        return ans;
+    }
 
     private static async Task<TableClient> CreateTableClient()
     {
