@@ -7,19 +7,19 @@ import { Painter } from "../../contest-logic/Painter";
 import { RandomInstructionGenerator } from "../../contest-logic/RandomInstructionGenerator";
 import { CommandsPanel } from "./commandPanel";
 
-import {Point} from "../../contest-logic/Point";
-import {Block} from "../../contest-logic/Block";
-import {getClickInstruction} from "./canvasCommands";
-import {getMousePos} from "./shared/helpers";
+import { Point } from "../../contest-logic/Point";
+import { Block } from "../../contest-logic/Block";
+import { getClickInstruction } from "./canvasCommands";
+import { getMousePos } from "./shared/helpers";
 import { SimilarityChecker } from "../../contest-logic/SimilarityCheck";
 
-const modules = import.meta.glob('../../../../problems/*.png', { as: 'url', eager: true });
+const modules = import.meta.glob("../../../../problems/*.png", { as: "url", eager: true });
 
 function getImageData(imgRef: HTMLImageElement) {
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-  const height = canvas.height = imgRef.naturalHeight || imgRef.offsetHeight || imgRef.height;
-  const width = canvas.width = imgRef.naturalWidth || imgRef.offsetWidth || imgRef.width;
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  const height = (canvas.height = imgRef.naturalHeight || imgRef.offsetHeight || imgRef.height);
+  const width = (canvas.width = imgRef.naturalWidth || imgRef.offsetWidth || imgRef.width);
 
   if (!context) {
     return null;
@@ -41,7 +41,8 @@ export const Playground = (): JSX.Element => {
   const [playgroundCode, setPlaygroundCode] = useState("");
   const [instrument, setInstrument] = useState<InstructionType>(InstructionType.NopInstructionType);
   const [interpretedResult, setInterpreterResult] = useState<InterpreterResult>(
-      new InterpreterResult(new Canvas(400, 400, new RGBA([255, 255, 255, 255])), 0));
+    new InterpreterResult(new Canvas(400, 400, new RGBA([255, 255, 255, 255])), 0)
+  );
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const handlePlaygroundCode = (e: any) => {
@@ -79,8 +80,6 @@ export const Playground = (): JSX.Element => {
     const canvas = canvasRef.current!;
     const context = canvas.getContext("2d")!;
 
-    console.log(result.canvas.blocks);
-
     canvas.width = result.canvas.width;
     canvas.height = result.canvas.height;
     const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -91,26 +90,29 @@ export const Playground = (): JSX.Element => {
       imgData.data[index * 4 + 3] = pixel.a;
     });
     context.putImageData(imgData, 0, 0);
+    drawBlocks(result);
 
     if (imgRef.current) {
-        const expectedData = getImageData(imgRef.current)!;
-        const expectedFrame = SimilarityChecker.bufferToFrame(expectedData);
-        const actualFrame = SimilarityChecker.bufferToFrame(imgData.data)
+      const expectedData = getImageData(imgRef.current)!;
+      const expectedFrame = SimilarityChecker.bufferToFrame(expectedData);
+      const actualFrame = SimilarityChecker.bufferToFrame(imgData.data);
 
-        console.log(SimilarityChecker.imageDiff(expectedFrame, actualFrame));
+      console.log(SimilarityChecker.imageDiff(expectedFrame, actualFrame));
     }
   };
   const handleReset = () => {
     setPlaygroundCode("");
     clearCanvas();
-    setInterpreterResult(new InterpreterResult(new Canvas(400, 400, new RGBA([255, 255, 255, 255])), 0));
+    setInterpreterResult(
+      new InterpreterResult(new Canvas(400, 400, new RGBA([255, 255, 255, 255])), 0)
+    );
   };
-  const drawBlocks = () => {
+  const [drawBorder, setDrawBorder] = useState(true);
+  const drawBlocks = (interpretedResult: InterpreterResult) => {
+    if (!drawBorder) return;
     const context = canvasRef.current!.getContext("2d")!;
-    if (!interpretedResult) return;
     const canvas = interpretedResult.canvas;
     const blocks = canvas.blocks;
-    context.font = "12px sans-serif";
     context.strokeStyle = "rgba(0, 0, 0, 0.25)";
     for (const [id, block] of blocks) {
       const frameTopLeft = new Point([block.bottomLeft.px, canvas.height - block.topRight.py]);
@@ -121,6 +123,7 @@ export const Playground = (): JSX.Element => {
     }
   };
 
+  const [hoveringPoint, setHoveringPoint] = useState<Point | null>(null);
   const [hoveringBlocks, setHoveringBlocks] = useState<Block[]>([]);
   const onCanvasHover = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const point = getMousePos(canvasRef.current, event);
@@ -128,6 +131,7 @@ export const Playground = (): JSX.Element => {
       point.isInside(b.bottomLeft, b.topRight)
     );
     setHoveringBlocks(block);
+    setHoveringPoint(point);
   };
 
   return (
@@ -154,7 +158,14 @@ export const Playground = (): JSX.Element => {
           <button onClick={handleClickGenerateInstruction}>Generate Instruction</button>
           <button onClick={() => handleClickRenderCanvas(playgroundCode)}>Render Canvas</button>
           <button onClick={handleReset}>Reset</button>
-          <button onClick={drawBlocks}>Draw borders</button>
+          <label>
+            <input
+              type="checkbox"
+              checked={drawBorder}
+              onChange={(e) => setDrawBorder(e.target.checked)}
+            />
+            border
+          </label>
         </div>
         <div>
           <div>
@@ -223,19 +234,27 @@ export const Playground = (): JSX.Element => {
           width={width}
           height={height}
           ref={canvasRef}
-          onClick={event => {
-              const instruction = getClickInstruction(canvasRef, event, instrument,
-                  interpretedResult.canvas.blocks);
-              if (instruction){
-                  const code = `${playgroundCode}\n${instructionToString(instruction)}`;
-                  setPlaygroundCode(code);
-                  handleClickRenderCanvas(code);
+          onClick={(event) => {
+            if (interpretedResult) {
+              const instruction = getClickInstruction(
+                canvasRef,
+                event,
+                instrument,
+                interpretedResult?.canvas.blocks
+              );
+              if (instruction) {
+                const code = `${playgroundCode}\n${instructionToString(instruction)}`;
+                setPlaygroundCode(code);
+                handleClickRenderCanvas(code);
               }
-
-          } }
+            }
+          }}
           onMouseMove={onCanvasHover}
           onMouseOver={onCanvasHover}
-          onMouseLeave={() => setHoveringBlocks([])}
+          onMouseLeave={() => {
+            setHoveringBlocks([]);
+            setHoveringPoint(null);
+          }}
         />
         <img
           ref={imgRef}
@@ -256,7 +275,10 @@ export const Playground = (): JSX.Element => {
           value={expectedOpacity}
           onChange={(event) => setExpectedOpacity(Number(event.target.value))}
         />
-        <div>Hovering: {hoveringBlocks.map((b) => b.id).join(", ")}</div>
+        <div>
+          Hovering: {hoveringPoint ? `(${hoveringPoint.px},${hoveringPoint.py})` : ""}{" "}
+          {hoveringBlocks.map((b) => b.id).join(", ")}
+        </div>
         <div>Cost: {interpretedResult?.cost}</div>
       </div>
       <CommandsPanel instrument={instrument} setInstrument={setInstrument} />

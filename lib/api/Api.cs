@@ -62,7 +62,7 @@ namespace lib.api
             content.Add(new StreamContent(new MemoryStream(Encoding.ASCII.GetBytes(text))),
                 "file", "submission.isl");
 
-            var response = Client.PostAsync($"https://robovinci.xyz/api/submissions/{problemId}/create", content).GetAwaiter().GetResult();
+            var response = Client.PostAsync($"{sendingHost}/api/submissions/{problemId}/create", content).GetAwaiter().GetResult();
 
             return response.Content.ReadFromJsonAsync<SubmissionResult>().GetAwaiter().GetResult();
         }

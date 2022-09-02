@@ -15,7 +15,7 @@ public class ScreenTests
     [Test]
     public void TestLoad()
     {
-        var fn = FileHelper.FindFilenameUpwards("problems/1.png");
+        var fn = FileHelper.FindFilenameUpwards("problems/problem1.png");
         using var image = (Image<Rgba32>)Image.Load(fn, new PngDecoder());
         var screen = Screen.LoadFrom(image);
     }

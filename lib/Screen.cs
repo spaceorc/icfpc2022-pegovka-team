@@ -13,7 +13,7 @@ public class Screen
 
     public static Screen LoadProblem(int problem)
     {
-        var file = FileHelper.FindFilenameUpwards($"problems/{problem}.png");
+        var file = FileHelper.FindFilenameUpwards($"problems/problem{problem}.png");
         using var image = (Image<Rgba32>)Image.Load(file, new PngDecoder());
         return LoadFrom(image);
     }
@@ -65,5 +65,17 @@ public class Screen
             diff += p1.DiffTo(block.Color);
         }
         return diff * alpha;
+    }
+
+    public void ToImage(string pngPath)
+    {
+        using var image = new Image<Rgba32>(Width, Height);
+        for (int y = 0; y < Height; y++)
+        for (int x = 0; x < Width; x++)
+        {
+            var pixel = Pixels[x, y];
+            image[x, Height - y - 1] = new Rgba32((byte)pixel.R, (byte)pixel.G, (byte)pixel.B, (byte)pixel.A);
+        }
+        image.Save(pngPath, new PngEncoder());
     }
 }
