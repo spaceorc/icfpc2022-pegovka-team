@@ -2,9 +2,10 @@ import { useRef, useState } from "react";
 import { Canvas } from "../../contest-logic/Canvas";
 import { RGBA } from "../../contest-logic/Color";
 import { Interpreter } from "../../contest-logic/Interpreter";
-import { instructionToString } from "../../contest-logic/Instruction";
+import { instructionToString, InstructionType } from "../../contest-logic/Instruction";
 import { Painter } from "../../contest-logic/Painter";
 import { RandomInstructionGenerator } from "../../contest-logic/RandomInstructionGenerator";
+import { CommandsPanel } from "./commandPanel";
 
 function getMousePos(canvas: any, event: any) {
   var rect = canvas.getBoundingClientRect();
@@ -21,6 +22,10 @@ export const Playground = (): JSX.Element => {
   const [result, setResut] = useState();
 
   const [playgroundCode, setPlaygroundCode] = useState("");
+  const [paintedCanvas, setPaintedCanvas] = useState(
+    new Canvas(width, height, new RGBA([255, 255, 255, 255]))
+  );
+  const [instrument, setInstrument] = useState<InstructionType>(InstructionType.NopInstructionType);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const handlePlaygroundCode = (e: any) => {
     setPlaygroundCode(e.target.value as string);
@@ -146,8 +151,8 @@ export const Playground = (): JSX.Element => {
           ref={canvasRef}
           onClick={onCanvasClick}
         />
-        Cost: {cost}
       </div>
+      <CommandsPanel instrument={instrument} setInstrument={setInstrument} />
     </div>
   );
 };

@@ -190,6 +190,23 @@ namespace lib
             return X >= 0 && X < width && Y >= 0 && Y < height;
         }
 
+        public bool IsStrictlyInside(V bottomLeft, V topRight)
+        {
+            return bottomLeft.X < X && X < topRight.X && bottomLeft.Y < Y && Y < topRight.Y;
+        }
+        public bool IsInside(V bottomLeft, V topRight)
+        {
+            return IsStrictlyInside(bottomLeft, topRight) || IsOnBoundary(bottomLeft, topRight);
+        }
+
+        public bool IsOnBoundary(V bottomLeft, V topRight)
+        {
+            return (bottomLeft.X == X && bottomLeft.Y <= Y && Y <= topRight.Y)
+                   || (topRight.X == X && bottomLeft.Y <= Y && Y <= topRight.Y)
+                   || (bottomLeft.Y == Y && bottomLeft.X <= X && X <= topRight.X)
+                   || (topRight.Y == Y && bottomLeft.X <= X && X <= topRight.X);
+        }
+
         public IEnumerable<V> Area9()
         {
             for (int dx = -1; dx <= 1; dx++)

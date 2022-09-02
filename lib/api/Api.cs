@@ -16,7 +16,7 @@ namespace lib.api
             this.host = host;
         }
 
-        public async Task<bool> FetchProblem(int problemId)
+        public async Task<bool> DownloadProblem(int problemId)
         {
             var stream = await Client.GetStreamAsync($"{host}/imageframes/{problemId}.png");
             var fileStream = new FileStream($"{pathToSave}\\{problemId}.png", FileMode.OpenOrCreate);
@@ -30,6 +30,11 @@ namespace lib.api
                 Console.WriteLine(e);
                 return false;
             }
+        }
+
+        public async Task<byte[]> FetchProblem(int problemId)
+        {
+            return await Client.GetByteArrayAsync($"{host}/imageframes/{problemId}.png");
         }
 
         public SubmissionResult? PostSolution(string problemId, byte[] content)
