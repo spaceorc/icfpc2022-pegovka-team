@@ -93,7 +93,7 @@ public class CutEnchancer : ISolutionEnchancer
 
     private void ApplyRange(Canvas canvas, List<Move> moves, int start, int end)
     {
-        for (var i = start; i < end; i++)
+        for (var i = start; i <= end; i++)
         {
             var move = moves[i];
             canvas.Apply(move);

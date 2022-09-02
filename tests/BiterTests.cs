@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using lib;
 using lib.Algorithms;
+using lib.Algorithms.RectBiter;
 using lib.api;
 using NUnit.Framework;
 
@@ -23,11 +25,10 @@ public class BiterTests
     }
 
     [TestCase(1, ExpectedResult = 1)]
-    public int Run(int problemNumber)
+    public int Run(int problemId)
     {
-        var problem = Screen.LoadProblem(problemNumber);
+        var problem = Screen.LoadProblem(problemId);
         var moves = new HRibbonBiter().Solve(problem).ToList();
-        moves.RemoveAt(moves.Count-1);
         var canvas = new Canvas(problem);
         var res = new StringBuilder();
         foreach (var move in moves)
@@ -41,7 +42,20 @@ public class BiterTests
         //Console.WriteLine(response?.Submission_Id);
         var score = canvas.GetScore(problem);
         //Console.WriteLine(score);
-        canvas.ToScreen().ToImage($"res{problemNumber}.png");
+        canvas.ToScreen().ToImage($"res{problemId}.png");
         return score;
+    }
+
+    [TestCase(1)]
+    public void RunGreedyRectBiter(int problemId)
+    {
+        var solver = new GreedyRectBiter(new Random());
+        var problem = Screen.LoadProblem(problemId);
+        var canvas = new Canvas(problem);
+        var state = new BiterState(canvas, new HashSet<string>(), problem);
+        var moves = solver.Solve(state, 200).ToList();
+        Console.WriteLine(moves.StrJoin("\n"));
+        //Console.WriteLine(state.Canvas.GetScore(problem));
+
     }
 }

@@ -18,14 +18,14 @@ public static class Moves
 
 public abstract record Move(int BaseCost)
 {
-    public int GetCost(int canvasSize, int blockSize)
+    public static int GetCost(int canvasSize, int blockSize, int baseCost)
     {
-        return (int)Math.Round((double)BaseCost * canvasSize / blockSize);
+        return (int)Math.Round((double)baseCost * canvasSize / blockSize);
     }
 
     public int GetCost(Canvas canvas)
     {
-        return GetCost(canvas.ScalarSize, GetBlockScalarSize(canvas));
+        return GetCost(canvas.ScalarSize, GetBlockScalarSize(canvas), BaseCost);
     }
 
     protected abstract int GetBlockScalarSize(Canvas canvas);
