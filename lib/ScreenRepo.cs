@@ -20,17 +20,17 @@ public static class ScreenRepo
     private static string GetProblemFileName(int index) =>
         FileHelper.PatchFilename($"problems/problem{index}.json");
 
-    public static Screen LoadProblem(int index)
+    public static Screen GetProblem(int index)
     {
         if (!DoesProblemExist(index))
             throw new InvalidOperationException($"invalid problem {index}");
         return Screen.LoadProblem(index);
     }
 
-    public static void SaveProblem(int index, string problem)
+    public static void SaveProblem(int index, byte[] problem)
     {
         var dir = FileHelper.PatchDirectoryName("problems");
         var filename = Path.Combine(dir, $"problem{index}.json");
-        File.WriteAllText(filename, problem);
+        File.WriteAllBytes(filename, problem);
     }
 }
