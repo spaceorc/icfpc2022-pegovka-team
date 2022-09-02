@@ -10,6 +10,7 @@ import {Point} from "../../contest-logic/Point";
 import {Block} from "../../contest-logic/Block";
 import {getClickInstruction} from "./canvasCommands";
 import {getMousePos} from "./shared/helpers";
+import {Canvas} from "../../contest-logic/Canvas";
 
 export const Playground = (): JSX.Element => {
   const [width, setWidth] = useState(400);
@@ -19,7 +20,8 @@ export const Playground = (): JSX.Element => {
 
   const [playgroundCode, setPlaygroundCode] = useState("");
   const [instrument, setInstrument] = useState<InstructionType>(InstructionType.NopInstructionType);
-  const [interpretedResult, setInterpreterResult] = useState<InterpreterResult | null>(null);
+  const [interpretedResult, setInterpreterResult] = useState<InterpreterResult>(
+      new InterpreterResult(new Canvas(400, 400, new RGBA([255, 255, 255, 255])), 0));
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const handlePlaygroundCode = (e: any) => {
     setPlaygroundCode(e.target.value as string);
@@ -73,7 +75,7 @@ export const Playground = (): JSX.Element => {
   const handleReset = () => {
     setPlaygroundCode("");
     clearCanvas();
-    setInterpreterResult(null);
+    setInterpreterResult(new InterpreterResult(new Canvas(400, 400, new RGBA([255, 255, 255, 255])), 0));
   };
   const drawBlocks = () => {
     const context = canvasRef.current!.getContext("2d")!;
@@ -194,14 +196,12 @@ export const Playground = (): JSX.Element => {
           height={height}
           ref={canvasRef}
           onClick={event => {
-              if (interpretedResult){
-                  const instruction = getClickInstruction(canvasRef, event, instrument,
-                      interpretedResult?.canvas.blocks);
-                  if (instruction){
-                      const code = `${playgroundCode}\n${instructionToString(instruction)}`;
-                      setPlaygroundCode(code);
-                      handleClickRenderCanvas(code);
-                  }
+              const instruction = getClickInstruction(canvasRef, event, instrument,
+                  interpretedResult.canvas.blocks);
+              if (instruction){
+                  const code = `${playgroundCode}\n${instructionToString(instruction)}`;
+                  setPlaygroundCode(code);
+                  handleClickRenderCanvas(code);
               }
 
           } }
