@@ -12,10 +12,14 @@
   cursor: pointer;
 }
 
-.commandPanel__active {
+.commandPanel__active-item {
   border-radius: 8px;
   text-align: center;
   width: 200px;
   background-color: red;
   cursor: pointer;
+}
+
+.commandPanel__item-with-color {
+  display: flex;
 }

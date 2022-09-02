@@ -5,6 +5,7 @@ import { instructionToString, InstructionType } from "../../contest-logic/Instru
 import { Painter } from "../../contest-logic/Painter";
 import { RandomInstructionGenerator } from "../../contest-logic/RandomInstructionGenerator";
 import { CommandsPanel } from "./commandPanel";
+
 import { Point } from "../../contest-logic/Point";
 import { Block } from "../../contest-logic/Block";
 import { getClickInstruction } from "./canvasCommands";
@@ -22,6 +23,9 @@ export const Playground = (): JSX.Element => {
   const [interpretedResult, setInterpreterResult] = useState<InterpreterResult>(
     new InterpreterResult(new Canvas(400, 400, new RGBA([255, 255, 255, 255])), 0)
   );
+
+  const [color, setColor] = useState<RGBA>(new RGBA([0, 0, 0, 255]));
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const handlePlaygroundCode = (e: any) => {
     setPlaygroundCode(e.target.value as string);
@@ -205,18 +209,17 @@ export const Playground = (): JSX.Element => {
           height={height}
           ref={canvasRef}
           onClick={(event) => {
-            if (interpretedResult) {
-              const instruction = getClickInstruction(
-                canvasRef,
-                event,
-                instrument,
-                interpretedResult?.canvas.blocks
-              );
-              if (instruction) {
-                const code = `${playgroundCode}\n${instructionToString(instruction)}`;
-                setPlaygroundCode(code);
-                handleClickRenderCanvas(code);
-              }
+            const instruction = getClickInstruction(
+              canvasRef,
+              event,
+              instrument,
+              interpretedResult.canvas.blocks,
+              color
+            );
+            if (instruction) {
+              const code = `${playgroundCode}\n${instructionToString(instruction)}`;
+              setPlaygroundCode(code);
+              handleClickRenderCanvas(code);
             }
           }}
           onMouseMove={onCanvasHover}
@@ -250,7 +253,12 @@ export const Playground = (): JSX.Element => {
         </div>
         <div>Cost: {interpretedResult?.cost}</div>
       </div>
-      <CommandsPanel instrument={instrument} setInstrument={setInstrument} />
+      <CommandsPanel
+        color={color}
+        setColor={setColor}
+        instrument={instrument}
+        setInstrument={setInstrument}
+      />
     </div>
   );
 };
