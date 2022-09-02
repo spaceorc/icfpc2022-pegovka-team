@@ -40,7 +40,7 @@ public class ApiTests
     {
         var api = new Api();
 
-        for (var i = 16; i <= 20; i++)
+        for (var i = 1; i <= 20; i++)
         {
             Console.WriteLine(i);
             var problem = api.FetchProblem(i).Result;

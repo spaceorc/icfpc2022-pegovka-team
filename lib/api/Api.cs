@@ -58,7 +58,6 @@ namespace lib.api
         public FullSubmissionResults? GetSubmissionsInfo()
         {
             var response = Client.GetAsync($"{sendingHost}/api/submissions").GetAwaiter().GetResult();
-            Console.WriteLine(response);
             var g = response.Content.ReadAsStringAsync();
             return response.Content.ReadFromJsonAsync<FullSubmissionResults>().GetAwaiter().GetResult();
         }

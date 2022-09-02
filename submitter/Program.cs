@@ -24,7 +24,7 @@ namespace submitter
                         solution.SubmittedAt = DateTime.UtcNow;
                         solution.SubmissionId = submissionResult?.Submission_Id;
                         Console.WriteLine($"Submit solution for problem {problemId} with score {score} by {solution.SolverId}");
-                        SolutionRepo.Submit(solution);
+                        SolutionRepo.Submit(solution).GetAwaiter().GetResult();
                         continue;
                     }
 
@@ -32,7 +32,7 @@ namespace submitter
                     {
                         solution.ScoreServer = problemIdToInfo[solution.SubmissionId.Value].Score;
                         Console.WriteLine($"Add ScoreServer for problem {problemId} - score: {score}, serverScore: {solution.ScoreServer}, submissionId {solution.SubmissionId}");
-                        SolutionRepo.Submit(solution);
+                        SolutionRepo.Submit(solution).GetAwaiter().GetResult();
                     }
                 }
                 Thread.Sleep(60_000);
