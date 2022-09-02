@@ -117,7 +117,7 @@ export const Playground = (): JSX.Element => {
     const context = canvasRef.current!.getContext("2d")!;
     const canvas = interpretedResult.canvas;
     const blocks = canvas.blocks;
-    context.strokeStyle = "rgba(0, 0, 0, 0.25)";
+    context.strokeStyle = "rgba(102, 255, 0, 1)";
     for (const [id, block] of blocks) {
       const frameTopLeft = new Point([block.bottomLeft.px, canvas.height - block.topRight.py]);
       const frameBottomRight = new Point([block.topRight.px, canvas.height - block.bottomLeft.py]);
