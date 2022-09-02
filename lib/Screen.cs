@@ -1,5 +1,6 @@
 
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace lib;
@@ -7,6 +8,13 @@ namespace lib;
 public class Screen
 {
     public Rgba[,] Pixels;
+
+    public static Screen LoadProblem(int problem)
+    {
+        var file = FileHelper.FindFilenameUpwards($"problems/{problem}.png");
+        using var image = (Image<Rgba32>)Image.Load(file, new PngDecoder());
+        return LoadFrom(image);
+    }
 
     public static Screen LoadFrom(Image<Rgba32> bitmap)
     {
@@ -25,5 +33,3 @@ public class Screen
         Pixels = pixels;
     }
 }
-
-public record Rgba(int R, int G, int B, int A);

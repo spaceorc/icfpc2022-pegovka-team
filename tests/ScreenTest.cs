@@ -1,4 +1,3 @@
-using FluentAssertions;
 using lib;
 using NUnit.Framework;
 using SixLabors.ImageSharp;
@@ -16,6 +15,12 @@ public class ScreenTests
         var fn = FileHelper.FindFilenameUpwards("problems/1.png");
         using var image = (Image<Rgba32>)Image.Load(fn, new PngDecoder());
         var screen = Screen.LoadFrom(image);
-    } 
+    }
+
+    [Test]
+    public void TestLoadProblem()
+    {
+        var screen = Screen.LoadProblem(1);
+    }
 
 }
