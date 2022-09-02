@@ -1,5 +1,5 @@
 import { Canvas } from "../../contest-logic/Canvas";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { RGBA } from "../../contest-logic/Color";
 import { Interpreter, InterpreterResult } from "../../contest-logic/Interpreter";
 import { instructionToString, InstructionType } from "../../contest-logic/Instruction";
@@ -35,7 +35,13 @@ function getImageData(imgRef: HTMLImageElement) {
 export const Playground = (): JSX.Element => {
   const [width, setWidth] = useState(400);
   const [height, setHeight] = useState(400);
-  const [expectedOpacity, setExpectedOpacity] = useState(0);
+  const [expectedOpacity, _setExpectedOpacity] = useState(
+    Number(sessionStorage.getItem("opacity")) ?? 0
+  );
+  const setExpectedOpacity = (opacity: number) => {
+    sessionStorage.setItem("opacity", opacity.toString());
+    _setExpectedOpacity(opacity);
+  };
   const [exampleId, setExampleId] = useState(1);
   const [similarity, setSimilarity] = useState(0);
 
@@ -44,6 +50,9 @@ export const Playground = (): JSX.Element => {
     sessionStorage.setItem("code", code);
     _setPlaygroundCode(code);
   };
+  useEffect(() => {
+    handleClickRenderCanvas(playgroundCode);
+  }, []);
   const [instrument, setInstrument] = useState<InstructionType>(InstructionType.NopInstructionType);
   const [interpretedResult, setInterpreterResult] = useState<InterpreterResult>(
     new InterpreterResult(new Canvas(400, 400, new RGBA([255, 255, 255, 255])), 0)
@@ -218,7 +227,7 @@ export const Playground = (): JSX.Element => {
                   value={playgroundCode}
                   onChange={handlePlaygroundCode}
                 />
-                  <div style={{ width: "5ch" }}>
+                <div style={{ width: "5ch" }}>
                   {interpretedResult?.instructionCosts.map((cost, index) => (
                     <div key={index}>{cost}</div>
                   ))}
