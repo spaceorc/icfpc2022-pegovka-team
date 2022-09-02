@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,10 +5,14 @@ namespace lib.Enchancers;
 
 public class CutEnchancer : ISolutionEnchancer
 {
-    private const int PCUT_DELTA = 3;
-    private const int LCUT_DELTA = 3;
-
     public List<Move> Enchance(Screen problem, List<Move> moves)
+    {
+        moves = EnchanceDelta(problem, moves, 3);
+        moves = EnchanceDelta(problem, moves, 1);
+        return moves;
+    }
+
+    private List<Move> EnchanceDelta(Screen problem, List<Move> moves, int delta)
     {
         var cutIndexes = moves.Select((move, i) => new { move, i }).Where(x => x.move is CutMove).Select(x => x.i).ToArray();
         if (!cutIndexes.Any())
@@ -19,7 +22,6 @@ public class CutEnchancer : ISolutionEnchancer
 
         while (true)
         {
-            var bestCutIndex = -1;
             Move? bestCut = null;
 
             var canvas = new Canvas(problem);
@@ -27,7 +29,7 @@ public class CutEnchancer : ISolutionEnchancer
             {
                 var copy = canvas.Copy();
                 ApplyRange(copy, moves, 0, cutIndex - 1);
-                foreach (var cut in IterateCuts(copy, moves[cutIndex]))
+                foreach (var cut in IterateCuts(copy, moves[cutIndex], delta))
                 {
                     var copy2 = copy.Copy();
                     copy2.Apply(cut);
@@ -39,53 +41,56 @@ public class CutEnchancer : ISolutionEnchancer
                     {
                         continue;
                     }
+                    catch (BadMoveException)
+                    {
+                        continue;
+                    }
+
                     var score = copy2.GetScore(problem);
                     if (score < bestScore)
                     {
                         bestScore = score;
-                        bestCutIndex = cutIndex;
                         bestCut = cut;
+                        moves = moves.ToList();
+                        moves[cutIndex] = bestCut;
+                        break;
                     }
                 }
             }
 
             if (bestCut == null)
                 return moves;
-
-            moves = moves.ToList();
-            moves[bestCutIndex] = bestCut;
-            return moves;
         }
     }
 
-    private IEnumerable<Move> IterateCuts(Canvas canvas, Move move)
+    private IEnumerable<Move> IterateCuts(Canvas canvas, Move move, int delta)
     {
         var cut = (CutMove)move;
         var block = canvas.Blocks[cut.BlockId];
         if (cut is VCutMove vCut)
         {
-            for (int dx = -LCUT_DELTA; dx <= LCUT_DELTA; dx++)
+            for (int dx = -1; dx <= 1; dx++)
             {
-                var x = vCut.LineNumber + dx;
+                var x = vCut.LineNumber + dx * delta;
                 if (x > block.Left && x < block.Right)
                     yield return vCut with { LineNumber = x };
             }
         }
         else if (cut is HCutMove hCut)
         {
-            for (int dy = -LCUT_DELTA; dy <= LCUT_DELTA; dy++)
+            for (int dy = -1; dy <= 1; dy++)
             {
-                var y = hCut.LineNumber + dy;
+                var y = hCut.LineNumber + dy * delta;
                 if (y > block.Bottom && y < block.Top)
                     yield return hCut with { LineNumber = y };
             }
         }
         else if (cut is PCutMove pCut)
         {
-            for (int dx = -PCUT_DELTA; dx <= PCUT_DELTA; dx++)
-            for (int dy = -PCUT_DELTA; dy <= PCUT_DELTA; dy++)
+            for (int dx = -1; dx <= 1; dx++)
+            for (int dy = -1; dy <= 1; dy++)
             {
-                var v = pCut.Point + new V(dx, dy);
+                var v = pCut.Point + new V(dx * delta, dy * delta);
                 if (v.IsStrictlyInside(block))
                     yield return pCut with { Point = v };
             }
