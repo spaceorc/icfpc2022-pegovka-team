@@ -207,6 +207,8 @@ namespace lib
                    || (topRight.Y == Y && bottomLeft.X <= X && X <= topRight.X);
         }
 
+        public int GetScalarSize() => X * Y;
+
         public IEnumerable<V> Area9()
         {
             for (int dx = -1; dx <= 1; dx++)
