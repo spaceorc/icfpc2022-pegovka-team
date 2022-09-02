@@ -14,30 +14,45 @@ export const Playground = (): JSX.Element => {
   const [paintedCanvas, setPaintedCanvas] = useState(
     new Canvas(width, height, new RGBA([255, 255, 255, 255]))
   );
-  const [canvasDrawn, setCanvasDrawn] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const handlePlaygroundCode = (e: any) => {
     setPlaygroundCode(e.target.value as string);
-    setCanvasDrawn(false);
-    clearCanvas();
   };
   const handleClickGenerateInstruction = () => {
     const interpreter = new Interpreter();
-    const instruction = RandomInstructionGenerator.generateRandomInstruction(paintedCanvas);
-    const result = interpreter.interpret(0, paintedCanvas, instruction);
+    const result = interpreter.run(playgroundCode);
+
+    const instruction = RandomInstructionGenerator.generateRandomInstruction(result.canvas);
     setPlaygroundCode(`${playgroundCode}\n${instructionToString(instruction)}`);
-    setPaintedCanvas(result.canvas);
-    setCanvasDrawn(true);
   };
 
-  const drawToCanvas = () => {
-    const painter = new Painter();
-    const renderedData = painter.draw(paintedCanvas);
+  const clearCanvas = () => {
     const canvas = canvasRef.current!;
     const context = canvas.getContext("2d")!;
 
-    canvas.width = paintedCanvas.width;
-    canvas.height = paintedCanvas.height;
+    canvas.width = width;
+    canvas.height = height;
+    const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
+    imgData.data.forEach((value, index) => {
+      imgData.data[index] = 255;
+    });
+  };
+
+  const handleClickRenderCanvas = () => {
+    clearCanvas();
+
+    const interpreter = new Interpreter();
+    const result = interpreter.run(playgroundCode);
+
+    const painter = new Painter();
+    const renderedData = painter.draw(result.canvas);
+    const canvas = canvasRef.current!;
+    const context = canvas.getContext("2d")!;
+
+    console.log(result.canvas.blocks);
+
+    canvas.width = result.canvas.width;
+    canvas.height = result.canvas.height;
     const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
     renderedData.forEach((pixel: RGBA, index: number) => {
       imgData.data[index * 4] = pixel.r;
@@ -47,30 +62,7 @@ export const Playground = (): JSX.Element => {
     });
     context.putImageData(imgData, 0, 0);
   };
-
-  const clearCanvas = () => {
-    const canvas = canvasRef.current!;
-    const context = canvas.getContext("2d")!;
-
-    canvas.width = paintedCanvas.width;
-    canvas.height = paintedCanvas.height;
-    const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
-    imgData.data.forEach((value, index) => {
-      imgData.data[index] = 255;
-    });
-  };
-  const handleClickRenderCanvas = () => {
-    if (canvasDrawn) {
-      drawToCanvas();
-    } else {
-      const interpreter = new Interpreter();
-      const result = interpreter.run(playgroundCode);
-      setPaintedCanvas(result.canvas);
-      setCanvasDrawn(true);
-    }
-  };
   const handleReset = () => {
-    setPaintedCanvas(new Canvas(width, height, new RGBA([255, 255, 255, 255])));
     setPlaygroundCode("");
     clearCanvas();
   };
