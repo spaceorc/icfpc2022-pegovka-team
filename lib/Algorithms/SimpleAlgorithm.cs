@@ -1,11 +1,5 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Linq;
-using System.Text;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace lib.Algorithms;
 
@@ -13,7 +7,7 @@ public class SimpleAlgorithm : IAlgorithm
 {
     public const int CanvasSize = 400;
 
-    public (IList<Move>, double Score) GetBestResult(Screen screen)
+    public IList<Move> Solve(Screen screen)
     {
         var (bestResult, bestScore) = (new List<Move>(), double.MaxValue);
 
@@ -27,7 +21,7 @@ public class SimpleAlgorithm : IAlgorithm
             }
         }
 
-        return (bestResult, bestScore);
+        return bestResult;
     }
 
     private (List<Move> Moves, double Score) GetResult(Screen screen, int maxBlockSize)
