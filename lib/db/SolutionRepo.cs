@@ -8,6 +8,7 @@ using Ydb.Sdk;
 using Ydb.Sdk.Table;
 using Ydb.Sdk.Value;
 using Ydb.Sdk.Yc;
+// ReSharper disable InconsistentNaming
 
 namespace lib.db;
 
@@ -43,12 +44,12 @@ public class ContestSolution
     public ContestSolution(ResultSet.Row row)
     {
         var id = (string?) row["id"] ?? throw new ArgumentException();
-        var solverMeta = (string?) row["solver_meta"] ?? throw new ArgumentException();
+        var solverMeta = row["solver_meta"].GetOptionalJson() ?? throw new ArgumentException();
         Id = Guid.Parse(id);
         ProblemId = (long?) row["problem_id"] ?? throw new ArgumentException();
         ScoreEstimated = (long?) row["score_estimated"] ?? throw new ArgumentException();
         Solution = (string?) row["solution"] ?? throw new ArgumentException();
-        SolverMeta = new SolverMeta();
+        SolverMeta = solverMeta.FromJson<SolverMeta>();
         SolvedAt = (DateTime?) row["solved_at"] ?? throw new ArgumentException();
         SolverId = (string?) row["solver_id"] ?? throw new ArgumentException();
 
@@ -60,7 +61,29 @@ public class ContestSolution
 
 public class SolverMeta
 {
+    public long Previous_Score;
+    public string? Previous_SolverName;
 
+    public SolverMeta()
+    {
+
+    }
+
+    public SolverMeta(long previousScore, string previousSolverName)
+    {
+        Previous_Score = previousScore;
+        Previous_SolverName = previousSolverName;
+    }
+
+    public override string ToString()
+    {
+        return $"{nameof(Previous_Score)}: {Previous_Score}, {nameof(Previous_SolverName)}: {Previous_SolverName}";
+    }
+
+    public string ToJson()
+    {
+        return JsonExtensions.ToJson(this);
+    }
 }
 
 public static class SolutionRepo
@@ -93,7 +116,7 @@ public static class SolutionRepo
                     { "$solution", YdbValue.MakeUtf8(solution.Solution)},
                     { "$solved_at", YdbValue.MakeDatetime(solution.SolvedAt)},
                     { "$solver_id", YdbValue.MakeUtf8(solution.SolverId)},
-                    { "$solver_meta", YdbValue.MakeJson("{}")},
+                    { "$solver_meta", YdbValue.MakeJson(solution.SolverMeta.ToJson())},
                     { "$submission_id", solution.SubmissionId == null ? YdbValue.MakeEmptyOptional(YdbTypeId.Int64) : YdbValue.MakeOptional(YdbValue.MakeInt64((long) solution.SubmissionId))},
                     { "$submitted_at", solution.SubmittedAt == null ? YdbValue.MakeEmptyOptional(YdbTypeId.Datetime) : YdbValue.MakeOptional(YdbValue.MakeDatetime((DateTime) solution.SubmittedAt))},
                 }
