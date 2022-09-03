@@ -11,11 +11,18 @@ namespace enhancer
             while (true)
             {
                 var scoreByProblemId = SolutionRepo.GetBestScoreByProblemIdAndSolverId().GetAwaiter().GetResult();
+
+                Console.WriteLine("getting solutions from DB");
+                var solutions = scoreByProblemId.ToDictionary(
+                    e => (e.problemId, e.solverId),
+                    e => SolutionRepo.GetSolutionByProblemIdAndSolverIdAndScore(e.problemId, e.solverId, e.score).GetAwaiter().GetResult());
+                Console.WriteLine("got solutions from DB");
+
                 Parallel.ForEach(scoreByProblemId, parms =>
                     //foreach (var (problemId, solverId, score) in scoreByProblemId)
                 {
                     var (problemId, solverId, score) = parms;
-                    var solution = SolutionRepo.GetSolutionByProblemIdAndSolverIdAndScore(problemId, solverId, score).GetAwaiter().GetResult();
+                    var solution = solutions[(problemId, solverId)];
                     if (!solution.SolverId.EndsWith("-enchanced") && solution.SolverMeta.Enhancer_Id == null)
                     {
                         Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} not enhanced");
