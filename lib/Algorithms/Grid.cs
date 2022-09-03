@@ -15,24 +15,22 @@ public class Grid
 
 public class GridRow
 {
-    public GridRow(int height, List<GridCell> widths)
+    public GridRow(int height, List<GridCell> cells)
     {
         Height = height;
-        Widths = widths;
+        Cells = cells;
     }
 
     public int Height;
-    public List<GridCell> Widths;
+    public List<GridCell> Cells;
 }
 
 public class GridCell
 {
-    public GridCell(int width, int similarityCost)
+    public GridCell(int width)
     {
         Width = width;
-        SimilarityCost = similarityCost;
     }
 
     public int Width;
-    public int SimilarityCost;
 }
