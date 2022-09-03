@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using lib.Algorithms;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
@@ -12,6 +15,7 @@ public class Screen
 {
     private const double Alpha = 0.005;
     public Rgba[,] Pixels;
+    public SimpleBlock[] InitialBlocks;
 
     public int Width => Pixels.GetLength(0);
     public int Height => Pixels.GetLength(1);
@@ -20,7 +24,29 @@ public class Screen
     {
         var file = FileHelper.FindFilenameUpwards($"problems/problem{problem}.png");
         using var image = (Image<Rgba32>)Image.Load(file, new PngDecoder());
-        return LoadFrom(image);
+        var result = LoadFrom(image);
+        var jsonFile = Path.ChangeExtension(file, ".json");
+        if (File.Exists(jsonFile))
+        {
+            var json = (JToken)JsonConvert.DeserializeObject(File.ReadAllText(jsonFile))!;
+            var initialBlocks = new List<SimpleBlock>();
+            foreach (var jToken in json["blocks"]!)
+            {
+                var blockId = jToken["blockId"]!.ToString();
+                var left = (int)jToken["bottomLeft"]![0]!;
+                var bottom = (int)jToken["bottomLeft"]![1]!;
+                var right = (int)jToken["topRight"]![0]!;
+                var top = (int)jToken["topRight"]![1]!;
+                var r = (int)jToken["color"]![0]!;
+                var g = (int)jToken["color"]![1]!;
+                var b = (int)jToken["color"]![2]!;
+                var a = (int)jToken["color"]![3]!;
+                initialBlocks.Add(new SimpleBlock(blockId, new V(left, bottom), new V(right, top), new Rgba(r,g,b,a)));
+            }
+            result.InitialBlocks = initialBlocks.ToArray();
+        }
+
+        return result;
     }
 
     public static Screen LoadFrom(Image<Rgba32> bitmap)
@@ -43,6 +69,7 @@ public class Screen
     public Screen(Rgba[,] pixels)
     {
         Pixels = pixels;
+        InitialBlocks = new[] { new SimpleBlock("0", V.Zero, new V(Width, Height), new Rgba(255, 255, 255, 255)) };
     }
 
     public double DiffTo(V bottomLeft, V topRight, Rgba color)

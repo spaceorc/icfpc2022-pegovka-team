@@ -24,18 +24,15 @@ public class Canvas
 
     public int GetScore(Screen screen) => GetSimilarity(screen) + TotalCost;
 
-    public Canvas(int width, int height, Rgba backgroundColor)
+    public Canvas(int width, int height, IEnumerable<SimpleBlock> blocks)
     {
         Width = width;
         Height = height;
-        Blocks = new Dictionary<string, Block>
-        {
-            { "0", new SimpleBlock("0", V.Zero, new V(width, height), backgroundColor) }
-        };
+        Blocks = blocks.ToDictionary(x => x.Id, x => (Block)x);
     }
 
     public Canvas(Screen problem)
-        : this(problem.Width, problem.Height, new Rgba(255, 255, 255, 255))
+        : this(problem.Width, problem.Height, problem.InitialBlocks)
     {
     }
 
