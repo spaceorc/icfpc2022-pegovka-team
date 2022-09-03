@@ -25,14 +25,14 @@ public class ContestSolution
     public DateTime SolvedAt;
     public DateTime? SubmittedAt;
 
-    public ContestSolution(long problemId, long scoreEstimated, string solution, SolverMeta solverMeta, DateTime solvedAt,  string solverId)
+    public ContestSolution(long problemId, long scoreEstimated, string solution, SolverMeta solverMeta, string solverId)
     {
         Id = Guid.NewGuid();
         ProblemId = problemId;
         ScoreEstimated = scoreEstimated;
         Solution = solution;
         SolverMeta = solverMeta;
-        SolvedAt = solvedAt;
+        SolvedAt = DateTime.UtcNow;
         SolverId = solverId;
     }
 

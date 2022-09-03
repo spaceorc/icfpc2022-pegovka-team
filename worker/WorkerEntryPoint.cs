@@ -60,7 +60,6 @@ public static class WorkerEntryPoint
                     enhancedScore,
                     moves.StrJoin("\n"),
                     new SolverMeta(sol.ScoreEstimated, sol.SolverId),
-                    DateTime.UtcNow,
                     sol.SolverId + "-enchanced"
                 )).GetAwaiter().GetResult();
                 var incremented = Interlocked.Increment(ref processed);

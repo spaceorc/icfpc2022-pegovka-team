@@ -24,8 +24,7 @@ namespace enhancer
                             screen.CalculateScore(combinedEnhancer.Enhance(screen, Moves.Parse(solution.Solution))),
                             combinedEnhancer.Enhance(screen, Moves.Parse(solution.Solution)).StrJoin("\n"),
                             new SolverMeta(solution.ScoreEstimated, solution.SolverId),
-                            DateTime.UtcNow,
-                            solution.SolverId+"-enchanced");
+                             solution.SolverId+"-enchanced");
                         Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} enhanced from score {solution.ScoreEstimated} to {eSolution.ScoreEstimated}");
                         SolutionRepo.Submit(eSolution).GetAwaiter().GetResult();
                     }
