@@ -138,11 +138,7 @@ public static class SolutionRepo
         var response = await client.SessionExec(async session =>
 
             await session.ExecuteDataQuery(
-                query: @"
-                DECLARE $problem_id AS Int64;
-                DECLARE $score_estimated AS Double;
-
-                SELECT problem_id, min(score_estimated) as score from Solutions Group by problem_id;",
+                query: @"SELECT problem_id, min(score_estimated) AS score FROM Solutions GROUP BY problem_id;",
                 txControl: TxControl.BeginSerializableRW().Commit(),
                 parameters: new Dictionary<string, YdbValue> {}
 
@@ -194,7 +190,7 @@ public static class SolutionRepo
                 DECLARE $problem_id AS Int64;
                 DECLARE $score_estimated AS Int64;
 
-                SELECT * from Solutions where problem_id=$problem_id and score_estimated=$score_estimated limit 1",
+                SELECT * FROM Solutions WHERE problem_id=$problem_id AND score_estimated=$score_estimated LIMIT 1",
                 txControl: TxControl.BeginSerializableRW().Commit(),
                 parameters: new Dictionary<string, YdbValue>
                 {
@@ -251,7 +247,7 @@ public static class SolutionRepo
                 DECLARE $problem_id AS Int64;
                 DECLARE $solver_id AS Utf8;
 
-                SELECT * from Solutions where problem_id=$problem_id and solver_id=$solver_id order by score_estimated limit 1",
+                SELECT * FROM Solutions WHERE problem_id=$problem_id AND solver_id=$solver_id ORDER BY score_estimated LIMIT 1",
                 txControl: TxControl.BeginSerializableRW().Commit(),
                 parameters: new Dictionary<string, YdbValue>
                 {
@@ -279,7 +275,7 @@ public static class SolutionRepo
                 query: @"
                 DECLARE $problem_id AS Int64;
 
-                SELECT * from Solutions where problem_id=$problem_id order by score_estimated limit 1",
+                SELECT * FROM Solutions WHERE problem_id=$problem_id ORDER BY score_estimated LIMIT 1",
                 txControl: TxControl.BeginSerializableRW().Commit(),
                 parameters: new Dictionary<string, YdbValue>
                 {
@@ -305,7 +301,7 @@ public static class SolutionRepo
                 query: @"
                 DECLARE $problem_id AS Int64;
 
-                SELECT distinct solver_id from Solutions where problem_id=$problem_id",
+                SELECT DISTINCT solver_id FROM Solutions WHERE problem_id=$problem_id",
                 txControl: TxControl.BeginSerializableRW().Commit(),
                 parameters: new Dictionary<string, YdbValue>
                 {
@@ -324,8 +320,7 @@ public static class SolutionRepo
         var response = await client.SessionExec(async session =>
 
             await session.ExecuteDataQuery(
-                query: @"
-                SELECT distinct problem_id from Solutions",
+                query: @"SELECT DISTINCT problem_id FROM Solutions",
                 txControl: TxControl.BeginSerializableRW().Commit(),
                 parameters: new Dictionary<string, YdbValue>()));
         response.Status.EnsureSuccess();
