@@ -63,6 +63,7 @@ public class SolverMeta
 {
     public long Previous_Score;
     public string? Previous_SolverName;
+    public string? Description;
     public List<string>? Enhanced_By;
 
     public SolverMeta()
@@ -78,7 +79,7 @@ public class SolverMeta
 
     public override string ToString()
     {
-        return $"{nameof(Previous_Score)}: {Previous_Score}, {nameof(Previous_SolverName)}: {Previous_SolverName}";
+        return $"{nameof(Previous_Score)}: {Previous_Score}, {nameof(Previous_SolverName)}: {Previous_SolverName}, {Description}";
     }
 
     public string ToJson()

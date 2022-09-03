@@ -6,12 +6,12 @@ namespace lib.Algorithms;
 
 public static class GridGuidedPainterRunner
 {
-    public static IList<Move> Solve(int problemId)
+    public static IList<Move> Solve(int problemId, int rows, int cols)
     {
         Func<SimpleBlock,double,double> estimateBlock = (block, similarity) => 1.0 * similarity + 400.0 * 400 / block.ScalarSize;
 
         var problem = Screen.LoadProblem(problemId);
-        var grid = GridBuilder.BuildRegularGrid(problem, 10, 10);
+        var grid = GridBuilder.BuildRegularGrid(problem, rows, cols);
         double estimation;
 
 

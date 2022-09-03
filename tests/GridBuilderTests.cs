@@ -22,8 +22,8 @@ public class GridBuilderTests
     {
         Func<SimpleBlock,double,double> estimateBlock = (block, similarity) => 1.0 * similarity + 400.0 * 400 / block.ScalarSize;
 
-        var problem = Screen.LoadProblem(25);
-        var grid = GridBuilder.BuildRegularGrid(problem, 10, 10);
+        var problem = Screen.LoadProblem(8);
+        var grid = GridBuilder.BuildRegularGrid(problem, 11, 10);
         double estimation;
 
         problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "regular.png"), grid);
@@ -44,7 +44,7 @@ public class GridBuilderTests
         problem.MovesToImage(moves, Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "solved0.png"));
         Console.Out.WriteLine(score);
 
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 11; i++)
         {
             (grid, estimation) = GridBuilder.OptimizeCellsViaMerge(problem, grid, i, estimateBlock);
             problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), $"optimizedM{i}.png"), grid);
