@@ -37,6 +37,11 @@ public static class WorkerEntryPoint
                     continue;
 
                 var sol = await SolutionRepo.GetBestSolutionBySolverId(problemId, solverId);
+                if (sol == null)
+                {
+                    Console.WriteLine("sol is null");
+                    throw new ArgumentException();
+                }
                 works.Add(sol);
                 Console.WriteLine($"Existing solution: {sol.ProblemId} {sol.SolverId}");
             }

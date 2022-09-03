@@ -97,7 +97,7 @@ public class SolutionRepoTests
             if (solver.EndsWith("-enchanced"))
                 continue;
             var sol = SolutionRepo.GetBestSolutionBySolverId(problemId, solver).GetAwaiter().GetResult();
-            Console.WriteLine($"{sol.SolverId} - {sol.ScoreEstimated}");
+            Console.WriteLine(sol == null ? "sol is null" : $"{sol.SolverId} - {sol.ScoreEstimated}");
         }
     }
 
@@ -126,6 +126,11 @@ public class SolutionRepoTests
             foreach (var solver in solvers)
             {
                 var sol = SolutionRepo.GetBestSolutionBySolverId(problemId, solver).GetAwaiter().GetResult();
+                if (sol == null)
+                {
+                    Console.WriteLine("sol is null");
+                    return;
+                }
                 Console.WriteLine($"{sol.SolverId} - {sol.ScoreEstimated}");
                 var screen = ScreenRepo.GetProblem(problemId);
                 var canvas = new Canvas(screen);

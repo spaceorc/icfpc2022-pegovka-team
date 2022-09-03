@@ -1,7 +1,6 @@
 ﻿using lib;
 using lib.api;
 using lib.db;
-using MongoDB.Bson.Serialization.Conventions;
 using Spectre.Console;
 
 namespace submitter
@@ -34,15 +33,19 @@ namespace submitter
                         var screen = Screen.LoadProblem(problemId);
                         var score = screen.CalculateScore(moves);
                         var sol = SolutionRepo.GetBestSolutionBySolverId(problemId, "manual").GetAwaiter().GetResult();
-                        if (sol.Solution == program)
+                        if (sol != null)
                         {
-                            Console.WriteLine($"duplicated solution {fileName}");
-                            continue;
-                        }
-                        if (sol.ScoreEstimated <= score)
-                        {
-                            Console.WriteLine($"{fileName} with score {score} is not good enough - bestScore: {sol.ScoreEstimated}");
-                            continue;
+                            if (sol.Solution == program)
+                            {
+                                Console.WriteLine($"duplicated solution {fileName}");
+                                continue;
+                            }
+
+                            if (sol.ScoreEstimated <= score)
+                            {
+                                Console.WriteLine($"{fileName} with score {score} is not good enough - bestScore: {sol.ScoreEstimated}");
+                                continue;
+                            }
                         }
 
                         var solution = new ContestSolution(problemId, score, program, new SolverMeta(), "manual");
