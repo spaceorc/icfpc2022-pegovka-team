@@ -162,4 +162,12 @@ public class Screen
         }
         image.Save(pngPath, new PngEncoder());
     }
+
+    public int CalculateScore(IEnumerable<Move> moves)
+    {
+        var canvas = new Canvas(this);
+        foreach (var move in moves)
+            canvas.Apply(move);
+        return canvas.GetScore(this);
+    }
 }

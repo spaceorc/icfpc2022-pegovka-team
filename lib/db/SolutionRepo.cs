@@ -206,6 +206,21 @@ public static class SolutionRepo
         return queryResponse.Result.ResultSets[0].Rows.Select(x => (string?)x["solver_id"] ?? throw new Exception("WTF")).ToArray();
     }
 
+    public static async Task<long[]> GetAllProblems()
+    {
+        var client = await CreateTableClient();
+        var response = await client.SessionExec(async session =>
+
+            await session.ExecuteDataQuery(
+                query: @"
+                SELECT distinct problem_id from Solutions",
+                txControl: TxControl.BeginSerializableRW().Commit(),
+                parameters: new Dictionary<string, YdbValue>()));
+        response.Status.EnsureSuccess();
+        var queryResponse = (ExecuteDataQueryResponse) response;
+        return queryResponse.Result.ResultSets[0].Rows.Select(x => (long?)x["problem_id"] ?? throw new Exception("WTF")).ToArray();
+    }
+
     private static async Task<TableClient> CreateTableClient()
     {
         var settings = new Settings();
