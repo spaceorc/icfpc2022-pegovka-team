@@ -2,7 +2,7 @@ import { Canvas } from "../../contest-logic/Canvas";
 import React, { useEffect, useRef, useState } from "react";
 import { RGBA } from "../../contest-logic/Color";
 import { Interpreter, InterpreterResult } from "../../contest-logic/Interpreter";
-import { instructionToString, InstructionType } from "../../contest-logic/Instruction";
+import { Instruction, instructionToString, InstructionType } from "../../contest-logic/Instruction";
 import { Painter } from "../../contest-logic/Painter";
 import { RandomInstructionGenerator } from "../../contest-logic/RandomInstructionGenerator";
 import { CommandsPanel } from "./commandPanel";
@@ -12,6 +12,7 @@ import { Block } from "../../contest-logic/Block";
 import { getClickInstruction } from "./canvasCommands";
 import { getMousePoint } from "./shared/helpers";
 import { SimilarityChecker } from "../../contest-logic/SimilarityCheck";
+import { Parser } from "../../contest-logic/Parser";
 
 const modules = import.meta.glob("../../../../problems/*.png", { as: "url", eager: true });
 
@@ -77,9 +78,9 @@ export const Playground = (): JSX.Element => {
   const color = colorRecord[chosenColor];
 
   const onSetColor = (color: RGBA, colorNumber: number) => {
-    setColor(colorRecord => ({
-        ...colorRecord,
-        [colorNumber]: color
+    setColor((colorRecord) => ({
+      ...colorRecord,
+      [colorNumber]: color,
     }));
   };
 
@@ -238,12 +239,76 @@ export const Playground = (): JSX.Element => {
         event.preventDefault();
         setChosenColor(3);
       }
+
+      if (
+        (event.code === "ArrowLeft" ||
+          event.code === "ArrowRight" ||
+          event.code === "ArrowUp" ||
+          event.code === "ArrowDown") &&
+        event.altKey
+      ) {
+        event.preventDefault();
+        const diffX = event.code === "ArrowLeft" ? -1 : event.code === "ArrowRight" ? 1 : 0;
+        const diffY = event.code === "ArrowDown" ? -1 : event.code === "ArrowUp" ? 1 : 0;
+        const parser = new Parser();
+        const reversedLines = playgroundCode.split("\n").reverse();
+        const lastInstrutionLineIndex = reversedLines.findIndex((line) => {
+          const instruction = parser.parseLine(0, line).result as Instruction;
+          return (
+            instruction.typ === InstructionType.HorizontalCutInstructionType ||
+            instruction.typ === InstructionType.PointCutInstructionType ||
+            instruction.typ === InstructionType.VerticalCutInstructionType
+          );
+        });
+
+        const lastInstrution = parser.parseLine(0, reversedLines[lastInstrutionLineIndex])
+          .result as Instruction;
+        if (lastInstrution?.typ === InstructionType.PointCutInstructionType) {
+          lastInstrution.point = new Point([
+            lastInstrution.point.px + diffX,
+            lastInstrution.point.py + diffY,
+          ]);
+        }
+        if (lastInstrution?.typ === InstructionType.HorizontalCutInstructionType) {
+          if (!diffY) {
+            return;
+          }
+          lastInstrution.lineNumber = lastInstrution.lineNumber + diffY;
+        }
+        if (lastInstrution?.typ === InstructionType.VerticalCutInstructionType) {
+          if (!diffX) {
+            return;
+          }
+          lastInstrution.lineNumber = lastInstrution.lineNumber + diffX;
+        }
+        reversedLines[lastInstrutionLineIndex] = instructionToString(lastInstrution);
+        const newCode = reversedLines.reverse().join("\n");
+        setPlaygroundCode(newCode);
+        handleClickRenderCanvas(newCode);
+      }
+
+      if (event.code === "KeyZ" && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        const newCode = playgroundCode.split("\n").slice(0, -1).join('\n');
+        setPlaygroundCode(newCode);
+        handleClickRenderCanvas(newCode);
+      }
+
+      if (event.code === "Equal" && event.shiftKey) {
+        event.preventDefault();
+        setExpectedOpacity(Math.max(Math.min(expectedOpacity + 0.5, 1), 0));
+      }
+
+      if (event.code === "Minus" && event.shiftKey) {
+        event.preventDefault();
+        setExpectedOpacity(Math.max(Math.min(expectedOpacity - 0.5, 1), 0));
+      }
     };
 
     document.addEventListener("keydown", handler);
 
     return () => document.removeEventListener("keydown", handler);
-  }, [handleClickRenderCanvas, playgroundCode]);
+  }, [handleClickRenderCanvas, playgroundCode, expectedOpacity]);
 
   const onPlayClick = () => {
     setIsPlaying((isPlaying) => !isPlaying);
@@ -287,6 +352,7 @@ export const Playground = (): JSX.Element => {
     >
       <div>
         <div>
+          <div style={{ fontSize: 12, lineHeight: '14px', width: 300 }}>Shift + Enter – rerender canvas<br /> Alt + Arrows – shift last command point<br /> Command + Z – remove last command<br />Shift + "+", Shift + "-" – change example opacity</div>
           <label>
             Example id
             <input
