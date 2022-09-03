@@ -15,10 +15,8 @@ namespace submitter
                 var submissionsInfos = api.GetSubmissionsInfo();
                 var problemIdToInfo = submissionsInfos!.Submissions.ToDictionary(s => s.Id, s => s);
                 var scoreByProblemId = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
-                Parallel.ForEach(scoreByProblemId, problemIdAndScore =>
-                    //foreach (var (problemId, score) in scoreByProblemId)
+                foreach (var (problemId, score) in scoreByProblemId)
                 {
-                    var (problemId, score) = problemIdAndScore;
                     var solution = SolutionRepo.GetSolutionByProblemIdAndScore(problemId, score).GetAwaiter().GetResult();
                     if (solution.SubmissionId == null)
                     {
@@ -27,14 +25,16 @@ namespace submitter
                         solution.SubmissionId = submissionResult?.Submission_Id;
                         Console.WriteLine($"Submit solution for problem {problemId} with score {score} by {solution.SolverId}");
                         SolutionRepo.Submit(solution);
-                        //continue;
-                    } else if (solution.ScoreServer == null && problemIdToInfo.ContainsKey((long)solution.SubmissionId))
+                        continue;
+                    }
+
+                    if (solution.ScoreServer == null && problemIdToInfo.ContainsKey((long)solution.SubmissionId))
                     {
                         solution.ScoreServer = problemIdToInfo[solution.SubmissionId.Value].Score;
                         Console.WriteLine($"Add ScoreServer for problem {problemId} - score: {score}, serverScore: {solution.ScoreServer}, submissionId {solution.SubmissionId}");
                         SolutionRepo.Submit(solution);
                     }
-                });
+                }
                 Thread.Sleep(60_000);
             }
         }
