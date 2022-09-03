@@ -115,9 +115,10 @@ public class SolutionRepoTests
     }
 
     [Test]
+    [Explicit]
     public void SaveBestPngs()
     {
-        var path = "..\\..\\..\\..\\best-solutions";
+        var path = FileHelper.FindDirectoryUpwards("best-solutions");
         var prIds = ScreenRepo.GetProblemIds();
         foreach(var problemId in prIds)
         {
