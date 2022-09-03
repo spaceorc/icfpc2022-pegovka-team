@@ -11,8 +11,10 @@ namespace enhancer
             while (true)
             {
                 var scoreByProblemId = SolutionRepo.GetBestScoreByProblemIdAndSolverId().GetAwaiter().GetResult();
-                foreach (var (problemId, solverId, score) in scoreByProblemId)
+                Parallel.ForEach(scoreByProblemId, parms =>
+                    //foreach (var (problemId, solverId, score) in scoreByProblemId)
                 {
+                    var (problemId, solverId, score) = parms;
                     var solution = SolutionRepo.GetSolutionByProblemIdAndSolverIdAndScore(problemId, solverId, score).GetAwaiter().GetResult();
                     if (!solution.SolverId.EndsWith("-enchanced") && solution.SolverMeta.Enhancer_Id == null)
                     {
@@ -24,14 +26,14 @@ namespace enhancer
                             screen.CalculateScore(eMoves),
                             eMoves.StrJoin("\n"),
                             new SolverMeta(solution.ScoreEstimated, solution.SolverId),
-                             solution.SolverId+"-enchanced");
+                            solution.SolverId + "-enchanced");
                         Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} enhanced from score {solution.ScoreEstimated} to {eSolution.ScoreEstimated}");
                         SolutionRepo.Submit(eSolution);
 
                         solution.SolverMeta.Enhancer_Id = "default";
                         SolutionRepo.Submit(solution);
                     }
-                }
+                });
 
                 Console.WriteLine("sleeping");
                 Thread.Sleep(60_000);
