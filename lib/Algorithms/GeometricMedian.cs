@@ -19,13 +19,26 @@ namespace lib.Algorithms
 
         public Rgba GetGeometricMedian(Screen screen, Block block)
         {
+            var left = block.BottomLeft.X;
+            var right = block.TopRight.X;
+            var bottom = block.BottomLeft.Y;
+            var top = block.TopRight.Y;
+            return GetGeometricMedian(screen, left, right, bottom, top);
+        }
+
+        public Rgba GetGeometricMedian(Screen screen, int left, int right, int bottom, int top)
+        {
             var pixels = new List<Rgba>();
-            for (int x = block.BottomLeft.X; x < block.TopRight.X; x++)
-                for (int y = block.BottomLeft.Y; y < block.TopRight.Y; y++)
+            for (int x = left; x < right; x++)
+            {
+                for (int y = bottom; y < top; y++)
                 {
+                    if (x >= screen.Pixels.GetLength(0)) continue;
+                    if (y >= screen.Pixels.GetLength(1)) continue;
                     var pixel = screen.Pixels[x, y];
                     pixels.Add(pixel);
                 }
+            }
 
             return GetGeometricMedian(pixels.ToArray());
         }

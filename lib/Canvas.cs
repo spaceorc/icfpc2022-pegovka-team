@@ -602,7 +602,7 @@ public class Canvas
 
         if (!move.Point.IsStrictlyInside(block.BottomLeft, block.TopRight))
             throw new BadMoveException($"Point {move.Point} is out of block{block}");
-        var (bottomLeftBlock, bottomRightBlock, topRightBlock, topLeftBlock) = PreApplyPCut(block, move.Point);
+        var (bottomLeftBlock, bottomRightBlock, topLeftBlock, topRightBlock) = PreApplyPCut(block, move.Point);
         Blocks.Remove(block.Id);
         Blocks[bottomLeftBlock.Id] = bottomLeftBlock;
         Blocks[bottomRightBlock.Id] = bottomRightBlock;

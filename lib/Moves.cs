@@ -42,13 +42,13 @@ public abstract record Move(int BaseCost)
     }
 }
 
-public record NopMove() : Move(0)
+public record NopMove(string Comment = "") : Move(0)
 {
     protected override int GetBlockScalarSize(Canvas canvas) => 1;
 
     public override string ToString()
     {
-        return "";
+        return "# " + Comment;
     }
 }
 
