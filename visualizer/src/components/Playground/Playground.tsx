@@ -441,7 +441,7 @@ export const Playground = (): JSX.Element => {
               />
             </label>
             <br />
-            <label>
+            <div>
               code{" "}
               <button
                 onClick={() => setPlaygroundCode(shiftIdsBy(Number(shiftBy), playgroundCode))}
@@ -476,7 +476,7 @@ export const Playground = (): JSX.Element => {
                   ))}
                 </div>
               </div>
-            </label>
+            </div>
           </div>
         </div>
       </div>
