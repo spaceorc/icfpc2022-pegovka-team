@@ -49,7 +49,7 @@ public class SolutionRepoTests
         var scoresById = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
         foreach (var (problemId, score) in scoresById)
         {
-            var solution = SolutionRepo.GetSolutionByIdAndScore(problemId, score).GetAwaiter().GetResult();
+            var solution = SolutionRepo.GetSolutionByProblemIdAndScore(problemId, score).GetAwaiter().GetResult();
             Console.WriteLine(solution);
         }
     }
@@ -82,7 +82,7 @@ public class SolutionRepoTests
         var scoresById = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
         foreach (var (problemId, score) in scoresById)
         {
-            var solution = SolutionRepo.GetSolutionByIdAndScore(problemId, score).GetAwaiter().GetResult();
+            var solution = SolutionRepo.GetSolutionByProblemIdAndScore(problemId, score).GetAwaiter().GetResult();
             Console.WriteLine(solution);
         }
     }

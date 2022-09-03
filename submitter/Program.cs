@@ -17,7 +17,7 @@ namespace submitter
                 var scoreByProblemId = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
                 foreach (var (problemId, score) in scoreByProblemId)
                 {
-                    var solution = SolutionRepo.GetSolutionByIdAndScore(problemId, score).GetAwaiter().GetResult();
+                    var solution = SolutionRepo.GetSolutionByProblemIdAndScore(problemId, score).GetAwaiter().GetResult();
                     if (solution.SubmissionId == null)
                     {
                         var submissionResult = api.PostSolution(solution.ProblemId, solution.Solution);

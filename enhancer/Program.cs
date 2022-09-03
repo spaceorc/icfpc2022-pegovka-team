@@ -10,23 +10,26 @@ namespace enhancer
         {
             while (true)
             {
-                var scoreByProblemId = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
-                var combinedEnhancer = new CombinedEnhancer();
-                foreach (var (problemId, score) in scoreByProblemId)
+                var scoreByProblemId = SolutionRepo.GetBestScoreByProblemIdAndSolverId().GetAwaiter().GetResult();
+                foreach (var (problemId, solverId, score) in scoreByProblemId)
                 {
-                    var solution = SolutionRepo.GetSolutionByIdAndScore(problemId, score).GetAwaiter().GetResult();
-                    if (!solution.SolverId.EndsWith("-enchanced"))
+                    var solution = SolutionRepo.GetSolutionByProblemIdAndSolverIdAndScore(problemId, solverId, score).GetAwaiter().GetResult();
+                    if (!solution.SolverId.EndsWith("-enchanced") && solution.SolverMeta.Enhancer_Id == null)
                     {
                         Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} not enhanced");
                         var screen = ScreenRepo.GetProblem((int)solution.ProblemId);
+                        var eMoves = Enhancer.Enhance(screen, Moves.Parse(solution.Solution));
                         var eSolution = new ContestSolution(
                             solution.ProblemId,
-                            screen.CalculateScore(combinedEnhancer.Enhance(screen, Moves.Parse(solution.Solution))),
-                            combinedEnhancer.Enhance(screen, Moves.Parse(solution.Solution)).StrJoin("\n"),
+                            screen.CalculateScore(eMoves),
+                            eMoves.StrJoin("\n"),
                             new SolverMeta(solution.ScoreEstimated, solution.SolverId),
                              solution.SolverId+"-enchanced");
                         Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} enhanced from score {solution.ScoreEstimated} to {eSolution.ScoreEstimated}");
                         SolutionRepo.Submit(eSolution).GetAwaiter().GetResult();
+
+                        solution.SolverMeta.Enhancer_Id = "default";
+                        SolutionRepo.Submit(solution).GetAwaiter().GetResult();
                     }
                 }
 
