@@ -38,6 +38,15 @@ export class SimpleBlock {
   getChildren() {
     return [this];
   }
+
+  clone() {
+    return new SimpleBlock(
+      this.id,
+      this.bottomLeft.clone(),
+      this.topRight.clone(),
+      this.color.clone()
+    );
+  }
 }
 
 export class ComplexBlock {
@@ -66,5 +75,14 @@ export class ComplexBlock {
 
   getChildren() {
     return this.subBlocks;
+  }
+
+  clone() {
+    return new ComplexBlock(
+      this.id,
+      this.bottomLeft.clone(),
+      this.topRight.clone(),
+      this.subBlocks.map((b) => b.clone())
+    );
   }
 }

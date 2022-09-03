@@ -12,4 +12,8 @@ export class RGBA {
   constructor(rgba: [number, number, number, number] = [0, 0, 0, 0]) {
     [this.r, this.g, this.b, this.a] = rgba;
   }
+
+  clone() {
+    return new RGBA([this.r, this.g, this.b, this.a]);
+  }
 }

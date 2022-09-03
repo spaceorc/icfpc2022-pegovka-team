@@ -39,11 +39,12 @@ export class Interpreter {
   initialBlocks?: Block[];
 
   constructor(initialBlocks?: Block[]) {
-    this.topLevelIdCounter = 0;
     this.initialBlocks = initialBlocks;
+    this.topLevelIdCounter = (initialBlocks?.length ?? 1) - 1;
   }
 
   run(code: string): InterpreterResult {
+    this.topLevelIdCounter = (this.initialBlocks?.length ?? 1) - 1;
     let parser = new Parser();
     let result = parser.parse(code);
     if (result.typ === "error") {
@@ -69,12 +70,7 @@ export class Interpreter {
   }
 
   runInstructions(instructions: Instruction[]): InterpreterResult {
-    let canvas = new Canvas(
-        400,
-        400,
-        new RGBA([255, 255, 255, 255]),
-        this.initialBlocks
-      );
+    let canvas = new Canvas(400, 400, new RGBA([255, 255, 255, 255]), this.initialBlocks);
     let totalCost = 0;
     const instructionCosts = [];
     for (let index = 0; index < instructions.length; index++) {
@@ -644,16 +640,28 @@ export class Interpreter {
       block2.topRight = temp2;
 
       if (block1.typ === BlockType.ComplexBlockType) {
-        (block1 as ComplexBlock).subBlocks.forEach(subBlock => {
-            subBlock.bottomLeft = new Point([subBlock.bottomLeft.px - diffX, subBlock.bottomLeft.py - diffY]);
-            subBlock.topRight = new Point([subBlock.topRight.px - diffX, subBlock.topRight.py - diffY]);
+        (block1 as ComplexBlock).subBlocks.forEach((subBlock) => {
+          subBlock.bottomLeft = new Point([
+            subBlock.bottomLeft.px - diffX,
+            subBlock.bottomLeft.py - diffY,
+          ]);
+          subBlock.topRight = new Point([
+            subBlock.topRight.px - diffX,
+            subBlock.topRight.py - diffY,
+          ]);
         });
       }
 
       if (block2.typ === BlockType.ComplexBlockType) {
-        (block2 as ComplexBlock).subBlocks.forEach(subBlock => {
-            subBlock.bottomLeft = new Point([subBlock.bottomLeft.px + diffX, subBlock.bottomLeft.py + diffY]);
-            subBlock.topRight = new Point([subBlock.topRight.px + diffX, subBlock.topRight.py + diffY]);
+        (block2 as ComplexBlock).subBlocks.forEach((subBlock) => {
+          subBlock.bottomLeft = new Point([
+            subBlock.bottomLeft.px + diffX,
+            subBlock.bottomLeft.py + diffY,
+          ]);
+          subBlock.topRight = new Point([
+            subBlock.topRight.px + diffX,
+            subBlock.topRight.py + diffY,
+          ]);
         });
       }
 
@@ -677,6 +685,7 @@ export class Interpreter {
   ): InterpreterResult {
     // TypeCheck Starts
     const { blockId1, blockId2 } = mergeInstruction;
+    console.log(blockId1, blockId2, Array.from(context.blocks.keys()));
     const block1 = context.blocks.get(blockId1);
     if (!block1) {
       throw Error(`At ${line}, encountered: Block Id of [${blockId1}] is not found!`);

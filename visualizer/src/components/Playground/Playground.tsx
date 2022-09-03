@@ -54,15 +54,23 @@ export const Playground = (): JSX.Element => {
 
   const interpreter = useMemo(() => {
     const preset = presets[`../../../../problems/problem${exampleId}.json`];
-    console.log(presets, preset);
-    const blocks = preset && (preset as any).blocks.map((block: { blockId: string; bottomLeft: [px: number, py: number] | undefined; topRight: [px: number, py: number] | undefined; color: [number, number, number, number] | undefined; }) => {
-        return new SimpleBlock(
+    const blocks =
+      preset &&
+      (preset as any).blocks.map(
+        (block: {
+          blockId: string;
+          bottomLeft: [px: number, py: number] | undefined;
+          topRight: [px: number, py: number] | undefined;
+          color: [number, number, number, number] | undefined;
+        }) => {
+          return new SimpleBlock(
             block.blockId,
             new Point(block.bottomLeft),
             new Point(block.topRight),
             new RGBA(block.color)
-        );
-    });
+          );
+        }
+      );
     return new Interpreter(blocks);
   }, [exampleId]);
 

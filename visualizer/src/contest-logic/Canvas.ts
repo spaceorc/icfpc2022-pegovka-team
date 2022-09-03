@@ -22,17 +22,14 @@ export class Canvas {
     this.backgroundColor = backgroundColor;
     this.blocks = new Map();
     if (blocks) {
-        blocks.forEach(block => {
-            this.blocks.set(
-                block.id,
-                block
-            )
-        })
+      blocks.forEach((block) => {
+        this.blocks.set(block.id, block.clone());
+      });
     } else {
-        this.blocks.set(
-          "0",
-          new SimpleBlock("0", new Point([0, 0]), new Point([width, height]), backgroundColor)
-        );
+      this.blocks.set(
+        "0",
+        new SimpleBlock("0", new Point([0, 0]), new Point([width, height]), backgroundColor)
+      );
     }
   }
 
