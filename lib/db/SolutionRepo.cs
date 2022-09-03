@@ -270,7 +270,7 @@ public static class SolutionRepo
         return ans;
     }
 
-    public static async Task<ContestSolution> GetBestSolutionByProblemId(long problemId)
+    public static async Task<ContestSolution?> GetBestSolutionByProblemId(long problemId)
     {
         var client = await CreateTableClient();
         var response = await client.SessionExec(async session =>
@@ -289,8 +289,9 @@ public static class SolutionRepo
             ));
         response.Status.EnsureSuccess();
         var queryResponse = (ExecuteDataQueryResponse) response;
-        var row = queryResponse.Result.ResultSets[0].Rows.First();
-
+        var row = queryResponse.Result.ResultSets[0].Rows.FirstOrDefault();
+        if (row == null)
+            return null;
         var ans = new ContestSolution(row);
         return ans;
     }
