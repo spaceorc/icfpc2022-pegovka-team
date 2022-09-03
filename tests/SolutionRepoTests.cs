@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using FluentAssertions;
 using lib;
 using lib.Algorithms;
 using lib.api;
@@ -85,6 +86,20 @@ public class SolutionRepoTests
         {
             var solution = SolutionRepo.GetSolutionByIdAndScore(problemId, score).GetAwaiter().GetResult();
             Console.WriteLine(solution);
+        }
+    }
+
+    [Test]
+    public void METHOD()
+    {
+        var problemId = 3;
+        var solvers = SolutionRepo.GetAllSolvers(problemId).GetAwaiter().GetResult();
+        foreach (var solver in solvers)
+        {
+            if (solver.EndsWith("-enchanced"))
+                continue;
+            var sol = SolutionRepo.GetBestSolutionBySolverId(problemId, solver).GetAwaiter().GetResult();
+            Console.WriteLine($"{sol.SolverId} - {sol.ScoreEstimated}");
         }
     }
 }
