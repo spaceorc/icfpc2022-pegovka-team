@@ -8,6 +8,8 @@ namespace enhancer
     {
         private static void Main(string[] args)
         {
+            var excludedAlgoPrefixes = new HashSet<string>{"Layers", "Simple"};
+
             while (true)
             {
                 var scoreByProblemId = SolutionRepo.GetBestScoreByProblemIdAndSolverId().GetAwaiter().GetResult();
@@ -22,7 +24,7 @@ namespace enhancer
                 {
                     var (problemId, solverId, score) = parms;
                     var solution = solutions[(problemId, solverId)];
-                    if (!solution.SolverId.EndsWith("-enchanced"))
+                    if (!solution.SolverId.EndsWith("-enchanced") && !excludedAlgoPrefixes.Any(p => solution.SolverId.StartsWith(p)))
                     {
                         solution.SolverMeta.Enhanced_By ??= new List<string>();
                         var screen = ScreenRepo.GetProblem((int)solution.ProblemId);
