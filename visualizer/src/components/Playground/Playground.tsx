@@ -33,6 +33,9 @@ function getImageData(imgRef: HTMLImageElement) {
 }
 
 export const Playground = (): JSX.Element => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playingLine, setPlayingLine] = useState(0);
+
   const [width, setWidth] = useState(400);
   const [height, setHeight] = useState(400);
   const [expectedOpacity, _setExpectedOpacity] = useState(
@@ -169,6 +172,30 @@ console.log(result.canvas.blocks)
     return () => document.removeEventListener('keydown', handler);
   }, [handleClickRenderCanvas, playgroundCode]);
 
+  const onPlayClick = () => {
+    setIsPlaying(isPlaying => !isPlaying);
+    setPlayingLine(0);
+  };
+
+  useEffect(() => {
+    if (isPlaying) {
+        const intervalId = setInterval(() => {
+            setPlayingLine(playingLine => playingLine + 1);
+        }, 500);
+
+        return () => clearInterval(intervalId);
+    }
+  }, [isPlaying]);
+
+  const initedRef = useRef(false);
+
+  useEffect(() => {
+    if (!isPlaying) {
+        return;
+    }
+    handleClickRenderCanvas(playgroundCode.split('\n').slice(0, playingLine).join('\n'))
+  }, [handleClickRenderCanvas, isPlaying, playingLine, playgroundCode]);
+
   const total = interpretedResult?.cost + similarity;
   const diff = total - oldTotal;
 
@@ -196,6 +223,7 @@ console.log(result.canvas.blocks)
           <button onClick={handleClickGenerateInstruction}>Generate Instruction</button>
           <button onClick={() => handleClickRenderCanvas(playgroundCode)}>Render Canvas</button>
           <button onClick={handleReset}>Reset</button>
+          <button onClick={onPlayClick}>{isPlaying ? 'Stop' : 'Play'}</button>
           <label>
             <input
               type="checkbox"
