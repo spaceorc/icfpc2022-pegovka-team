@@ -180,6 +180,7 @@ export function getClickInstruction(
             blockId1: blocksList[0].id,
             blockId2: blocksList[1].id
         });
+        return instructions;
       }
 
       const maxBlock = getMaxBlock(blocks);
