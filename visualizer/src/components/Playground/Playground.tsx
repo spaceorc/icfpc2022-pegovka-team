@@ -35,6 +35,7 @@ function getImageData(imgRef: HTMLImageElement) {
 export const Playground = (): JSX.Element => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playingLine, setPlayingLine] = useState(0);
+  const [playSpeed, setPlaySpeed] = useState(200);
 
   const [width, setWidth] = useState(400);
   const [height, setHeight] = useState(400);
@@ -181,11 +182,11 @@ console.log(result.canvas.blocks)
     if (isPlaying) {
         const intervalId = setInterval(() => {
             setPlayingLine(playingLine => playingLine + 1);
-        }, 500);
+        }, playSpeed);
 
         return () => clearInterval(intervalId);
     }
-  }, [isPlaying]);
+  }, [isPlaying, playSpeed]);
 
   const initedRef = useRef(false);
 
@@ -223,7 +224,6 @@ console.log(result.canvas.blocks)
           <button onClick={handleClickGenerateInstruction}>Generate Instruction</button>
           <button onClick={() => handleClickRenderCanvas(playgroundCode)}>Render Canvas</button>
           <button onClick={handleReset}>Reset</button>
-          <button onClick={onPlayClick}>{isPlaying ? 'Stop' : 'Play'}</button>
           <label>
             <input
               type="checkbox"
@@ -232,6 +232,10 @@ console.log(result.canvas.blocks)
             />
             border
           </label>
+        </div>
+        <div>
+            <label>Play speed<input type="number" value={playSpeed} onChange={event => setPlaySpeed(Number(event.target.value))} /></label>
+            <button onClick={onPlayClick}>{isPlaying ? 'Stop' : 'Play'}</button>
         </div>
         <div>
           <div>
