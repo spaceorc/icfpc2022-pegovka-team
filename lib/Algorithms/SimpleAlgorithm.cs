@@ -7,7 +7,7 @@ public class SimpleAlgorithm : IAlgorithm
 {
     public const int CanvasSize = 400;
 
-    public IList<Move> Solve(Screen screen)
+    public (IList<Move> Moves, double Score) Solve(Screen screen)
     {
         var (bestResult, bestScore) = (new List<Move>(), double.MaxValue);
 
@@ -21,10 +21,10 @@ public class SimpleAlgorithm : IAlgorithm
             }
         }
 
-        return bestResult;
+        return (bestResult, bestScore);
     }
 
-    public (List<Move> Moves, double Score) GetResult(Screen screen, int maxBlockSize)
+    private (List<Move> Moves, double Score) GetResult(Screen screen, int maxBlockSize)
     {
         var resultMoves = new List<Move>();
 
