@@ -28,7 +28,9 @@ public class Canvas
     {
         Width = width;
         Height = height;
-        Blocks = blocks.ToDictionary(x => x.Id, x => (Block)x);
+        var simpleBlocks = blocks as SimpleBlock[] ?? blocks.ToArray();
+        Blocks = simpleBlocks.ToDictionary(x => x.Id, x => (Block)x);
+        TopLevelIdCounter = simpleBlocks.Length - 1;
     }
 
     public Canvas(Screen problem)
