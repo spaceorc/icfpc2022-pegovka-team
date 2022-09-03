@@ -59,12 +59,17 @@ public static class WorkerEntryPoint
                     sol.ProblemId,
                     enchancedScore,
                     moves.StrJoin("\n"),
-                    new SolverMeta(),
+                    new SolverMeta(sol.ScoreEstimated, sol.SolverId),
                     DateTime.UtcNow,
                     sol.SolverId + "-enchanced"
                 )).GetAwaiter().GetResult();
                 var incremented = Interlocked.Increment(ref processed);
                 Console.WriteLine($"{incremented}/{works.Count} enchanced {sol.ProblemId} {sol.SolverId}. {originalScore} -> {enchancedScore}");
+            }
+            else
+            {
+                var incremented = Interlocked.Increment(ref processed);
+                Console.WriteLine($"{incremented}/{works.Count} not enchanced {sol.ProblemId} {sol.SolverId}. {originalScore} : {enchancedScore}");
             }
         });
     }
