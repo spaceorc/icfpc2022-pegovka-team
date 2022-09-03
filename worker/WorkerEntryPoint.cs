@@ -1,18 +1,16 @@
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using lib;
+using lib.Algorithms;
 using lib.db;
-using lib.Enhancers;
 
 namespace worker;
 
 public static class WorkerEntryPoint
 {
-    public static async Task Main()
+    public static void Main()
     {
         // var releaseTag = EnvironmentVariables.Get("PEGOVKA_RELEASE_TAG");
         // var shardingToken = EnvironmentVariables.Get("PEGOVKA_SHARDING_TOKEN");
@@ -23,58 +21,22 @@ public static class WorkerEntryPoint
         // // решить задачу
         // // сохранить решение задачи в БД
 
-
-        var works = new List<ContestSolution>();
-        foreach (var problemId in await SolutionRepo.GetAllProblems())
-        {
-            var solvers = await SolutionRepo.GetAllSolvers(problemId);
-            foreach (var solverId in solvers)
-            {
-                if (!solverId.Contains("manual"))
-                    continue;
-
-                if (solverId.EndsWith("-enchanced"))
-                    continue;
-
-                var sol = await SolutionRepo.GetBestSolutionBySolverId(problemId, solverId);
-                if (sol == null)
-                {
-                    Console.WriteLine("sol is null");
-                    throw new ArgumentException();
-                }
-                works.Add(sol);
-                Console.WriteLine($"Existing solution: {sol.ProblemId} {sol.SolverId}");
-            }
-        }
-
-        Console.WriteLine($"Total works count: {works.Count}");
-
         var processed = 0;
 
-        Parallel.ForEach(works, sol =>
+        Parallel.ForEach(Enumerable.Range(1, 25), problemId =>
         {
-            var moves = Moves.Parse(sol.Solution);
-            var problem = Screen.LoadProblem((int)sol.ProblemId);
-            var originalScore = problem.CalculateScore(moves);
-            moves = Enhancer.Enhance(problem, moves);
-            var enhancedScore = problem.CalculateScore(moves);
-            if (enhancedScore < originalScore)
-            {
-                SolutionRepo.Submit(new ContestSolution(
-                    sol.ProblemId,
-                    enhancedScore,
+            var moves = GridGuidedPainterRunner.Solve(problemId);
+            var score = Screen.LoadProblem(problemId).CalculateScore(moves);
+            SolutionRepo.Submit(
+                new ContestSolution(
+                    problemId,
+                    score,
                     moves.StrJoin("\n"),
-                    new SolverMeta(sol.ScoreEstimated, sol.SolverId),
-                    sol.SolverId + "-enchanced"
-                ));
-                var incremented = Interlocked.Increment(ref processed);
-                Console.WriteLine($"{incremented}/{works.Count} enhanced {sol.ProblemId} {sol.SolverId}. {originalScore} -> {enhancedScore}");
-            }
-            else
-            {
-                var incremented = Interlocked.Increment(ref processed);
-                Console.WriteLine($"{incremented}/{works.Count} not enhanced {sol.ProblemId} {sol.SolverId}. {originalScore} : {enhancedScore}");
-            }
+                    new SolverMeta(),
+                    "GridGuidedPainter"));
+
+            var incremented = Interlocked.Increment(ref processed);
+            Console.WriteLine($"{incremented}/25 submitted score={score}");
         });
     }
 }

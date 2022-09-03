@@ -121,15 +121,17 @@ public static class GridBuilder
         }
     }
 
+    public static (Grid grid, double estimation) OptimizeCellWidths(Screen problem, Grid grid, Func<SimpleBlock, double, double> estimateBlock)
+    {
+        double estimation = double.PositiveInfinity;
+        for (int i = 0; i < grid.Rows.Count; i++)
+            (grid, estimation) = OptimizeCellWidths(problem, grid, i, estimateBlock);
+        return (grid, estimation);
+    }
+
     public static (Grid grid, double estimation) OptimizeCellWidths(Screen problem, Grid grid, int rowIndex, Func<SimpleBlock, double, double> estimateBlock)
     {
-        (grid, _) = OptimizeCellWidths(problem, grid, rowIndex, 128, estimateBlock);
-        (grid, _) = OptimizeCellWidths(problem, grid, rowIndex, 64, estimateBlock);
-        (grid, _) = OptimizeCellWidths(problem, grid, rowIndex, 32, estimateBlock);
-        (grid, _) = OptimizeCellWidths(problem, grid, rowIndex, 16, estimateBlock);
-        (grid, _) = OptimizeCellWidths(problem, grid, rowIndex, 8, estimateBlock);
-        (grid, _) = OptimizeCellWidths(problem, grid, rowIndex, 4, estimateBlock);
-        (grid, _) = OptimizeCellWidths(problem, grid, rowIndex, 2, estimateBlock);
+        (grid, _) = OptimizeCellWidths(problem, grid, rowIndex, 3, estimateBlock);
         return OptimizeCellWidths(problem, grid, rowIndex, 1, estimateBlock);
     }
 
@@ -165,6 +167,42 @@ public static class GridBuilder
                         optimized = true;
                         break;
                     }
+                }
+            }
+
+            if (!optimized)
+                return (grid, bestEstimation);
+        }
+    }
+
+    public static (Grid grid, double estimation) OptimizeCellsViaMerge(Screen problem, Grid grid, Func<SimpleBlock, double, double> estimateBlock)
+    {
+        double estimation = double.PositiveInfinity;
+        for (int i = 0; i < grid.Rows.Count; i++)
+            (grid, estimation) = OptimizeCellsViaMerge(problem, grid, i, estimateBlock);
+        return (grid, estimation);
+    }
+
+    public static (Grid grid, double estimation) OptimizeCellsViaMerge(Screen problem, Grid grid, int rowIndex, Func<SimpleBlock, double, double> estimateBlock)
+    {
+        var bestEstimation = EstimateGrid(problem, grid, estimateBlock);
+
+        while (true)
+        {
+            var optimized = false;
+            for (int i = 0; i < grid.Rows[rowIndex].Cells.Count - 1; i++)
+            {
+                var copy = grid.Copy();
+                copy.Rows[rowIndex].Cells[i].Width += copy.Rows[rowIndex].Cells[i + 1].Width;
+                copy.Rows[rowIndex].Cells.RemoveAt(i + 1);
+
+                var (optimizedGrid, nextEstimation) = OptimizeCellWidths(problem, copy, rowIndex, estimateBlock);
+                if (nextEstimation < bestEstimation)
+                {
+                    bestEstimation = nextEstimation;
+                    grid = optimizedGrid;
+                    optimized = true;
+                    break;
                 }
             }
 
@@ -215,6 +253,30 @@ public static class GridBuilder
         {
             var height = heightLeft / (rowCount - i);
             rows.Add(new GridRow(height, new List<GridCell> { new(problem.Width) }));
+            heightLeft -= height;
+        }
+
+        return new Grid(rows);
+    }
+
+    public static Grid BuildRegularGrid(Screen problem, int rowCount, int cellCount)
+    {
+        var rows = new List<GridRow>();
+        var heightLeft = problem.Height;
+        for (int i = 0; i < rowCount; i++)
+        {
+            var height = heightLeft / (rowCount - i);
+
+            var cells = new List<GridCell>();
+            var widthLeft = problem.Width;
+            for (int k = 0; k < cellCount; k++)
+            {
+                var width = widthLeft / (cellCount - k);
+                cells.Add(new GridCell(width));
+                widthLeft -= width;
+            }
+
+            rows.Add(new GridRow(height, cells));
             heightLeft -= height;
         }
 

@@ -22,7 +22,7 @@ public class Screen
 
     public static Screen LoadProblem(int problem)
     {
-        var file = FileHelper.FindFilenameUpwards($"problems/problem{problem}.png");
+        var file = Path.Combine(FileHelper.FindDirectoryUpwards("problems"), $"problem{problem}.png");
         using var image = (Image<Rgba32>)Image.Load(file, new PngDecoder());
         var result = LoadFrom(image);
         var jsonFile = Path.ChangeExtension(file, ".json");
