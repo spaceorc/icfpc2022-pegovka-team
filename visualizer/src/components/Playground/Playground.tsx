@@ -462,7 +462,7 @@ export const Playground = (): JSX.Element => {
                 />
                 <div style={{ width: "5ch" }}>
                   {interpretedResult?.instructionCosts.map((cost, index) => (
-                    <div key={index}>{cost}</div>
+                    <div key={index} onClick={() => setPlayingLine(index)}>{cost}</div>
                   ))}
                 </div>
               </div>
@@ -545,6 +545,7 @@ export const Playground = (): JSX.Element => {
         <div>Similarity: {similarity}</div>
         <div>Total: {total}</div>
         <div style={{ color: diff > 0 ? "red" : "green" }}>Diff: {diff}</div>
+        {playgroundCode.split('\n')[playingLine] && <div>Playing command: {playgroundCode.split('\n')[playingLine]}</div>}
       </div>
       <CommandsPanel
         colorRecord={colorRecord}
