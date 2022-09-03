@@ -15,7 +15,8 @@ export enum InstructionType {
   SwapInstructionType = "SWAP",
   MergeInstructionType = "MERGE",
   Rectangle = "RECTANGLE",
-  ColorMerge = 'COLOR_MERGE'
+  ColorMerge = "COLOR_MERGE",
+  AllAreMerged = "ALL_ARE_MERGED",
 }
 
 export type NopInstruction = {

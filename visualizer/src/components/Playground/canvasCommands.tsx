@@ -2,7 +2,7 @@ import { Instruction, instructionToString, InstructionType } from "../../contest
 import { MouseEvent } from "react";
 import { Block } from "../../contest-logic/Block";
 import { Point } from "../../contest-logic/Point";
-import { canMergeBlocks, getMousePoint } from "./shared/helpers";
+import { canMergeBlocks, getMousePoint, mergeAllRectangles } from "./shared/helpers";
 import { RGBA } from "../../contest-logic/Color";
 import { Interpreter } from "../../contest-logic/Interpreter";
 
@@ -29,23 +29,23 @@ function getCenterPoint(p1: Point, p2: Point) {
 }
 
 function getMaxBlock(blocks: Map<string, Block>) {
-    let maxSizeBlock: Block | null = null;
-    for (const block of blocks.values()) {
-        if (!maxSizeBlock) {
-            maxSizeBlock = block;
-            continue;
-        }
-        if (block.size.px * block.size.py > maxSizeBlock.size.px * maxSizeBlock.size.py) {
-            maxSizeBlock = block;
-        }
+  let maxSizeBlock: Block | null = null;
+  for (const block of blocks.values()) {
+    if (!maxSizeBlock) {
+      maxSizeBlock = block;
+      continue;
     }
-    return maxSizeBlock!;
+    if (block.size.px * block.size.py > maxSizeBlock.size.px * maxSizeBlock.size.py) {
+      maxSizeBlock = block;
+    }
+  }
+  return maxSizeBlock!;
 }
 
 function getAdjustentBlock(blocks: Map<string, Block>, block: Block) {
-    return [...blocks.values()].find(b => {
-        return canMergeBlocks(b, block);
-    });
+  return [...blocks.values()].find((b) => {
+    return canMergeBlocks(b, block);
+  });
 }
 
 export function getClickInstruction(
@@ -176,9 +176,9 @@ export function getClickInstruction(
 
       if (blocksList.length === 2) {
         instructions.push({
-            typ: InstructionType.MergeInstructionType,
-            blockId1: blocksList[0].id,
-            blockId2: blocksList[1].id
+          typ: InstructionType.MergeInstructionType,
+          blockId1: blocksList[0].id,
+          blockId2: blocksList[1].id,
         });
         return instructions;
       }
@@ -188,22 +188,26 @@ export function getClickInstruction(
       instructions.push({
         typ: InstructionType.MergeInstructionType,
         blockId1: maxBlock.id,
-        blockId2: mergeBlock.id
+        blockId2: mergeBlock.id,
       });
-      const otherBlocks = blocksList.filter(b => b.id !== maxBlock.id && b.id !== mergeBlock.id);
+      const otherBlocks = blocksList.filter((b) => b.id !== maxBlock.id && b.id !== mergeBlock.id);
       instructions.push({
         typ: InstructionType.MergeInstructionType,
         blockId1: otherBlocks[0].id,
-        blockId2: otherBlocks[1].id
+        blockId2: otherBlocks[1].id,
       });
       const mergedBlocks = [...getNewBlocks(interpreter, code, instructions).values()];
       instructions.push({
         typ: InstructionType.MergeInstructionType,
         blockId1: mergedBlocks[0].id,
-        blockId2: mergedBlocks[1].id
+        blockId2: mergedBlocks[1].id,
       });
 
       return instructions;
+    }
+
+    case InstructionType.AllAreMerged: {
+      return mergeAllRectangles(interpreter.initialBlocks?.length ?? 1);
     }
   }
 }

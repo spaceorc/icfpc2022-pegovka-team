@@ -685,7 +685,6 @@ export class Interpreter {
   ): InterpreterResult {
     // TypeCheck Starts
     const { blockId1, blockId2 } = mergeInstruction;
-    console.log(blockId1, blockId2, Array.from(context.blocks.keys()));
     const block1 = context.blocks.get(blockId1);
     if (!block1) {
       throw Error(`At ${line}, encountered: Block Id of [${blockId1}] is not found!`);

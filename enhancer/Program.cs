@@ -19,26 +19,49 @@ namespace enhancer
                 Console.WriteLine("got solutions from DB");
 
                 Parallel.ForEach(scoreByProblemId, parms =>
-                    //foreach (var (problemId, solverId, score) in scoreByProblemId)
                 {
                     var (problemId, solverId, score) = parms;
                     var solution = solutions[(problemId, solverId)];
-                    if (!solution.SolverId.EndsWith("-enchanced") && solution.SolverMeta.Enhancer_Id == null)
+                    if (!solution.SolverId.EndsWith("-enchanced"))
                     {
-                        Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} not enhanced");
+                        solution.SolverMeta.Enhanced_By ??= new List<string>();
                         var screen = ScreenRepo.GetProblem((int)solution.ProblemId);
-                        var eMoves = Enhancer.Enhance(screen, Moves.Parse(solution.Solution));
-                        var eSolution = new ContestSolution(
-                            solution.ProblemId,
-                            screen.CalculateScore(eMoves),
-                            eMoves.StrJoin("\n"),
-                            new SolverMeta(solution.ScoreEstimated, solution.SolverId),
-                            solution.SolverId + "-enchanced");
-                        Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} enhanced from score {solution.ScoreEstimated} to {eSolution.ScoreEstimated}");
-                        SolutionRepo.Submit(eSolution);
 
-                        solution.SolverMeta.Enhancer_Id = "default";
-                        SolutionRepo.Submit(solution);
+                        // enhancer 1
+                        if (!solution.SolverMeta.Enhanced_By.Contains("enchancer"))
+                        {
+                            Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} not enhanced");
+                            var eMoves = Enhancer.Enhance(screen, Moves.Parse(solution.Solution));
+                            var eSolution = new ContestSolution(
+                                solution.ProblemId,
+                                screen.CalculateScore(eMoves),
+                                eMoves.StrJoin("\n"),
+                                new SolverMeta(solution.ScoreEstimated, solution.SolverId),
+                                solution.SolverId + "-enchanced");
+                            Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} enhanced from score {solution.ScoreEstimated} to {eSolution.ScoreEstimated}");
+                            SolutionRepo.Submit(eSolution);
+
+                            solution.SolverMeta.Enhanced_By.Add("enchancer");
+                            SolutionRepo.Submit(solution);
+                        }
+
+                        // enhancer 2
+                        if (!solution.SolverMeta.Enhanced_By.Contains("enchancer2"))
+                        {
+                            Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} not enhanced2");
+                            var eMoves = Enhancer.Enhance2(screen, Moves.Parse(solution.Solution));
+                            var eSolution = new ContestSolution(
+                                solution.ProblemId,
+                                screen.CalculateScore(eMoves),
+                                eMoves.StrJoin("\n"),
+                                new SolverMeta(solution.ScoreEstimated, solution.SolverId),
+                                solution.SolverId + "-2-enchanced");
+                            Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} enhanced2 from score {solution.ScoreEstimated} to {eSolution.ScoreEstimated}");
+                            SolutionRepo.Submit(eSolution);
+
+                            solution.SolverMeta.Enhanced_By.Add("enchancer2");
+                            SolutionRepo.Submit(solution);
+                        }
                     }
                 });
 

@@ -110,7 +110,9 @@ public class SolutionRepoTests
         foreach (var problemId in prIds)
         {
             var sol= SolutionRepo.GetBestSolutionByProblemId(problemId).GetAwaiter().GetResult();
-            File.WriteAllText(Path.Combine(path, $"sol-{problemId}-{sol.SolverId}.txt"),sol.Solution);
+            if (sol == null)
+                continue;
+            File.WriteAllText(Path.Combine(path, $"sol-{problemId}-{sol.SolverId}-{sol.ScoreEstimated}.txt"),sol.Solution);
         }
     }
 
