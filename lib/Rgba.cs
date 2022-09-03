@@ -1,5 +1,4 @@
 using System;
-using Yandex.Cloud.Ai.Vision.V1;
 
 namespace lib;
 
@@ -16,4 +15,18 @@ public record Rgba(int R, int G, int B, int A)
     }
 
     public override string ToString() => $"[{R}, {G}, {B}, {A}]";
+
+    public virtual bool Equals(Rgba? other)
+    {
+        if (ReferenceEquals(null, other))
+            return false;
+        if (ReferenceEquals(this, other))
+            return true;
+        return R == other.R && G == other.G && B == other.B && A == other.A;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(R, G, B, A);
+    }
 }
