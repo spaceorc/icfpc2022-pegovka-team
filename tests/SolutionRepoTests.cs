@@ -112,7 +112,7 @@ public class SolutionRepoTests
             var sol= SolutionRepo.GetBestSolutionByProblemId(problemId).GetAwaiter().GetResult();
             if (sol == null)
                 continue;
-            File.WriteAllText(Path.Combine(path, $"sol-{problemId}-{sol.SolverId}.txt"),sol.Solution);
+            File.WriteAllText(Path.Combine(path, $"sol-{problemId}-{sol.SolverId}-{sol.ScoreEstimated}.txt"),sol.Solution);
         }
     }
 
