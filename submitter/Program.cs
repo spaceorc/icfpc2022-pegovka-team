@@ -12,6 +12,7 @@ namespace submitter
         {
             if (args.Contains("-handMode"))
             {
+                Console.WriteLine("running handMode");
                 var filePathSet = new HashSet<string>();
                 var handsDirectory = FileHelper.FindDirectoryUpwards("hand-solutions");
 
@@ -54,6 +55,7 @@ namespace submitter
             }
             else
             {
+                Console.WriteLine("running normalMode");
                 var api = new Api();
                 while (true)
                 {
