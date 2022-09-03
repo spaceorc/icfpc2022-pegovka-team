@@ -26,28 +26,31 @@ public class BiterState
 
     public void Apply(SolutionPart part)
     {
-        foreach (var move in part.Moves)
-            Canvas.Apply(move);
-
-        foreach (var blockId in part.BlocksToFix)
-            FixedBlockIds.Add(blockId);
+        if (part.ColorMove != null)
+            Canvas.Apply(part.ColorMove);
+        if (part.CutMove != null)
+            Canvas.Apply(part.CutMove);
+        foreach (var block in part.BlocksToFix)
+            FixedBlockIds.Add(block.Id);
     }
 }
 
 
 public class SolutionPart
 {
-    public SolutionPart(List<Move> moves, List<string> blocksToFix)
+    public ColorMove? ColorMove;
+    public Move? CutMove;
+    public SolutionPart(ColorMove? colorMove, Move? cutMove, List<Block> blocksToFix)
     {
-        Moves = moves;
+        ColorMove = colorMove;
+        CutMove = cutMove;
         BlocksToFix = blocksToFix;
     }
 
-    public List<Move> Moves;
-    public List<string> BlocksToFix;
+    public List<Block> BlocksToFix;
     public override string ToString()
     {
-        return $"{Moves.StrJoin(";")} {BlocksToFix.StrJoin(";")}";
+        return $"{ColorMove} {CutMove} {BlocksToFix.StrJoin(";")}";
     }
 }
 
@@ -69,8 +72,17 @@ public class GreedyRectBiter
         while (!state.Canvas.Blocks.Keys.All(state.FixedBlockIds.Contains))
         {
             var part = SearchBestSolutionPart(state, countdownPerSolutionPart);
+            if (part.ColorMove != null)
+            {
+                var a = part.BlocksToFix.Single();
+                var realColor = state.Screen.GetAverageColorByGeometricMedian(a);
+                part.ColorMove = part.ColorMove with { Color = realColor };
+            }
             state.Apply(part);
-            moves.AddRange(part.Moves);
+            if (part.ColorMove != null)
+                moves.Add(part.ColorMove);
+            if (part.CutMove != null)
+                moves.Add(part.CutMove);
             var penalty = state.Canvas.GetScore(state.Screen);
             if (penalty < minPenalty)
             {
@@ -85,11 +97,12 @@ public class GreedyRectBiter
     public SolutionPart SearchBestSolutionPart(BiterState state, Countdown countdown)
     {
         var blocksToFix = FindBlocksToFix(state).ToList();
-        if (blocksToFix.Any()) return new SolutionPart(new List<Move>(), blocksToFix);
+        if (blocksToFix.Any()) return new SolutionPart(null, null, blocksToFix);
         var minPenalty = double.PositiveInfinity;
         SolutionPart? bestPart = null;
         var count = 0;
-        while (!countdown.IsFinished())
+        var imp = 0;
+        while (!countdown.IsFinished() || count < 20)
         {
             var part = GenerateRandomSolutionPart(state);
             var stateCopy = state.Clone();
@@ -100,29 +113,28 @@ public class GreedyRectBiter
                 //Console.WriteLine(penalty + " " + part);
                 minPenalty = penalty;
                 bestPart = part;
+                imp++;
             }
             count++;
         }
-        //Console.WriteLine(count + " sims");
-
-
+        //Console.WriteLine($"sims: {count} imps {imp}");
         return bestPart ?? throw new Exception("Need more time");
     }
 
-    private static IEnumerable<string> FindBlocksToFix(BiterState state)
+    private static IEnumerable<Block> FindBlocksToFix(BiterState state)
     {
         var colorWithHCutBaseCost = 5 + 7;
 
         foreach (var aliveBlock in state.Canvas.Blocks.Where(b => !state.FixedBlockIds.Contains(b.Key)))
         {
             if (aliveBlock.Value.Height <= 2 || aliveBlock.Value.Width <= 2)
-                yield return aliveBlock.Key;
+                yield return aliveBlock.Value;
             else
             {
                 var similarityPenalty = state.Screen.DiffTo(aliveBlock.Value);
                 var moveCost = Move.GetCost(state.Canvas.ScalarSize, aliveBlock.Value.ScalarSize, colorWithHCutBaseCost);
                 if (similarityPenalty <= moveCost)
-                    yield return aliveBlock.Key;
+                    yield return aliveBlock.Value;
             }
         }
     }
@@ -145,8 +157,8 @@ public class GreedyRectBiter
             var penaltyA = state.Screen.DiffTo(a.BottomLeft, a.TopRight, colorA) / a.ScalarSize;
             var penaltyB = state.Screen.DiffTo(b.BottomLeft, b.TopRight, colorB) / b.ScalarSize;
             return penaltyA <= penaltyB
-                ? new SolutionPart(new List<Move> { new ColorMove(blockId, colorA), cut }, new List<string> { a.Id })
-                : new SolutionPart(new List<Move> { new ColorMove(blockId, colorB), cut }, new List<string> { b.Id });
+                ? new SolutionPart(new ColorMove(blockId, colorA), cut, new List<Block> { a })
+                : new SolutionPart(new ColorMove(blockId, colorB), cut, new List<Block> { b });
         }
 
         var activeBlocks = state.Canvas.Blocks.Keys.Where(id => !state.FixedBlockIds.Contains(id)).ToList();
@@ -176,7 +188,7 @@ public class GreedyRectBiter
             var blocks = new[] { a, b, c, d };
             var minBlock = blocks.MinBy(subBlock => subBlock.ScalarSize);
             var color = state.Screen.GetAverageColor(minBlock);
-            return new SolutionPart(new List<Move> { new ColorMove(block.Id, color), pCut }, new List<string> { minBlock.Id });
+            return new SolutionPart(new ColorMove(block.Id, color), pCut, new List<Block> { minBlock });
         }
     }
 }

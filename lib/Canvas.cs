@@ -239,7 +239,7 @@ public class Canvas
         return (a, b);
     }
 
-    public void ApplyMerge(MergeMove move)
+    public ComplexBlock ApplyMerge(MergeMove move)
     {
         var block1 = Blocks[move.Block1Id];
         var block2 = Blocks[move.Block2Id];
@@ -273,7 +273,7 @@ public class Canvas
             Blocks.Remove(block1.Id);
             Blocks.Remove(block2.Id);
             TotalCost += cost;
-            return;
+            return newBlock;
         }
 
         var leftToRight = (block1.BottomLeft.X == block2.TopRight.X ||
@@ -305,7 +305,7 @@ public class Canvas
             Blocks.Remove(block1.Id);
             Blocks.Remove(block2.Id);
             TotalCost += cost;
-            return;
+            return newBlock;
         }
 
         throw new BadMoveException($"Invalid merge {block1} {block2}");
@@ -595,7 +595,7 @@ public class Canvas
         }
     }
 
-    public void ApplyPCut(PCutMove move)
+    public (Block bottomLeftBlock, Block bottomRightBlock, Block topRightBlock, Block topLeftBlock) ApplyPCut(PCutMove move)
     {
         var block = Blocks[move.BlockId];
         var cost = Move.GetCost(ScalarSize, block.ScalarSize, move.BaseCost);
@@ -609,6 +609,7 @@ public class Canvas
         Blocks[topRightBlock.Id] = topRightBlock;
         Blocks[topLeftBlock.Id] = topLeftBlock;
         TotalCost += cost;
+        return (bottomLeftBlock, bottomRightBlock, topRightBlock, topLeftBlock);
     }
 
     public Screen ToScreen()
