@@ -14,7 +14,8 @@ export enum InstructionType {
   HorizontalCutInstructionType = "HORIZONTAL_CUT",
   SwapInstructionType = "SWAP",
   MergeInstructionType = "MERGE",
-  Rectangle = "RECTANGLE"
+  Rectangle = "RECTANGLE",
+  ColorMerge = 'COLOR_MERGE'
 }
 
 export type NopInstruction = {

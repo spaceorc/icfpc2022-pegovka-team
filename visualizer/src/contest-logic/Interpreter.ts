@@ -2,6 +2,7 @@
 
 import { BlockType, ComplexBlock, SimpleBlock } from "./Block";
 import { Canvas } from "./Canvas";
+import { RGBA } from "./Color";
 import {
   ColorInstruction,
   HorizontalCutInstruction,
@@ -57,6 +58,23 @@ export class Interpreter {
     const instructionCosts = [];
     for (let index = 0; index < program.instructions.length; index++) {
       const result = this.interpret(index, canvas, program.instructions[index]);
+      canvas = result.canvas;
+      instructionCosts.push(result.cost);
+      totalCost += result.cost;
+    }
+    return new InterpreterResult(canvas, totalCost, instructionCosts);
+  }
+
+  runInstructions(instructions: Instruction[]): InterpreterResult {
+    let canvas = new Canvas(
+        400,
+        400,
+        new RGBA([255, 255, 255, 255])
+      );
+    let totalCost = 0;
+    const instructionCosts = [];
+    for (let index = 0; index < instructions.length; index++) {
+      const result = this.interpret(index, canvas, instructions[index]);
       canvas = result.canvas;
       instructionCosts.push(result.cost);
       totalCost += result.cost;

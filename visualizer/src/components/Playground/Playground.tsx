@@ -195,6 +195,12 @@ console.log(result.canvas.blocks)
     handleClickRenderCanvas(playgroundCode.split('\n').slice(0, playingLine).join('\n'))
   }, [handleClickRenderCanvas, isPlaying, playingLine, playgroundCode]);
 
+  const onMakeCode = () => {
+    const code = '';
+
+    setPlaygroundCode(code);
+  };
+
   const total = interpretedResult?.cost + similarity;
   const diff = total - oldTotal;
 
@@ -222,6 +228,7 @@ console.log(result.canvas.blocks)
           <button onClick={handleClickGenerateInstruction}>Generate Instruction</button>
           <button onClick={() => handleClickRenderCanvas(playgroundCode)}>Render Canvas</button>
           <button onClick={handleReset}>Reset</button>
+          {/* <button onClick={onMakeCode}>Make code</button> */}
           <label>
             <input
               type="checkbox"

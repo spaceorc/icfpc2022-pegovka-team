@@ -2,7 +2,7 @@ import { Instruction, instructionToString, InstructionType } from "../../contest
 import { MouseEvent } from "react";
 import { Block } from "../../contest-logic/Block";
 import { Point } from "../../contest-logic/Point";
-import { getMousePoint } from "./shared/helpers";
+import { canMergeBlocks, getMousePoint } from "./shared/helpers";
 import { RGBA } from "../../contest-logic/Color";
 import { Interpreter } from "../../contest-logic/Interpreter";
 
@@ -10,21 +10,43 @@ let prevPoint: Point | null = null;
 let prevSelectedBlockId: string | undefined;
 
 function getBlockByPoint(blocks: Map<string, Block>, point: Point) {
-    return [...blocks.values()].find(block => point.isInside(block.bottomLeft, block.topRight));
+  return [...blocks.values()].find((block) => point.isInside(block.bottomLeft, block.topRight));
 }
 
 function getNewBlocks(code: string, instructions: Instruction[]) {
-    const interpreter = new Interpreter();
-    const result = interpreter.run(`${code}\n${instructions.map(i => instructionToString(i)).join('\n')}`);
+  const interpreter = new Interpreter();
+  const result = interpreter.run(
+    `${code}\n${instructions.map((i) => instructionToString(i)).join("\n")}`
+  );
 
-    return result.canvas.blocks;
+  return result.canvas.blocks;
 }
 
 function getCenterPoint(p1: Point, p2: Point) {
-    const diffX = p2.px - p1.px;
-    const diffY = p2.py - p1.py;
+  const diffX = p2.px - p1.px;
+  const diffY = p2.py - p1.py;
 
-    return new Point([Math.trunc(p2.px - diffX / 2), Math.trunc(p2.py - diffY / 2)]);
+  return new Point([Math.trunc(p2.px - diffX / 2), Math.trunc(p2.py - diffY / 2)]);
+}
+
+function getMaxBlock(blocks: Map<string, Block>) {
+    let maxSizeBlock: Block | null = null;
+    for (const block of blocks.values()) {
+        if (!maxSizeBlock) {
+            maxSizeBlock = block;
+            continue;
+        }
+        if (block.size.px * block.size.py > maxSizeBlock.size.px * maxSizeBlock.size.py) {
+            maxSizeBlock = block;
+        }
+    }
+    return maxSizeBlock!;
+}
+
+function getAdjustentBlock(blocks: Map<string, Block>, block: Block) {
+    return [...blocks.values()].find(b => {
+        return canMergeBlocks(b, block);
+    });
 }
 
 export function getClickInstruction(
@@ -33,7 +55,7 @@ export function getClickInstruction(
   instrument: InstructionType,
   blocks: Map<string, Block>,
   color: RGBA,
-  code: string,
+  code: string
 ): Instruction | Instruction[] | undefined {
   if (!blocks) {
   }
@@ -120,7 +142,7 @@ export function getClickInstruction(
         blockId: prevSelectedBlockId,
         point: prevPoint,
       };
-      instructions.push(firstCut)
+      instructions.push(firstCut);
       const blocks1 = getNewBlocks(code, instructions);
       const block1 = getBlockByPoint(blocks1, point);
       const secondCut: Instruction = {
@@ -128,19 +150,48 @@ export function getClickInstruction(
         blockId: block1!.id,
         point,
       };
-      instructions.push(secondCut)
+      instructions.push(secondCut);
       const blocks2 = getNewBlocks(code, instructions);
       const block2 = getBlockByPoint(blocks2, getCenterPoint(prevPoint, point));
       const colorMove: Instruction = {
         typ: InstructionType.ColorInstructionType,
         color,
-        blockId: block2!.id
-      }
+        blockId: block2!.id,
+      };
       instructions.push(colorMove);
-
 
       prevPoint = null;
       prevSelectedBlockId = undefined;
+      return instructions;
+    }
+
+    case InstructionType.ColorMerge: {
+      const colorMove: Instruction = {
+        typ: InstructionType.ColorInstructionType,
+        color,
+        blockId: currentBlock!.id,
+      };
+      const instructions: Instruction[] = [colorMove];
+      const maxBlock = getMaxBlock(blocks);
+      const mergeBlock = getAdjustentBlock(blocks, maxBlock)!;
+      instructions.push({
+        typ: InstructionType.MergeInstructionType,
+        blockId1: maxBlock.id,
+        blockId2: mergeBlock.id
+      });
+      const otherBlocks = [...blocks.values()].filter(b => b.id !== maxBlock.id && b.id !== mergeBlock.id);
+      instructions.push({
+        typ: InstructionType.MergeInstructionType,
+        blockId1: otherBlocks[0].id,
+        blockId2: otherBlocks[1].id
+      });
+      const mergedBlocks = [...getNewBlocks(code, instructions).values()];
+      instructions.push({
+        typ: InstructionType.MergeInstructionType,
+        blockId1: mergedBlocks[0].id,
+        blockId2: mergedBlocks[1].id
+      });
+
       return instructions;
     }
   }
