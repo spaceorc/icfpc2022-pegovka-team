@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Ydb.Sdk;
@@ -112,7 +113,7 @@ public static class SolutionRepo
                 DECLARE $problem_id AS Int64;
                 DECLARE $score_estimated AS Double;
 
-                SELECT problem_id, max(score_estimated) as score from Solutions Group by problem_id;",
+                SELECT problem_id, min(score_estimated) as score from Solutions Group by problem_id;",
                 txControl: TxControl.BeginSerializableRW().Commit(),
                 parameters: new Dictionary<string, YdbValue> {}
 
@@ -154,6 +155,55 @@ public static class SolutionRepo
 
         var ans = new ContestSolution(row);
         return ans;
+    }
+
+    public static async Task<ContestSolution> GetBestSolutionBySolverId(long problemId, string solverId)
+    {
+        var client = await CreateTableClient();
+        var response = await client.SessionExec(async session =>
+
+            await session.ExecuteDataQuery(
+                query: @"
+                DECLARE $problem_id AS Int64;
+                DECLARE $solver_id AS Utf8;
+
+                SELECT * from Solutions where problem_id=$problem_id and solver_id=$solver_id order by score_estimated limit 1",
+                txControl: TxControl.BeginSerializableRW().Commit(),
+                parameters: new Dictionary<string, YdbValue>
+                {
+                    { "$problem_id", YdbValue.MakeInt64(problemId)},
+                    { "$solver_id", YdbValue.MakeUtf8(solverId)},
+                }
+
+            ));
+        response.Status.EnsureSuccess();
+        var queryResponse = (ExecuteDataQueryResponse) response;
+        var row = queryResponse.Result.ResultSets[0].Rows.First();
+
+        var ans = new ContestSolution(row);
+        return ans;
+    }
+
+    public static async Task<string[]> GetAllSolvers(long problemId)
+    {
+        var client = await CreateTableClient();
+        var response = await client.SessionExec(async session =>
+
+            await session.ExecuteDataQuery(
+                query: @"
+                DECLARE $problem_id AS Int64;
+
+                SELECT distinct solver_id from Solutions where problem_id=$problem_id",
+                txControl: TxControl.BeginSerializableRW().Commit(),
+                parameters: new Dictionary<string, YdbValue>
+                {
+                    { "$problem_id", YdbValue.MakeInt64(problemId)},
+                }
+
+            ));
+        response.Status.EnsureSuccess();
+        var queryResponse = (ExecuteDataQueryResponse) response;
+        return queryResponse.Result.ResultSets[0].Rows.Select(x => (string?)x["solver_id"] ?? throw new Exception("WTF")).ToArray();
     }
 
     private static async Task<TableClient> CreateTableClient()
