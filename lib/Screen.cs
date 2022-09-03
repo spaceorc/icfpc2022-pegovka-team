@@ -148,7 +148,7 @@ public class Screen
             pixels.Add(Pixels[x, y]);
         }
 
-        return geometricMedian.GetGeometricMedian(pixels);
+        return geometricMedian.GetGeometricMedian(this, block);
     }
 
     public void ToImage(string pngPath)

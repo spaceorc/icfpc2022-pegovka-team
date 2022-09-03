@@ -24,7 +24,7 @@ public class SimpleAlgorithm : IAlgorithm
         return bestResult;
     }
 
-    private (List<Move> Moves, double Score) GetResult(Screen screen, int maxBlockSize)
+    public (List<Move> Moves, double Score) GetResult(Screen screen, int maxBlockSize)
     {
         var resultMoves = new List<Move>();
 
