@@ -74,6 +74,7 @@ namespace submitter
                     var scoreByProblemId = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
                     foreach (var (problemId, score) in scoreByProblemId)
                     {
+                        Console.WriteLine($"Processing problem {problemId}");
                         var solution = SolutionRepo.GetSolutionByProblemIdAndScore(problemId, score).GetAwaiter().GetResult();
                         if (solution.SubmissionId == null)
                         {
@@ -92,6 +93,7 @@ namespace submitter
                             SolutionRepo.Submit(solution);
                         }
                     }
+                    Console.WriteLine("sleeping");
                     Thread.Sleep(60_000);
                 }
             }

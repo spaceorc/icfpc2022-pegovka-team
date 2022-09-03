@@ -365,6 +365,19 @@ export const Playground = (): JSX.Element => {
 
   const [shiftBy, setShiftBy] = useState("");
 
+  const downloadUrl = () => {
+    const blob = new Blob([playgroundCode], { type: "text/plain; charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.setAttribute("href", url);
+    a.setAttribute("download", `problem-${exampleId}-${total}_${Date.now()}.txt`);
+    a.click();
+    a.remove();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 10 * 1000);
+  };
+
   return (
     <div
       style={{
@@ -442,14 +455,16 @@ export const Playground = (): JSX.Element => {
             </label>
             <br />
             <div>
-              code{" "}
-              <button
-                onClick={() => setPlaygroundCode(shiftIdsBy(Number(shiftBy), playgroundCode))}
-              >
-                shift by {shiftBy}
-              </button>{" "}
-              <input type="text" value={shiftBy} onChange={(e) => setShiftBy(e.target.value)} />
-              <br />
+              <div>
+                code{" "}
+                <button
+                  onClick={() => setPlaygroundCode(shiftIdsBy(Number(shiftBy), playgroundCode))}
+                >
+                  shift by:
+                </button>{" "}
+                <input type="text" value={shiftBy} onChange={(e) => setShiftBy(e.target.value)} />
+                <button onClick={() => downloadUrl()}>download</button>
+              </div>
               <div
                 style={{
                   display: "flex",
