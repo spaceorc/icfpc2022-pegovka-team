@@ -1,6 +1,7 @@
 ﻿using lib;
 using lib.api;
 using lib.db;
+using MongoDB.Bson.Serialization.Conventions;
 using Spectre.Console;
 
 namespace submitter
@@ -9,33 +10,47 @@ namespace submitter
     {
         private static void Main(string[] args)
         {
-            if (args.Contains("handMode"))
+            if (args.Contains("-handMode"))
             {
                 var filePathSet = new HashSet<string>();
                 var handsDirectory = FileHelper.FindDirectoryUpwards("hand-solutions");
-                var filePaths = Directory.GetFiles(handsDirectory, "*.txt");
-                foreach (var filePath in filePaths)
+
+                while (true)
                 {
-                    if (filePathSet.Contains(filePath))
-                        continue;
-                    filePathSet.Add(filePath);
-                    var fileName = filePath.Split('\\').Last();
-                    var nameParts = fileName.Split('-');
-                    if (!nameParts[0].Contains("problem"))
-                        continue;
-                    var problemId = int.Parse(nameParts[1]);
-                    var program = File.ReadAllText(filePath);
-                    var moves = Moves.Parse(program);
-                    var screen = Screen.LoadProblem(problemId);
-                    var score = screen.CalculateScore(moves);
-                    SolutionRepo.Submit(new ContestSolution(problemId, score, program, new SolverMeta(), "manual"));
+                    var filePaths = Directory.GetFiles(handsDirectory, "*.txt");
+                    foreach (var filePath in filePaths)
+                    {
+                        if (filePathSet.Contains(filePath))
+                            continue;
+                        filePathSet.Add(filePath);
+                        var fileName = filePath.Split('\\').Last();
+                        var nameParts = fileName.Split('-');
+                        if (!nameParts[0].Contains("problem"))
+                            continue;
+                        var problemId = int.Parse(nameParts[1]);
+                        var program = File.ReadAllText(filePath);
+                        var moves = Moves.Parse(program);
+                        var screen = Screen.LoadProblem(problemId);
+                        var score = screen.CalculateScore(moves);
+                        var sol = SolutionRepo.GetBestSolutionBySolverId(problemId, "manual").GetAwaiter().GetResult();
+                        if (sol.Solution == program)
+                        {
+                            Console.WriteLine("dubble!");
+                            continue;
+                        }
+
+                        var solution = new ContestSolution(problemId, score, program, new SolverMeta(), "manual");
+                        SolutionRepo.Submit(solution);
+                        Console.WriteLine(solution);
+                    }
+                    Thread.Sleep(60_000);
                 }
-                var scoresById = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
-                foreach (var (problemId, score) in scoresById)
-                {
-                    var solution = SolutionRepo.GetSolutionByProblemIdAndScore(problemId, score).GetAwaiter().GetResult();
-                    Console.WriteLine(solution);
-                }
+                // var scoresById = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
+                // foreach (var (problemId, score) in scoresById)
+                // {
+                //     var solution = SolutionRepo.GetSolutionByProblemIdAndScore(problemId, score).GetAwaiter().GetResult();
+                //     Console.WriteLine(solution);
+                // }
             }
             else
             {
@@ -65,9 +80,9 @@ namespace submitter
                             SolutionRepo.Submit(solution);
                         }
                     }
+                    Thread.Sleep(60_000);
                 }
             }
-            Thread.Sleep(60_000);
         }
 
         private static void RefreshDashboard(List<string> logMessages, Api api, SubmissionRepo submissionRepo)
