@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using lib.Origami;
 using SixLabors.ImageSharp;
@@ -10,6 +11,7 @@ namespace lib;
 public class Screen
 {
     private const double Alpha = 0.005;
+    private readonly GeometricMedian geometricMedian = new();
     public Rgba[,] Pixels;
 
     public int Width => Pixels.GetLength(0);
@@ -110,6 +112,19 @@ public class Screen
             g / pixelsCount,
             b / pixelsCount,
             a / pixelsCount);
+    }
+
+    public Rgba GetAverageColorByGeometricMedian(Block block)
+    {
+        var pixels = new List<Rgba>();
+
+        for (var x = block.BottomLeft.X; x < block.TopRight.X; x++)
+        for (var y = block.BottomLeft.Y; y < block.TopRight.Y; y++)
+        {
+            pixels.Add(Pixels[x, y]);
+        }
+
+        return geometricMedian.GetGeometricMedian(pixels);
     }
 
     public void ToImage(string pngPath)
