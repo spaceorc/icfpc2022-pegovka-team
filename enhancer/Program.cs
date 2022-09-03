@@ -26,10 +26,10 @@ namespace enhancer
                             new SolverMeta(solution.ScoreEstimated, solution.SolverId),
                              solution.SolverId+"-enchanced");
                         Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} enhanced from score {solution.ScoreEstimated} to {eSolution.ScoreEstimated}");
-                        SolutionRepo.Submit(eSolution).GetAwaiter().GetResult();
+                        SolutionRepo.Submit(eSolution);
 
                         solution.SolverMeta.Enhancer_Id = "default";
-                        SolutionRepo.Submit(solution).GetAwaiter().GetResult();
+                        SolutionRepo.Submit(solution);
                     }
                 }
 

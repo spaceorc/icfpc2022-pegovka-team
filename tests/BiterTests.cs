@@ -69,7 +69,7 @@ public class BiterTests
                 Console.WriteLine(minScore + " " + DateTime.Now);
             }
         }
-        await SolutionRepo.Submit(new ContestSolution(problemId, minScore, bestRes, new SolverMeta(), solver.ToString()!));
+        await SolutionRepo.SubmitAsync(new ContestSolution(problemId, minScore, bestRes, new SolverMeta(), solver.ToString()!));
         Console.WriteLine(bestRes);
         //var response = new Api().PostSolution(problemId, res);
         //Console.WriteLine(response?.Submission_Id);

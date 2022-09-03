@@ -61,7 +61,7 @@ public static class WorkerEntryPoint
                     moves.StrJoin("\n"),
                     new SolverMeta(sol.ScoreEstimated, sol.SolverId),
                     sol.SolverId + "-enchanced"
-                )).GetAwaiter().GetResult();
+                ));
                 var incremented = Interlocked.Increment(ref processed);
                 Console.WriteLine($"{incremented}/{works.Count} enhanced {sol.ProblemId} {sol.SolverId}. {originalScore} -> {enhancedScore}");
             }

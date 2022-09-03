@@ -27,7 +27,7 @@ public class SolutionRepoTests
 
             var solution = new ContestSolution(problemId, (long) score,
                 commands, new SolverMeta(), nameof(SimpleAlgorithm));
-            SolutionRepo.Submit(solution).GetAwaiter().GetResult();
+            SolutionRepo.Submit(solution);
         }
         catch (Exception e)
         {
@@ -77,7 +77,7 @@ public class SolutionRepoTests
 
             // api.PostSolution(int.Parse(nameParts[3]), File.ReadAllText(filename));
             var score = canvas.GetScore(screen);
-            SolutionRepo.Submit(new ContestSolution(problemId, score, program, new SolverMeta(), "manual")).GetAwaiter().GetResult();
+            SolutionRepo.Submit(new ContestSolution(problemId, score, program, new SolverMeta(), "manual"));
         }
         var scoresById = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
         foreach (var (problemId, score) in scoresById)

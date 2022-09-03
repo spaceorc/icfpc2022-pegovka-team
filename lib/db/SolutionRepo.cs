@@ -89,7 +89,7 @@ public class SolverMeta
 
 public static class SolutionRepo
 {
-    public static async Task Submit(ContestSolution solution)
+    public static async Task SubmitAsync(ContestSolution solution)
     {
         var client = await CreateTableClient();
         var response = await client.SessionExec(async session =>
@@ -123,6 +123,11 @@ public static class SolutionRepo
                 }
             ));
         response.Status.EnsureSuccess();
+    }
+
+    public static void Submit(ContestSolution solution)
+    {
+        SubmitAsync(solution).GetAwaiter().GetResult();
     }
 
     public static async Task<List<(long problemId, long score)>> GetBestScoreByProblemId()

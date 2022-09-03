@@ -24,7 +24,7 @@ public class GridPrinterTests
             Console.WriteLine($"Score: {score} cellSize: {cellSize}");
             var solution = moves.StrJoin("\n");
             await ClipboardService.SetTextAsync(solution);
-            await SolutionRepo.Submit(new ContestSolution(problemId, (int)score, solution, new SolverMeta(), DateTime.Now, nameof(GridPrinterAlgorithm)));
+            await SolutionRepo.SubmitAsync(new ContestSolution(problemId, (int)score, solution, new SolverMeta(), nameof(GridPrinterAlgorithm)));
         }
     }
 }
