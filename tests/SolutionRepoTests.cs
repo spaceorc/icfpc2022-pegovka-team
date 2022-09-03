@@ -95,6 +95,8 @@ public class SolutionRepoTests
         {
             if (solver.EndsWith("-enchanced"))
                 continue;
+            if (solver.EndsWith("-enhanced"))
+                continue;
             var sol = SolutionRepo.GetBestSolutionBySolverId(problemId, solver).GetAwaiter().GetResult();
             Console.WriteLine($"{sol.SolverId} - {sol.ScoreEstimated}");
         }

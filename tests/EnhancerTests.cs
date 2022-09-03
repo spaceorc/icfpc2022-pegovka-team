@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
 using lib;
-using lib.Enchancers;
+using lib.Enhancers;
 using NUnit.Framework;
 
 namespace tests;
 
-public class EnchancerTests
+public class EnhancerTests
 {
     [Test]
     public void Run()
@@ -26,7 +26,7 @@ public class EnchancerTests
         canvas.ToScreen().ToImage($"{filename}_original.png");
 
         // Console.WriteLine("Enchanced cuts:");
-        // var enchanced = new CutEnchancer().Enchance(problem, moves);
+        // var enchanced = new CutEnhancer().Enhance(problem, moves);
         // canvas = new Canvas(problem);
         // foreach (var move in enchanced)
         // {
@@ -39,7 +39,7 @@ public class EnchancerTests
         // canvas.ToScreen().ToImage($"{filename}_enchanced_cuts.png");
         //
         // Console.WriteLine("Enchanced colors:");
-        // enchanced = new ColorEnchancer().Enchance(problem, moves);
+        // enchanced = new ColorEnhancer().Enhance(problem, moves);
         // canvas = new Canvas(problem);
         // foreach (var move in enchanced)
         // {
@@ -51,10 +51,10 @@ public class EnchancerTests
         // Console.WriteLine(canvas.GetScore(problem));
         // canvas.ToScreen().ToImage($"{filename}_enchanced_colors.png");
 
-        Console.WriteLine("Enchanced all:");
-        var enchanced = new CombinedEnchancer(new CutEnchancer(), new ColorEnchancer()).Enchance(problem, moves);
+        Console.WriteLine("Enhanced all:");
+        var enhanced = new CombinedEnhancer(new CutEnhancer(), new ColorEnhancer()).Enhance(problem, moves);
         canvas = new Canvas(problem);
-        foreach (var move in enchanced)
+        foreach (var move in enhanced)
         {
             Console.WriteLine(move);
             canvas.Apply(move);
@@ -62,7 +62,7 @@ public class EnchancerTests
 
         Console.WriteLine();
         Console.WriteLine(canvas.GetScore(problem));
-        canvas.ToScreen().ToImage($"{filename}_enchanced_all.png");
+        canvas.ToScreen().ToImage($"{filename}_enhanced_all.png");
     }
 
     [Test]

@@ -1,33 +1,33 @@
 using System;
 using System.Collections.Generic;
 
-namespace lib.Enchancers;
+namespace lib.Enhancers;
 
-public static class Enchancer
+public static class Enhancer
 {
-    public static List<Move> Enchance(Screen problem, List<Move> moves)
+    public static List<Move> Enhance(Screen problem, List<Move> moves)
     {
-        return new CombinedEnchancer(new CutEnchancer(), new ColorEnchancer()).Enchance(problem, moves);
+        return new CombinedEnhancer(new CutEnhancer(), new ColorEnhancer()).Enhance(problem, moves);
     }
 }
 
-public class CombinedEnchancer : ISolutionEnchancer
+public class CombinedEnhancer : ISolutionEnhancer
 {
-    private readonly ISolutionEnchancer[] enchancers;
+    private readonly ISolutionEnhancer[] enhancers;
 
-    public CombinedEnchancer(params ISolutionEnchancer[] enchancers)
+    public CombinedEnhancer(params ISolutionEnhancer[] enhancers)
     {
-        this.enchancers = enchancers;
+        this.enhancers = enhancers;
     }
 
-    public List<Move> Enchance(Screen problem, List<Move> moves)
+    public List<Move> Enhance(Screen problem, List<Move> moves)
     {
         var bestScore = GetScore(problem, moves);
 
         while (true)
         {
-            foreach (var enchancer in enchancers)
-                moves = enchancer.Enchance(problem, moves);
+            foreach (var enhancer in enhancers)
+                moves = enhancer.Enhance(problem, moves);
             var score = GetScore(problem, moves);
             if (score < bestScore)
             {
@@ -36,7 +36,7 @@ public class CombinedEnchancer : ISolutionEnchancer
             }
 
             if (score > bestScore)
-                throw new Exception("Enchancers shouldn't make bad solutions");
+                throw new Exception("Enhancers shouldn't make bad solutions");
 
             return moves;
         }

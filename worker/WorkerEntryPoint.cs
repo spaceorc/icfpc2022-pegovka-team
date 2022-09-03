@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using lib;
 using lib.db;
-using lib.Enchancers;
+using lib.Enhancers;
 
 namespace worker;
 
@@ -33,6 +33,9 @@ public static class WorkerEntryPoint
                 if (!solverId.Contains("manual"))
                     continue;
 
+                if (solverId.EndsWith("-enhanced"))
+                    continue;
+
                 if (solverId.EndsWith("-enchanced"))
                     continue;
 
@@ -51,25 +54,25 @@ public static class WorkerEntryPoint
             var moves = Moves.Parse(sol.Solution);
             var problem = Screen.LoadProblem((int)sol.ProblemId);
             var originalScore = problem.CalculateScore(moves);
-            moves = Enchancer.Enchance(problem, moves);
-            var enchancedScore = problem.CalculateScore(moves);
-            if (enchancedScore < originalScore)
+            moves = Enhancer.Enhance(problem, moves);
+            var enhancedScore = problem.CalculateScore(moves);
+            if (enhancedScore < originalScore)
             {
                 SolutionRepo.Submit(new ContestSolution(
                     sol.ProblemId,
-                    enchancedScore,
+                    enhancedScore,
                     moves.StrJoin("\n"),
                     new SolverMeta(sol.ScoreEstimated, sol.SolverId),
                     DateTime.UtcNow,
-                    sol.SolverId + "-enchanced"
+                    sol.SolverId + "-enhanced"
                 )).GetAwaiter().GetResult();
                 var incremented = Interlocked.Increment(ref processed);
-                Console.WriteLine($"{incremented}/{works.Count} enchanced {sol.ProblemId} {sol.SolverId}. {originalScore} -> {enchancedScore}");
+                Console.WriteLine($"{incremented}/{works.Count} enhanced {sol.ProblemId} {sol.SolverId}. {originalScore} -> {enhancedScore}");
             }
             else
             {
                 var incremented = Interlocked.Increment(ref processed);
-                Console.WriteLine($"{incremented}/{works.Count} not enchanced {sol.ProblemId} {sol.SolverId}. {originalScore} : {enchancedScore}");
+                Console.WriteLine($"{incremented}/{works.Count} not enhanced {sol.ProblemId} {sol.SolverId}. {originalScore} : {enhancedScore}");
             }
         });
     }
