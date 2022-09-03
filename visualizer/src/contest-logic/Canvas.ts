@@ -15,16 +15,25 @@ export class Canvas {
 
   blocks: Map<string, Block>;
 
-  constructor(width: number, height: number, backgroundColor: Color) {
+  constructor(width: number, height: number, backgroundColor: Color, blocks?: Block[]) {
     this.width = width;
     this.height = height;
 
     this.backgroundColor = backgroundColor;
     this.blocks = new Map();
-    this.blocks.set(
-      "0",
-      new SimpleBlock("0", new Point([0, 0]), new Point([width, height]), backgroundColor)
-    );
+    if (blocks) {
+        blocks.forEach(block => {
+            this.blocks.set(
+                block.id,
+                block
+            )
+        })
+    } else {
+        this.blocks.set(
+          "0",
+          new SimpleBlock("0", new Point([0, 0]), new Point([width, height]), backgroundColor)
+        );
+    }
   }
 
   get size(): Point {

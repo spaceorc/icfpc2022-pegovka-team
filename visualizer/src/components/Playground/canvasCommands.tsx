@@ -13,8 +13,7 @@ function getBlockByPoint(blocks: Map<string, Block>, point: Point) {
   return [...blocks.values()].find((block) => point.isInside(block.bottomLeft, block.topRight));
 }
 
-function getNewBlocks(code: string, instructions: Instruction[]) {
-  const interpreter = new Interpreter();
+function getNewBlocks(interpreter: Interpreter, code: string, instructions: Instruction[]) {
   const result = interpreter.run(
     `${code}\n${instructions.map((i) => instructionToString(i)).join("\n")}`
   );
@@ -55,7 +54,8 @@ export function getClickInstruction(
   instrument: InstructionType,
   blocks: Map<string, Block>,
   color: RGBA,
-  code: string
+  code: string,
+  interpreter: Interpreter
 ): Instruction | Instruction[] | undefined {
   if (!blocks) {
   }
@@ -143,7 +143,7 @@ export function getClickInstruction(
         point: prevPoint,
       };
       instructions.push(firstCut);
-      const blocks1 = getNewBlocks(code, instructions);
+      const blocks1 = getNewBlocks(interpreter, code, instructions);
       const block1 = getBlockByPoint(blocks1, point);
       const secondCut: Instruction = {
         typ: InstructionType.PointCutInstructionType,
@@ -151,7 +151,7 @@ export function getClickInstruction(
         point,
       };
       instructions.push(secondCut);
-      const blocks2 = getNewBlocks(code, instructions);
+      const blocks2 = getNewBlocks(interpreter, code, instructions);
       const block2 = getBlockByPoint(blocks2, getCenterPoint(prevPoint, point));
       const colorMove: Instruction = {
         typ: InstructionType.ColorInstructionType,
@@ -196,7 +196,7 @@ export function getClickInstruction(
         blockId1: otherBlocks[0].id,
         blockId2: otherBlocks[1].id
       });
-      const mergedBlocks = [...getNewBlocks(code, instructions).values()];
+      const mergedBlocks = [...getNewBlocks(interpreter, code, instructions).values()];
       instructions.push({
         typ: InstructionType.MergeInstructionType,
         blockId1: mergedBlocks[0].id,

@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { BlockType, ComplexBlock, SimpleBlock } from "./Block";
+import { Block, BlockType, ComplexBlock, SimpleBlock } from "./Block";
 import { Canvas } from "./Canvas";
 import { RGBA } from "./Color";
 import {
@@ -36,9 +36,11 @@ export class InterpreterResult {
 
 export class Interpreter {
   topLevelIdCounter: number;
+  initialBlocks?: Block[];
 
-  constructor() {
+  constructor(initialBlocks?: Block[]) {
     this.topLevelIdCounter = 0;
+    this.initialBlocks = initialBlocks;
   }
 
   run(code: string): InterpreterResult {
@@ -52,7 +54,8 @@ export class Interpreter {
     let canvas = new Canvas(
       program.metaData.width,
       program.metaData.height,
-      program.metaData.backgroundColor
+      program.metaData.backgroundColor,
+      this.initialBlocks
     );
     let totalCost = 0;
     const instructionCosts = [];
@@ -69,7 +72,8 @@ export class Interpreter {
     let canvas = new Canvas(
         400,
         400,
-        new RGBA([255, 255, 255, 255])
+        new RGBA([255, 255, 255, 255]),
+        this.initialBlocks
       );
     let totalCost = 0;
     const instructionCosts = [];

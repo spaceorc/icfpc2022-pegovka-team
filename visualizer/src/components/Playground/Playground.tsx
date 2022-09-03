@@ -1,5 +1,5 @@
 import { Canvas } from "../../contest-logic/Canvas";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { RGBA } from "../../contest-logic/Color";
 import { Interpreter, InterpreterResult } from "../../contest-logic/Interpreter";
 import { Instruction, instructionToString, InstructionType } from "../../contest-logic/Instruction";
@@ -8,13 +8,14 @@ import { RandomInstructionGenerator } from "../../contest-logic/RandomInstructio
 import { CommandsPanel } from "./commandPanel";
 
 import { Point } from "../../contest-logic/Point";
-import { Block } from "../../contest-logic/Block";
+import { Block, SimpleBlock } from "../../contest-logic/Block";
 import { getClickInstruction } from "./canvasCommands";
 import { getMousePoint } from "./shared/helpers";
 import { SimilarityChecker } from "../../contest-logic/SimilarityCheck";
 import { Parser } from "../../contest-logic/Parser";
 
-const modules = import.meta.glob("../../../../problems/*.png", { as: "url", eager: true });
+const images = import.meta.glob("../../../../problems/*.png", { as: "url", eager: true });
+const presets = import.meta.glob("../../../../problems/*.json", { eager: true });
 
 function getImageData(imgRef: HTMLImageElement) {
   const canvas = document.createElement("canvas");
@@ -50,6 +51,21 @@ export const Playground = (): JSX.Element => {
   const [exampleId, _setExampleId] = useState(
     sessionStorage.getItem("exampleId") ? Number(sessionStorage.getItem("exampleId")) : 1
   );
+
+  const interpreter = useMemo(() => {
+    const preset = presets[`../../../../problems/problem${exampleId}.json`];
+    console.log(presets, preset);
+    const blocks = preset && (preset as any).blocks.map((block: { blockId: string; bottomLeft: [px: number, py: number] | undefined; topRight: [px: number, py: number] | undefined; color: [number, number, number, number] | undefined; }) => {
+        return new SimpleBlock(
+            block.blockId,
+            new Point(block.bottomLeft),
+            new Point(block.topRight),
+            new RGBA(block.color)
+        );
+    });
+    return new Interpreter(blocks);
+  }, [exampleId]);
+
   const setExampleId = (exampleId: number) => {
     sessionStorage.setItem("exampleId", exampleId.toString());
     _setExampleId(exampleId);
@@ -90,7 +106,6 @@ export const Playground = (): JSX.Element => {
     setPlaygroundCode(e.target.value as string);
   };
   const handleClickGenerateInstruction = () => {
-    const interpreter = new Interpreter();
     const result = interpreter.run(playgroundCode);
 
     const instruction = RandomInstructionGenerator.generateRandomInstruction(result.canvas);
@@ -113,7 +128,6 @@ export const Playground = (): JSX.Element => {
     setOldTotal(interpretedResult.cost + similarity);
     clearCanvas();
 
-    const interpreter = new Interpreter();
     const result = interpreter.run(code);
     setInterpreterResult(result);
 
@@ -289,7 +303,7 @@ export const Playground = (): JSX.Element => {
 
       if (event.code === "KeyZ" && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
-        const newCode = playgroundCode.split("\n").slice(0, -1).join('\n');
+        const newCode = playgroundCode.split("\n").slice(0, -1).join("\n");
         setPlaygroundCode(newCode);
         handleClickRenderCanvas(newCode);
       }
@@ -352,7 +366,13 @@ export const Playground = (): JSX.Element => {
     >
       <div>
         <div>
-          <div style={{ fontSize: 12, lineHeight: '14px', width: 300 }}>Shift + Enter – rerender canvas<br /> Alt + Arrows – shift last command point<br /> Command + Z – remove last command<br />Shift + "+", Shift + "-" – change example opacity</div>
+          <div style={{ fontSize: 12, lineHeight: "14px", width: 300 }}>
+            Shift + Enter – rerender canvas
+            <br /> Alt + Arrows – shift last command point
+            <br /> Command + Z – remove last command
+            <br />
+            Shift + "+", Shift + "-" – change example opacity
+          </div>
           <label>
             Example id
             <input
@@ -464,7 +484,8 @@ export const Playground = (): JSX.Element => {
               instrument,
               interpretedResult.canvas.blocks,
               color,
-              playgroundCode
+              playgroundCode,
+              interpreter
             );
             if (instruction) {
               const code = Array.isArray(instruction)
@@ -490,7 +511,7 @@ export const Playground = (): JSX.Element => {
             opacity: expectedOpacity,
             pointerEvents: "none",
           }}
-          src={modules[`../../../../problems/problem${exampleId}.png`]}
+          src={images[`../../../../problems/problem${exampleId}.png`]}
         />
         <input
           type="range"
