@@ -39,7 +39,7 @@ namespace submitter
                             Console.WriteLine($"duplicated solution {fileName}");
                             continue;
                         }
-                        if (sol.ScoreEstimated >= score)
+                        if (sol.ScoreEstimated <= score)
                         {
                             Console.WriteLine($"{fileName} with score {score} is not good enough - bestScore: {sol.ScoreEstimated}");
                             continue;
