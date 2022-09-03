@@ -109,10 +109,33 @@ public class Screen
         }
 
         return new Rgba(
-            r / pixelsCount,
-            g / pixelsCount,
-            b / pixelsCount,
-            a / pixelsCount);
+            (r / pixelsCount),
+            (g / pixelsCount),
+            (b / pixelsCount),
+            (a / pixelsCount));
+    }
+
+    public Rgba GetAverageColor2(Block block)
+    {
+        var pixelsCount = block.ScalarSize;
+
+        var (r, g, b, a) = (0.0, 0.0, 0.0, 0.0);
+
+        for (int x = block.BottomLeft.X; x < block.TopRight.X; x++)
+        for (int y = block.BottomLeft.Y; y < block.TopRight.Y; y++)
+        {
+            var pixel = Pixels[x, y];
+            r += pixel.R*pixel.R;
+            g += pixel.G*pixel.G;
+            b += pixel.B*pixel.B;
+            a += pixel.A*pixel.A;
+        }
+
+        return new Rgba(
+            (int)Math.Sqrt(r / pixelsCount),
+            (int)Math.Sqrt(g / pixelsCount),
+            (int)Math.Sqrt(b / pixelsCount),
+            (int)Math.Sqrt(a / pixelsCount));
     }
 
     public Rgba GetAverageColorByGeometricMedian(Block block)
@@ -125,7 +148,7 @@ public class Screen
             pixels.Add(Pixels[x, y]);
         }
 
-        return geometricMedian.GetGeometricMedian(pixels);
+        return geometricMedian.GetGeometricMedian(this, block);
     }
 
     public void ToImage(string pngPath)

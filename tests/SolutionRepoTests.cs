@@ -22,7 +22,7 @@ public class SolutionRepoTests
                 var screen = Screen.LoadProblem(problemId);
                 var algorithm = new SimpleAlgorithm();
 
-                var (moves, score) = algorithm.GetBestResult(screen);
+                var (moves, score) = algorithm.GetResult(screen, 40);
 
                 var commands = string.Join('\n', moves.Select(m => m.ToString()));
 

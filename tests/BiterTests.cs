@@ -61,6 +61,5 @@ public class BiterTests
         await SolutionRepo.Submit(new ContestSolution(problemId, score, res, new SolverMeta(), DateTime.Now, solver.ToString()!));
         //var response = new Api().PostSolution(problemId, res);
         //Console.WriteLine(response?.Submission_Id);
-
     }
 }
