@@ -30,7 +30,7 @@ namespace lib.Algorithms
             return GetGeometricMedian(pixels.ToArray());
         }
 
-        private Rgba GetGeometricMedian(Rgba[] points, double eps = 1e-4)
+        public Rgba GetGeometricMedian(IList<Rgba> points, double eps = 1e-4)
         {
             var (rm, gm, bm, am) = (0.0, 0.0, 0.0, 0.0);
             foreach (var p in points)
@@ -40,10 +40,10 @@ namespace lib.Algorithms
                 bm += p.B;
                 am += p.A;
             }
-            rm /= points.Length;
-            gm /= points.Length;
-            bm /= points.Length;
-            am /= points.Length;
+            rm /= points.Count;
+            gm /= points.Count;
+            bm /= points.Count;
+            am /= points.Count;
 
             var d = EuclidDistance(rm, gm, bm, am, points);
 
@@ -80,7 +80,7 @@ namespace lib.Algorithms
             return new Rgba((int) Math.Round(rm), (int) Math.Round(gm), (int) Math.Round(bm), (int) Math.Round(am));
         }
 
-        private double EuclidDistance(double r, double g, double b, double a, Rgba[] points)
+        private double EuclidDistance(double r, double g, double b, double a, IList<Rgba> points)
         {
             var distance = 0.0;
             foreach (var other in points)
