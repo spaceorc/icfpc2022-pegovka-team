@@ -166,6 +166,14 @@ console.log(result.canvas.blocks)
             event.preventDefault();
             handleClickRenderCanvas(playgroundCode);
         }
+
+        if (event.key === 'V') {
+            setInstrument(InstructionType.VerticalCutInstructionType)
+        }
+
+        if (event.key === 'P') {
+            setInstrument(InstructionType.PointCutInstructionType)
+        }
     };
 
     document.addEventListener('keydown', handler);
