@@ -63,7 +63,7 @@ public class SolverMeta
 {
     public long Previous_Score;
     public string? Previous_SolverName;
-    public string? Enhancer_Id;
+    public List<string>? Enhanced_By;
 
     public SolverMeta()
     {
