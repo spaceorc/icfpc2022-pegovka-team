@@ -188,10 +188,8 @@ console.log(result.canvas.blocks)
     }
   }, [isPlaying, playSpeed]);
 
-  const initedRef = useRef(false);
-
   useEffect(() => {
-    if (!isPlaying) {
+    if (!isPlaying && playingLine === 0) {
         return;
     }
     handleClickRenderCanvas(playgroundCode.split('\n').slice(0, playingLine).join('\n'))
@@ -236,6 +234,8 @@ console.log(result.canvas.blocks)
         <div>
             <label>Play speed<input type="number" value={playSpeed} onChange={event => setPlaySpeed(Number(event.target.value))} /></label>
             <button onClick={onPlayClick}>{isPlaying ? 'Stop' : 'Play'}</button>
+            <button onClick={() => setPlayingLine(playingLine + 1)}>{'Next Step'}</button>
+            <button onClick={() => setPlayingLine(playingLine - 1)}>{'Prev Step'}</button>
         </div>
         <div>
           <div>
