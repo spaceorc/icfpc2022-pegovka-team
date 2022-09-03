@@ -630,6 +630,14 @@ public class Canvas
         return screen;
     }
 
+    public SimpleBlock[] Flatten()
+    {
+        var result = new List<SimpleBlock>();
+        foreach (var block in Blocks.Values)
+            result.AddRange(block.GetChildren());
+        return result.ToArray();
+    }
+
     public int GetSimilarity(Screen screen)
     {
         var diff = 0.0;

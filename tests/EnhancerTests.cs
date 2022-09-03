@@ -52,7 +52,7 @@ public class EnhancerTests
         // canvas.ToScreen().ToImage($"{filename}_enchanced_colors.png");
 
         Console.WriteLine("Enhanced all:");
-        var enhanced = new CombinedEnhancer(new CutEnhancer(), new ColorEnhancer()).Enhance(problem, moves);
+        var enhanced = Enhancer.Enhance2(problem, moves);
         canvas = new Canvas(problem);
         foreach (var move in enhanced)
         {
@@ -68,17 +68,23 @@ public class EnhancerTests
     [Test]
     public void Run2()
     {
-        var problem = Screen.LoadProblem(2);
-        var moves = Moves.Parse(File.ReadAllText(FileHelper.FindFilenameUpwards("hand-solutions/problem2.txt")));
+        var problem = Screen.LoadProblem(3);
+        var filename = FileHelper.FindFilenameUpwards("hand-solutions/problem-3-a.txt");
+        var moves = Moves.Parse(File.ReadAllText(filename));
+        Console.WriteLine(problem.CalculateScore(moves));
+        problem.MovesToImage(moves, $"{filename}_original.png");
+
+        var eMoves = new ColorPicker().Enhance(problem, moves);
+        Console.WriteLine(problem.CalculateScore(eMoves));
+        problem.MovesToImage(eMoves, $"{filename}_picked.png");
+        Console.WriteLine();
+
         var canvas = new Canvas(problem);
-        foreach (var move in moves)
+        foreach (var move in eMoves)
         {
             Console.WriteLine(move);
             canvas.Apply(move);
         }
-
-        Console.WriteLine();
-        Console.WriteLine(canvas.GetScore(problem));
     }
 
     [Test]

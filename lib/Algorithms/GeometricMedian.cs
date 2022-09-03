@@ -10,14 +10,14 @@ using System.Linq;
 
 namespace lib.Algorithms
 {
-    public class GeometricMedian
+    public static class GeometricMedian
     {
-        private int[] Dr = new int[] { -1, 1, 0, 0, 0, 0, 0, 0 };
-        private int[] Dg = new int[] { 0, 0, -1, 1, 0, 0, 0, 0 };
-        private int[] Db = new int[] { 0, 0, 0, 0, -1, 1, 0, 0 };
-        private int[] Da = new int[] { 0, 0, 0, 0, 0, 0, -1, 1 };
+        private static int[] Dr = new int[] { -1, 1, 0, 0, 0, 0, 0, 0 };
+        private static int[] Dg = new int[] { 0, 0, -1, 1, 0, 0, 0, 0 };
+        private static int[] Db = new int[] { 0, 0, 0, 0, -1, 1, 0, 0 };
+        private static int[] Da = new int[] { 0, 0, 0, 0, 0, 0, -1, 1 };
 
-        public Rgba GetGeometricMedian(Screen screen, Block block)
+        public static Rgba GetGeometricMedian(Screen screen, Block block)
         {
             var left = block.BottomLeft.X;
             var right = block.TopRight.X;
@@ -26,7 +26,7 @@ namespace lib.Algorithms
             return GetGeometricMedian(screen, left, right, bottom, top);
         }
 
-        public Rgba GetGeometricMedian(Screen screen, int left, int right, int bottom, int top)
+        public static Rgba GetGeometricMedian(Screen screen, int left, int right, int bottom, int top)
         {
             var pixels = new List<Rgba>();
             for (int x = left; x < right; x++)
@@ -43,7 +43,7 @@ namespace lib.Algorithms
             return GetGeometricMedian(pixels.ToArray());
         }
 
-        public Rgba GetGeometricMedian(IList<Rgba> points, double eps = 1e-4)
+        public static Rgba GetGeometricMedian(IList<Rgba> points, double eps = 1e-4)
         {
             var (rm, gm, bm, am) = (0.0, 0.0, 0.0, 0.0);
             foreach (var p in points)
@@ -93,7 +93,7 @@ namespace lib.Algorithms
             return new Rgba((int) Math.Round(rm), (int) Math.Round(gm), (int) Math.Round(bm), (int) Math.Round(am));
         }
 
-        private double EuclidDistance(double r, double g, double b, double a, IList<Rgba> points)
+        private static double EuclidDistance(double r, double g, double b, double a, IList<Rgba> points)
         {
             var distance = 0.0;
             foreach (var other in points)
@@ -107,7 +107,7 @@ namespace lib.Algorithms
             return distance;
         }
 
-        private IEnumerable<IList<T>> Product<T>(IEnumerable<T> source, int repeat = 1)
+        private static IEnumerable<IList<T>> Product<T>(IEnumerable<T> source, int repeat = 1)
         {
             var result = new List<List<T>> { new List<T>() };
             foreach (var pool in Enumerable.Repeat(source, repeat))
