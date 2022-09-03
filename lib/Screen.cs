@@ -51,11 +51,14 @@ public class Screen
     {
         var diff = 0.0;
         for (int x = bottomLeft.X; x < topRight.X; x++)
-        for (int y = bottomLeft.Y; y < topRight.Y; y++)
-        {
-            var p1 = Pixels[x, y];
-            diff += p1.DiffTo(color);
-        }
+            if (x < Width)
+                for (int y = bottomLeft.Y; y < topRight.Y; y++)
+                {
+                    if (y >= Height) continue;
+
+                    var p1 = Pixels[x, y];
+                    diff += p1.DiffTo(color);
+                }
         return diff * Alpha;
     }
 
@@ -94,19 +97,28 @@ public class Screen
 
     public Rgba GetAverageColor(Block block)
     {
-        var pixelsCount = block.ScalarSize;
+        var bl = block.BottomLeft;
+        var tr = block.TopRight;
+        return GetAverageColor(bl, tr);
+    }
+
+    public Rgba GetAverageColor(V bl, V tr)
+    {
+        var pixelsCount = (tr - bl).GetScalarSize();
 
         var (r, g, b, a) = (0, 0, 0, 0);
 
-        for (int x = block.BottomLeft.X; x < block.TopRight.X; x++)
-        for (int y = block.BottomLeft.Y; y < block.TopRight.Y; y++)
-        {
-            var pixel = Pixels[x, y];
-            r += pixel.R;
-            g += pixel.G;
-            b += pixel.B;
-            a += pixel.A;
-        }
+        for (int x = bl.X; x < tr.X; x++)
+            if (x < Width)
+                for (int y = bl.Y; y < tr.Y; y++)
+                {
+                    if (y >= Height) continue;
+                    var pixel = Pixels[x, y];
+                    r += pixel.R;
+                    g += pixel.G;
+                    b += pixel.B;
+                    a += pixel.A;
+                }
 
         return new Rgba(
             (r / pixelsCount),
@@ -141,6 +153,11 @@ public class Screen
     public Rgba GetAverageColorByGeometricMedian(Block block)
     {
         return geometricMedian.GetGeometricMedian(this, block);
+    }
+
+    public Rgba GetAverageColorByGeometricMedian(int left, int bottom, int width, int height)
+    {
+        return geometricMedian.GetGeometricMedian(this, left, left+width, bottom, bottom+height);
     }
 
     public void ToImage(string pngPath)
