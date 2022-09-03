@@ -24,7 +24,7 @@ namespace submitter
                         if (filePathSet.Contains(filePath))
                             continue;
                         filePathSet.Add(filePath);
-                        var fileName = filePath.Split('\\').Last();
+                        var fileName = Path.GetFileName(filePath);
                         var nameParts = fileName.Split('-');
                         if (!nameParts[0].Contains("problem"))
                             continue;
