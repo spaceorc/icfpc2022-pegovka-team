@@ -335,7 +335,7 @@ public static class SolutionRepo
         var config = new DriverConfig(
             endpoint: settings.YdbEndpoint,
             database: settings.YdbDatabase,
-            credentials: new ServiceAccountProvider(settings.YandexCloudKeyFile),
+            credentials: new ServiceAccountProvider(FileHelper.FindFilenameUpwards(settings.YandexCloudKeyFile)),
             customServerCertificate: YcCerts.GetDefaultServerCertificate()
         );
 

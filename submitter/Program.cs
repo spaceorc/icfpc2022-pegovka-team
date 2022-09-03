@@ -9,34 +9,65 @@ namespace submitter
     {
         private static void Main(string[] args)
         {
-            var api = new Api();
-            while (true)
+            if (args.Contains("handMode"))
             {
-                var submissionsInfos = api.GetSubmissionsInfo();
-                var problemIdToInfo = submissionsInfos!.Submissions.ToDictionary(s => s.Id, s => s);
-                var scoreByProblemId = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
-                foreach (var (problemId, score) in scoreByProblemId)
+                var filePathSet = new HashSet<string>();
+                var handsDirectory = FileHelper.FindDirectoryUpwards("hand-solutions");
+                var filePaths = Directory.GetFiles(handsDirectory, "*.txt");
+                foreach (var filePath in filePaths)
+                {
+                    if (filePathSet.Contains(filePath))
+                        continue;
+                    filePathSet.Add(filePath);
+                    var fileName = filePath.Split('\\').Last();
+                    var nameParts = fileName.Split('-');
+                    if (!nameParts[0].Contains("problem"))
+                        continue;
+                    var problemId = int.Parse(nameParts[1]);
+                    var program = File.ReadAllText(filePath);
+                    var moves = Moves.Parse(program);
+                    var screen = Screen.LoadProblem(problemId);
+                    var score = screen.CalculateScore(moves);
+                    SolutionRepo.Submit(new ContestSolution(problemId, score, program, new SolverMeta(), "manual"));
+                }
+                var scoresById = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
+                foreach (var (problemId, score) in scoresById)
                 {
                     var solution = SolutionRepo.GetSolutionByProblemIdAndScore(problemId, score).GetAwaiter().GetResult();
-                    if (solution.SubmissionId == null)
+                    Console.WriteLine(solution);
+                }
+            }
+            else
+            {
+                var api = new Api();
+                while (true)
+                {
+                    var submissionsInfos = api.GetSubmissionsInfo();
+                    var problemIdToInfo = submissionsInfos!.Submissions.ToDictionary(s => s.Id, s => s);
+                    var scoreByProblemId = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
+                    foreach (var (problemId, score) in scoreByProblemId)
                     {
-                        var submissionResult = api.PostSolution(solution.ProblemId, solution.Solution);
-                        solution.SubmittedAt = DateTime.UtcNow;
-                        solution.SubmissionId = submissionResult?.Submission_Id;
-                        Console.WriteLine($"Submit solution for problem {problemId} with score {score} by {solution.SolverId}");
-                        SolutionRepo.Submit(solution);
-                        continue;
-                    }
+                        var solution = SolutionRepo.GetSolutionByProblemIdAndScore(problemId, score).GetAwaiter().GetResult();
+                        if (solution.SubmissionId == null)
+                        {
+                            var submissionResult = api.PostSolution(solution.ProblemId, solution.Solution);
+                            solution.SubmittedAt = DateTime.UtcNow;
+                            solution.SubmissionId = submissionResult?.Submission_Id;
+                            Console.WriteLine($"Submit solution for problem {problemId} with score {score} by {solution.SolverId}");
+                            SolutionRepo.Submit(solution);
+                            continue;
+                        }
 
-                    if (solution.ScoreServer == null && problemIdToInfo.ContainsKey((long)solution.SubmissionId))
-                    {
-                        solution.ScoreServer = problemIdToInfo[solution.SubmissionId.Value].Score;
-                        Console.WriteLine($"Add ScoreServer for problem {problemId} - score: {score}, serverScore: {solution.ScoreServer}, submissionId {solution.SubmissionId}");
-                        SolutionRepo.Submit(solution);
+                        if (solution.ScoreServer == null && problemIdToInfo.ContainsKey((long) solution.SubmissionId))
+                        {
+                            solution.ScoreServer = problemIdToInfo[solution.SubmissionId.Value].Score;
+                            Console.WriteLine($"Add ScoreServer for problem {problemId} - score: {score}, serverScore: {solution.ScoreServer}, submissionId {solution.SubmissionId}");
+                            SolutionRepo.Submit(solution);
+                        }
                     }
                 }
-                Thread.Sleep(60_000);
             }
+            Thread.Sleep(60_000);
         }
 
         private static void RefreshDashboard(List<string> logMessages, Api api, SubmissionRepo submissionRepo)
