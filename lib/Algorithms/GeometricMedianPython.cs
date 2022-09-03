@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 using Python.Deployment;
 using Python.Runtime;
 
-namespace lib;
+namespace lib.Algorithms;
 
-public class GeometricMedian
+public class GeometricMedianPython
 {
     private readonly dynamic module;
-    public GeometricMedian()
+    public GeometricMedianPython()
     {
         Init().GetAwaiter().GetResult();
 

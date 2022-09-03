@@ -5,6 +5,7 @@ using NUnit.Framework;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
+using System;
 using System.Linq;
 
 namespace tests;
@@ -23,15 +24,7 @@ public class ScreenTests
     [Test]
     public void TestLoadProblem()
     {
-        for (var problemId = 1; problemId <= 10; problemId++)
-        {
-            var screen = Screen.LoadProblem(1);
-            var algorithm = new SimpleAlgorithm();
-
-            var (moves, score) = algorithm.GetBestResult(screen);
-
-            var commands = string.Join('\n', moves.Select(m => m.ToString()));
-        }
+        var problem = Screen.LoadProblem(1);
     }
 
     [Test]
