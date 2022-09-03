@@ -33,9 +33,6 @@ public static class WorkerEntryPoint
                 if (!solverId.Contains("manual"))
                     continue;
 
-                if (solverId.EndsWith("-enhanced"))
-                    continue;
-
                 if (solverId.EndsWith("-enchanced"))
                     continue;
 
@@ -64,7 +61,7 @@ public static class WorkerEntryPoint
                     moves.StrJoin("\n"),
                     new SolverMeta(sol.ScoreEstimated, sol.SolverId),
                     DateTime.UtcNow,
-                    sol.SolverId + "-enhanced"
+                    sol.SolverId + "-enchanced"
                 )).GetAwaiter().GetResult();
                 var incremented = Interlocked.Increment(ref processed);
                 Console.WriteLine($"{incremented}/{works.Count} enhanced {sol.ProblemId} {sol.SolverId}. {originalScore} -> {enhancedScore}");
