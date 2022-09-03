@@ -10,7 +10,7 @@ public static class Moves
     public static List<Move> Parse(string program)
     {
         var result = new List<Move>();
-        foreach (var line in program.Split('\n').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)))
+        foreach (var line in program.Split('\n').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x) && !x.StartsWith("#")))
             result.Add(Move.Parse(line));
         return result;
     }

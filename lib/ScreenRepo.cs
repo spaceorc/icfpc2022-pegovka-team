@@ -18,7 +18,7 @@ public static class ScreenRepo
         File.Exists(GetProblemFileName(index));
 
     private static string GetProblemFileName(int index) =>
-        FileHelper.FindDirectoryUpwards($"problems/problem{index}.png");
+        FileHelper.FindFilenameUpwards($"problems/problem{index}.png");
 
     public static Screen GetProblem(int index)
     {

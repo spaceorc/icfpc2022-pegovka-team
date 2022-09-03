@@ -62,9 +62,9 @@ public class SolutionRepoTests
         foreach (var filename in filenames)
         {
             var nameParts = filename.Split('-');
-            if (nameParts[0] != "problem")
+            if (!nameParts[2].Contains("problem"))
                 continue;
-            var problemId = int.Parse(nameParts[1]);
+            var problemId = int.Parse(nameParts[3]);
             var program = File.ReadAllText(filename);
             var moves = Moves.Parse(program);
             var screen = Screen.LoadProblem(problemId);
@@ -74,9 +74,9 @@ public class SolutionRepoTests
                 canvas.Apply(move);
             }
 
+            // api.PostSolution(int.Parse(nameParts[3]), File.ReadAllText(filename));
             var score = canvas.GetScore(screen);
             SolutionRepo.Submit(new ContestSolution(problemId, score, program, new SolverMeta(), DateTime.UtcNow, "manual")).GetAwaiter().GetResult();
-            // api.PostSolution(int.Parse(nameParts[1]), File.ReadAllText(filename));
         }
         var scoresById = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
         foreach (var (problemId, score) in scoresById)
@@ -97,6 +97,32 @@ public class SolutionRepoTests
                 continue;
             var sol = SolutionRepo.GetBestSolutionBySolverId(problemId, solver).GetAwaiter().GetResult();
             Console.WriteLine($"{sol.SolverId} - {sol.ScoreEstimated}");
+        }
+    }
+
+    [Test]
+    public void SaveBestPngs()
+    {
+        var path = "..\\..\\..\\..\\best-solutions";
+        var prIds = ScreenRepo.GetProblemIds();
+        foreach(var problemId in prIds)
+        {
+            var solvers = SolutionRepo.GetAllSolvers(problemId).GetAwaiter().GetResult();
+            foreach (var solver in solvers)
+            {
+                var sol = SolutionRepo.GetBestSolutionBySolverId(problemId, solver).GetAwaiter().GetResult();
+                Console.WriteLine($"{sol.SolverId} - {sol.ScoreEstimated}");
+                var screen = ScreenRepo.GetProblem(problemId);
+                var canvas = new Canvas(screen);
+                var moves = Moves.Parse(sol.Solution);
+                foreach (var move in moves)
+                {
+                    canvas.Apply(move);
+                }
+
+                var finalCanvas = canvas.ToScreen();
+                finalCanvas.ToImage(Path.Combine(path, $"sol-{problemId}-{sol.SolverId}.png"));
+            }
         }
     }
 }
