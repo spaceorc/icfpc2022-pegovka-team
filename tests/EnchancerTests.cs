@@ -11,8 +11,8 @@ public class EnchancerTests
     [Test]
     public void Run()
     {
-        var problem = Screen.LoadProblem(19);
-        var filename = FileHelper.FindFilenameUpwards("hand-solutions/problem19-biter.txt");
+        var problem = Screen.LoadProblem(24);
+        var filename = FileHelper.FindFilenameUpwards("hand-solutions/problem-24-43138.txt");
         var moves = Moves.Parse(File.ReadAllText(filename));
         var canvas = new Canvas(problem);
         foreach (var move in moves)
@@ -25,38 +25,38 @@ public class EnchancerTests
         Console.WriteLine(canvas.GetScore(problem));
         canvas.ToScreen().ToImage($"{filename}_original.png");
 
-        Console.WriteLine("Enchanced cuts:");
-        var enchanced = new CutEnchancer().Enchance(problem, moves);
-        canvas = new Canvas(problem);
-        foreach (var move in enchanced)
-        {
-            // Console.WriteLine(move);
-            canvas.Apply(move);
-        }
-
-        Console.WriteLine();
-        Console.WriteLine(canvas.GetScore(problem));
-        canvas.ToScreen().ToImage($"{filename}_enchanced_cuts.png");
-
-        Console.WriteLine("Enchanced colors:");
-        enchanced = new ColorEnchancer().Enchance(problem, moves);
-        canvas = new Canvas(problem);
-        foreach (var move in enchanced)
-        {
-            // Console.WriteLine(move);
-            canvas.Apply(move);
-        }
-
-        Console.WriteLine();
-        Console.WriteLine(canvas.GetScore(problem));
-        canvas.ToScreen().ToImage($"{filename}_enchanced_colors.png");
+        // Console.WriteLine("Enchanced cuts:");
+        // var enchanced = new CutEnchancer().Enchance(problem, moves);
+        // canvas = new Canvas(problem);
+        // foreach (var move in enchanced)
+        // {
+        //     // Console.WriteLine(move);
+        //     canvas.Apply(move);
+        // }
+        //
+        // Console.WriteLine();
+        // Console.WriteLine(canvas.GetScore(problem));
+        // canvas.ToScreen().ToImage($"{filename}_enchanced_cuts.png");
+        //
+        // Console.WriteLine("Enchanced colors:");
+        // enchanced = new ColorEnchancer().Enchance(problem, moves);
+        // canvas = new Canvas(problem);
+        // foreach (var move in enchanced)
+        // {
+        //     // Console.WriteLine(move);
+        //     canvas.Apply(move);
+        // }
+        //
+        // Console.WriteLine();
+        // Console.WriteLine(canvas.GetScore(problem));
+        // canvas.ToScreen().ToImage($"{filename}_enchanced_colors.png");
 
         Console.WriteLine("Enchanced all:");
-        enchanced = new CombinedEnchancer(new CutEnchancer(), new ColorEnchancer()).Enchance(problem, moves);
+        var enchanced = new CombinedEnchancer(new CutEnchancer(), new ColorEnchancer()).Enchance(problem, moves);
         canvas = new Canvas(problem);
         foreach (var move in enchanced)
         {
-            // Console.WriteLine(move);
+            Console.WriteLine(move);
             canvas.Apply(move);
         }
 
