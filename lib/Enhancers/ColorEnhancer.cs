@@ -1,21 +1,21 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace lib.Enchancers;
+namespace lib.Enhancers;
 
-public class ColorEnchancer : ISolutionEnchancer
+public class ColorEnhancer : ISolutionEnhancer
 {
-    public List<Move> Enchance(Screen problem, List<Move> moves)
+    public List<Move> Enhance(Screen problem, List<Move> moves)
     {
-        moves = EnchanceDelta(problem, moves, 50);
-        moves = EnchanceDelta(problem, moves, 20);
-        moves = EnchanceDelta(problem, moves, 10);
-        moves = EnchanceDelta(problem, moves, 5);
-        moves = EnchanceDelta(problem, moves, 1);
+        moves = EnhanceDelta(problem, moves, 50);
+        moves = EnhanceDelta(problem, moves, 20);
+        moves = EnhanceDelta(problem, moves, 10);
+        moves = EnhanceDelta(problem, moves, 5);
+        moves = EnhanceDelta(problem, moves, 1);
         return moves;
     }
 
-    private List<Move> EnchanceDelta(Screen problem, List<Move> moves, int delta)
+    private List<Move> EnhanceDelta(Screen problem, List<Move> moves, int delta)
     {
         var colorIndexes = moves.Select((move, i) => new { move, i }).Where(x => x.move is ColorMove).Select(x => x.i).ToArray();
         if (!colorIndexes.Any())

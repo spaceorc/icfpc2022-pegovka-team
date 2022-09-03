@@ -1,18 +1,18 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace lib.Enchancers;
+namespace lib.Enhancers;
 
-public class CutEnchancer : ISolutionEnchancer
+public class CutEnhancer : ISolutionEnhancer
 {
-    public List<Move> Enchance(Screen problem, List<Move> moves)
+    public List<Move> Enhance(Screen problem, List<Move> moves)
     {
-        moves = EnchanceDelta(problem, moves, 3);
-        moves = EnchanceDelta(problem, moves, 1);
+        moves = EnhanceDelta(problem, moves, 3);
+        moves = EnhanceDelta(problem, moves, 1);
         return moves;
     }
 
-    private List<Move> EnchanceDelta(Screen problem, List<Move> moves, int delta)
+    private List<Move> EnhanceDelta(Screen problem, List<Move> moves, int delta)
     {
         var cutIndexes = moves.Select((move, i) => new { move, i }).Where(x => x.move is CutMove).Select(x => x.i).ToArray();
         if (!cutIndexes.Any())

@@ -25,14 +25,14 @@ public class ContestSolution
     public DateTime SolvedAt;
     public DateTime? SubmittedAt;
 
-    public ContestSolution(long problemId, long scoreEstimated, string solution, SolverMeta solverMeta, DateTime solvedAt,  string solverId)
+    public ContestSolution(long problemId, long scoreEstimated, string solution, SolverMeta solverMeta, string solverId)
     {
         Id = Guid.NewGuid();
         ProblemId = problemId;
         ScoreEstimated = scoreEstimated;
         Solution = solution;
         SolverMeta = solverMeta;
-        SolvedAt = solvedAt;
+        SolvedAt = DateTime.UtcNow;
         SolverId = solverId;
     }
 
@@ -196,6 +196,31 @@ public static class SolutionRepo
                 {
                     { "$problem_id", YdbValue.MakeInt64(problemId)},
                     { "$solver_id", YdbValue.MakeUtf8(solverId)},
+                }
+
+            ));
+        response.Status.EnsureSuccess();
+        var queryResponse = (ExecuteDataQueryResponse) response;
+        var row = queryResponse.Result.ResultSets[0].Rows.First();
+
+        var ans = new ContestSolution(row);
+        return ans;
+    }
+
+    public static async Task<ContestSolution> GetBestSolutionByProblemId(long problemId)
+    {
+        var client = await CreateTableClient();
+        var response = await client.SessionExec(async session =>
+
+            await session.ExecuteDataQuery(
+                query: @"
+                DECLARE $problem_id AS Int64;
+
+                SELECT * from Solutions where problem_id=$problem_id order by score_estimated limit 1",
+                txControl: TxControl.BeginSerializableRW().Commit(),
+                parameters: new Dictionary<string, YdbValue>
+                {
+                    { "$problem_id", YdbValue.MakeInt64(problemId)},
                 }
 
             ));
