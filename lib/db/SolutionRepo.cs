@@ -207,6 +207,31 @@ public static class SolutionRepo
         return ans;
     }
 
+    public static async Task<ContestSolution> GetBestSolutionByProblemId(long problemId)
+    {
+        var client = await CreateTableClient();
+        var response = await client.SessionExec(async session =>
+
+            await session.ExecuteDataQuery(
+                query: @"
+                DECLARE $problem_id AS Int64;
+
+                SELECT * from Solutions where problem_id=$problem_id order by score_estimated limit 1",
+                txControl: TxControl.BeginSerializableRW().Commit(),
+                parameters: new Dictionary<string, YdbValue>
+                {
+                    { "$problem_id", YdbValue.MakeInt64(problemId)},
+                }
+
+            ));
+        response.Status.EnsureSuccess();
+        var queryResponse = (ExecuteDataQueryResponse) response;
+        var row = queryResponse.Result.ResultSets[0].Rows.First();
+
+        var ans = new ContestSolution(row);
+        return ans;
+    }
+
     public static async Task<string[]> GetAllSolvers(long problemId)
     {
         var client = await CreateTableClient();

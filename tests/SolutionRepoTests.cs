@@ -101,6 +101,19 @@ public class SolutionRepoTests
     }
 
     [Test]
+    public void SaveBestSolution()
+    {
+        var path = "..\\..\\..\\..\\best-solutions";
+        var prIds = ScreenRepo.GetProblemIds();
+        foreach (var problemId in prIds)
+        {
+            var sol= SolutionRepo.GetBestSolutionByProblemId(problemId).GetAwaiter().GetResult();
+            File.WriteAllText(Path.Combine(path, $"sol-{problemId}-{sol.SolverId}.txt"),sol.Solution);
+        }
+
+    }
+
+    [Test]
     public void SaveBestPngs()
     {
         var path = "..\\..\\..\\..\\best-solutions";
