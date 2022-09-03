@@ -10,7 +10,7 @@ import { CommandsPanel } from "./commandPanel";
 import { Point } from "../../contest-logic/Point";
 import { Block, SimpleBlock } from "../../contest-logic/Block";
 import { getClickInstruction } from "./canvasCommands";
-import { getMousePoint } from "./shared/helpers";
+import { getMousePoint, mergeAllRectangles, shiftIdsBy } from "./shared/helpers";
 import { SimilarityChecker } from "../../contest-logic/SimilarityCheck";
 import { Parser } from "../../contest-logic/Parser";
 
@@ -363,6 +363,8 @@ export const Playground = (): JSX.Element => {
   const total = interpretedResult?.cost + similarity;
   const diff = total - oldTotal;
 
+  const [shiftBy, setShiftBy] = useState("");
+
   return (
     <div
       style={{
@@ -440,7 +442,13 @@ export const Playground = (): JSX.Element => {
             </label>
             <br />
             <label>
-              code
+              code{" "}
+              <button
+                onClick={() => setPlaygroundCode(shiftIdsBy(Number(shiftBy), playgroundCode))}
+              >
+                shift by {shiftBy}
+              </button>{" "}
+              <input type="text" value={shiftBy} onChange={(e) => setShiftBy(e.target.value)} />
               <br />
               <div
                 style={{
@@ -462,7 +470,9 @@ export const Playground = (): JSX.Element => {
                 />
                 <div style={{ width: "5ch" }}>
                   {interpretedResult?.instructionCosts.map((cost, index) => (
-                    <div key={index} onClick={() => setPlayingLine(index)}>{cost}</div>
+                    <div key={index} onClick={() => setPlayingLine(index)}>
+                      {cost}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -545,7 +555,9 @@ export const Playground = (): JSX.Element => {
         <div>Similarity: {similarity}</div>
         <div>Total: {total}</div>
         <div style={{ color: diff > 0 ? "red" : "green" }}>Diff: {diff}</div>
-        {playgroundCode.split('\n')[playingLine] && <div>Playing command: {playgroundCode.split('\n')[playingLine]}</div>}
+        {playgroundCode.split("\n")[playingLine] && (
+          <div>Playing command: {playgroundCode.split("\n")[playingLine]}</div>
+        )}
       </div>
       <CommandsPanel
         colorRecord={colorRecord}
