@@ -17,10 +17,11 @@ public class GridGuidedPainterTests
     {
         var bestScore = double.PositiveInfinity;
 
-        foreach (var size in new[]{5, 10, 20, 40, 80})
+        foreach (var size in new[]{20})
         {
             var screen = Screen.LoadProblem(problemId);
             var grid = CreateRegularGrid(size);
+            screen.ToImage($"{problemId}-{size}.png", grid);
             var solver = new GridGuidedPainter(grid, screen);
             var (moves, score) = solver.GetBestResult();
             var solution = moves.StrJoin("\n");
@@ -44,7 +45,9 @@ public class GridGuidedPainterTests
             {
                 cells.Add(new GridCell(400/count));
             }
-            rows.Add(new GridRow(400/count, cells));
+
+            var height = 400/count;
+            rows.Add(new GridRow(height, cells));
         }
         return new Grid(rows);
 

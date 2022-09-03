@@ -196,6 +196,37 @@ public class Screen
         }
         image.Save(pngPath, new PngEncoder());
     }
+    public void ToImage(string pngPath, Grid grid)
+    {
+        using var image = new Image<Rgba32>(Width, Height);
+        for (int y = 0; y < Height; y++)
+        for (int x = 0; x < Width; x++)
+        {
+            var pixel = Pixels[x, y];
+            image[x, Height - y - 1] = new Rgba32((byte)pixel.R, (byte)pixel.G, (byte)pixel.B, (byte)pixel.A);
+        }
+
+        var top = 0;
+        foreach (var row in grid.Rows)
+        {
+            var left = 0;
+            for (int xx = 0; xx < Width; xx++)
+            {
+                image[xx, Height - top-1] = new Rgba32(255, 255, 0, 255);
+            }
+            foreach (var cell in row.Cells)
+            {
+                left += cell.Width;
+                if (left >= Width) continue;
+                for (int yy = top; yy < top+row.Height; yy++)
+                {
+                    image[left, Height - yy-1] = new Rgba32(255, 255, 0, 255);
+                }
+            }
+            top += row.Height;
+        }
+        image.Save(pngPath, new PngEncoder());
+    }
 
     public int CalculateScore(IEnumerable<Move> moves)
     {
