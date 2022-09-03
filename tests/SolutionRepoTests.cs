@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using lib;
 using lib.Algorithms;
@@ -101,16 +102,16 @@ public class SolutionRepoTests
     }
 
     [Test]
+    [Explicit]
     public void SaveBestSolution()
     {
-        var path = "..\\..\\..\\..\\best-solutions";
+        var path = FileHelper.FindDirectoryUpwards("best-solutions");
         var prIds = ScreenRepo.GetProblemIds();
         foreach (var problemId in prIds)
         {
             var sol= SolutionRepo.GetBestSolutionByProblemId(problemId).GetAwaiter().GetResult();
             File.WriteAllText(Path.Combine(path, $"sol-{problemId}-{sol.SolverId}.txt"),sol.Solution);
         }
-
     }
 
     [Test]
