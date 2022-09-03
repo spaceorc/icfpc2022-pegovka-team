@@ -19,7 +19,7 @@ public class LayersAlgoTests
         foreach (var cellSize in new[]{40})
         {
             var solver = new LayersAlgorithm(cellSize);
-            var screen = Screen.LoadProblem(problemId).MedianFilter();
+            var screen = Screen.LoadProblem(problemId);
             screen.ToImage("filtered.png");
             var (moves, score) = solver.GetBestResult(screen);
 
