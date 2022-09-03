@@ -43,7 +43,7 @@ public class SimpleAlgorithm : IAlgorithm
         var blocks = canvas.Blocks.Values.ToList();
         foreach (var block in blocks)
         {
-            var averageBlockColor = screen.GetAverageColor(block);
+            var averageBlockColor = screen.GetAverageColorByGeometricMedian(block);
             var colorMove = new ColorMove(block.Id, averageBlockColor);
 
             var currentScore = canvas.GetScore(screen);

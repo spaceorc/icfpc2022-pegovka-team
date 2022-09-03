@@ -18,10 +18,6 @@ public class SimpleAlgoTests
         var algorithm = new SimpleAlgorithm();
 
         var moves = algorithm.Solve(problem);
-        if (moves.Count <= 1)
-        {
-            return;
-        }
 
         var canvas = new Canvas(problem);
         foreach (var move in moves)
@@ -30,7 +26,8 @@ public class SimpleAlgoTests
             canvas.Apply(move);
         }
 
-        Console.WriteLine(canvas.GetScore(problem));
+        var score = canvas.GetScore(problem);
+        Console.WriteLine(score);
         canvas.ToScreen().ToImage("res.png");
     }
 }
