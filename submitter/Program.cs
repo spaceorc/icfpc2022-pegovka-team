@@ -17,14 +17,14 @@ namespace submitter
                 var scoreByProblemId = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
                 foreach (var (problemId, score) in scoreByProblemId)
                 {
-                    var solution = SolutionRepo.GetSolutionByIdAndScore(problemId, score).GetAwaiter().GetResult();
+                    var solution = SolutionRepo.GetSolutionByProblemIdAndScore(problemId, score).GetAwaiter().GetResult();
                     if (solution.SubmissionId == null)
                     {
                         var submissionResult = api.PostSolution(solution.ProblemId, solution.Solution);
                         solution.SubmittedAt = DateTime.UtcNow;
                         solution.SubmissionId = submissionResult?.Submission_Id;
                         Console.WriteLine($"Submit solution for problem {problemId} with score {score} by {solution.SolverId}");
-                        SolutionRepo.Submit(solution).GetAwaiter().GetResult();
+                        SolutionRepo.Submit(solution);
                         continue;
                     }
 
@@ -32,7 +32,7 @@ namespace submitter
                     {
                         solution.ScoreServer = problemIdToInfo[solution.SubmissionId.Value].Score;
                         Console.WriteLine($"Add ScoreServer for problem {problemId} - score: {score}, serverScore: {solution.ScoreServer}, submissionId {solution.SubmissionId}");
-                        SolutionRepo.Submit(solution).GetAwaiter().GetResult();
+                        SolutionRepo.Submit(solution);
                     }
                 }
                 Thread.Sleep(60_000);

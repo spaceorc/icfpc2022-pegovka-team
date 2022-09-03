@@ -140,14 +140,6 @@ public class Screen
 
     public Rgba GetAverageColorByGeometricMedian(Block block)
     {
-        var pixels = new List<Rgba>();
-
-        for (var x = block.BottomLeft.X; x < block.TopRight.X; x++)
-        for (var y = block.BottomLeft.Y; y < block.TopRight.Y; y++)
-        {
-            pixels.Add(Pixels[x, y]);
-        }
-
         return geometricMedian.GetGeometricMedian(this, block);
     }
 

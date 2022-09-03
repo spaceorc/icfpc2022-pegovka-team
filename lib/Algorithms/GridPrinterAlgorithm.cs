@@ -88,7 +88,6 @@ public class GridPrinterAlgorithm : IAlgorithm
                 yield return mergeMove;
             }
             BlocksToMerge.Clear();
-            CurrentColSize += 2;
         }
     }
 
@@ -111,8 +110,19 @@ public class GridPrinterAlgorithm : IAlgorithm
                     break;
             }
 
+            if (state.BlocksToMerge[0].Width <= cellSize)
+            {
+                foreach (var block in state.BlocksToMerge)
+                {
+                    var color = state.Screen.GetAverageColorByGeometricMedian(block);
+                    if (block is SimpleBlock sb && sb.Color == color) continue;
+                    var colorMove = new ColorMove(block.Id, color);
+                    state.Canvas.ApplyColor(colorMove);
+                    moves.Add(colorMove);
+                }
+                break;
+            }
             var mergeMoves = state.MergeRibbons().ToList();
-            if (!state.ShouldStartNextColumn()) break;
             moves.AddRange(mergeMoves);
         }
 

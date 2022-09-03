@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using FluentAssertions;
 using lib;
 using lib.Algorithms;
@@ -26,7 +27,7 @@ public class SolutionRepoTests
 
             var solution = new ContestSolution(problemId, (long) score,
                 commands, new SolverMeta(), nameof(SimpleAlgorithm));
-            SolutionRepo.Submit(solution).GetAwaiter().GetResult();
+            SolutionRepo.Submit(solution);
         }
         catch (Exception e)
         {
@@ -48,7 +49,7 @@ public class SolutionRepoTests
         var scoresById = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
         foreach (var (problemId, score) in scoresById)
         {
-            var solution = SolutionRepo.GetSolutionByIdAndScore(problemId, score).GetAwaiter().GetResult();
+            var solution = SolutionRepo.GetSolutionByProblemIdAndScore(problemId, score).GetAwaiter().GetResult();
             Console.WriteLine(solution);
         }
     }
@@ -76,12 +77,12 @@ public class SolutionRepoTests
 
             // api.PostSolution(int.Parse(nameParts[3]), File.ReadAllText(filename));
             var score = canvas.GetScore(screen);
-            SolutionRepo.Submit(new ContestSolution(problemId, score, program, new SolverMeta(), "manual")).GetAwaiter().GetResult();
+            SolutionRepo.Submit(new ContestSolution(problemId, score, program, new SolverMeta(), "manual"));
         }
         var scoresById = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
         foreach (var (problemId, score) in scoresById)
         {
-            var solution = SolutionRepo.GetSolutionByIdAndScore(problemId, score).GetAwaiter().GetResult();
+            var solution = SolutionRepo.GetSolutionByProblemIdAndScore(problemId, score).GetAwaiter().GetResult();
             Console.WriteLine(solution);
         }
     }
@@ -101,22 +102,23 @@ public class SolutionRepoTests
     }
 
     [Test]
+    [Explicit]
     public void SaveBestSolution()
     {
-        var path = "..\\..\\..\\..\\best-solutions";
+        var path = FileHelper.FindDirectoryUpwards("best-solutions");
         var prIds = ScreenRepo.GetProblemIds();
         foreach (var problemId in prIds)
         {
             var sol= SolutionRepo.GetBestSolutionByProblemId(problemId).GetAwaiter().GetResult();
             File.WriteAllText(Path.Combine(path, $"sol-{problemId}-{sol.SolverId}.txt"),sol.Solution);
         }
-
     }
 
     [Test]
+    [Explicit]
     public void SaveBestPngs()
     {
-        var path = "..\\..\\..\\..\\best-solutions";
+        var path = FileHelper.FindDirectoryUpwards("best-solutions");
         var prIds = ScreenRepo.GetProblemIds();
         foreach(var problemId in prIds)
         {
