@@ -12,12 +12,12 @@ namespace tests;
 public class SimpleAlgoTests
 {
     [Test]
-    public void Run([Range(1, 15)] int problemId)
+    public void Run([Range(16, 20)] int problemId)
     {
         var problem = Screen.LoadProblem(problemId);
         var algorithm = new SimpleAlgorithm();
 
-        var moves = algorithm.Solve(problem);
+        var (moves, _) = algorithm.Solve(problem);
 
         var canvas = new Canvas(problem);
         foreach (var move in moves)

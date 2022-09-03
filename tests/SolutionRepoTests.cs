@@ -13,23 +13,20 @@ namespace tests;
 public class SolutionRepoTests
 {
     [Test]
-    public void SubmitProblemTest()
+    public void SubmitProblemTest([Range(1, 25)] int problemId)
     {
         try
         {
-            for (var problemId = 1; problemId <= 15; problemId++)
-            {
-                var screen = Screen.LoadProblem(problemId);
-                var algorithm = new SimpleAlgorithm();
+            var screen = Screen.LoadProblem(problemId);
+            var algorithm = new SimpleAlgorithm();
 
-                var (moves, score) = algorithm.GetResult(screen, 40);
+            var (moves, score) = algorithm.Solve(screen);
 
-                var commands = string.Join('\n', moves.Select(m => m.ToString()));
+            var commands = string.Join('\n', moves.Select(m => m.ToString()));
 
-                var solution = new ContestSolution(problemId, (long) score,
-                    commands, new SolverMeta(), DateTime.UtcNow, nameof(SimpleAlgorithm));
-                SolutionRepo.Submit(solution).GetAwaiter().GetResult();
-            }
+            var solution = new ContestSolution(problemId, (long) score,
+                commands, new SolverMeta(), DateTime.UtcNow, nameof(SimpleAlgorithm));
+            SolutionRepo.Submit(solution).GetAwaiter().GetResult();
         }
         catch (Exception e)
         {
