@@ -46,11 +46,13 @@ export const Playground = (): JSX.Element => {
     sessionStorage.setItem("opacity", opacity.toString());
     _setExpectedOpacity(opacity);
   };
-  const [exampleId, _setExampleId] = useState(sessionStorage.getItem("exampleId") ? Number(sessionStorage.getItem("exampleId")) : 1);
+  const [exampleId, _setExampleId] = useState(
+    sessionStorage.getItem("exampleId") ? Number(sessionStorage.getItem("exampleId")) : 1
+  );
   const setExampleId = (exampleId: number) => {
     sessionStorage.setItem("exampleId", exampleId.toString());
     _setExampleId(exampleId);
-  }
+  };
   const [similarity, setSimilarity] = useState(0);
   const [oldTotal, setOldTotal] = useState(0);
 
@@ -59,12 +61,27 @@ export const Playground = (): JSX.Element => {
     sessionStorage.setItem("code", code);
     _setPlaygroundCode(code);
   };
-  const [instrument, setInstrument] = useState<InstructionType>(InstructionType.NopInstructionType);
+  const [instrument, setInstrument] = useState<InstructionType>(
+    InstructionType.ColorInstructionType
+  );
   const [interpretedResult, setInterpreterResult] = useState<InterpreterResult>(
     new InterpreterResult(new Canvas(400, 400, new RGBA([255, 255, 255, 255])), 0)
   );
 
-  const [color, setColor] = useState<RGBA>(new RGBA([0, 0, 0, 255]));
+  const [colorRecord, setColor] = useState<Record<number, RGBA>>({
+    1: new RGBA([0, 0, 0, 255]),
+    2: new RGBA([255, 255, 255, 255]),
+    3: new RGBA([255, 0, 0, 255]),
+  });
+  const [chosenColor, setChosenColor] = useState(1);
+  const color = colorRecord[chosenColor];
+
+  const onSetColor = (color: RGBA, colorNumber: number) => {
+    setColor(colorRecord => ({
+        ...colorRecord,
+        [colorNumber]: color
+    }));
+  };
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
@@ -105,7 +122,7 @@ export const Playground = (): JSX.Element => {
     const renderedData = painter.draw(result.canvas);
     const canvas = canvasRef.current!;
     const context = canvas.getContext("2d")!;
-console.log(result.canvas.blocks)
+    console.log(result.canvas.blocks);
     canvas.width = result.canvas.width;
     canvas.height = result.canvas.height;
     const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -162,49 +179,96 @@ console.log(result.canvas.blocks)
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
-        if (event.key === 'Enter' && event.shiftKey) {
-            event.preventDefault();
-            handleClickRenderCanvas(playgroundCode);
-        }
+      if (event.key === "Enter" && event.shiftKey) {
+        event.preventDefault();
+        handleClickRenderCanvas(playgroundCode);
+      }
 
-        if (event.key === 'V') {
-            setInstrument(InstructionType.VerticalCutInstructionType)
-        }
+      if (event.code === "KeyC" && event.shiftKey) {
+        event.preventDefault();
+        setInstrument(InstructionType.ColorInstructionType);
+      }
 
-        if (event.key === 'P') {
-            setInstrument(InstructionType.PointCutInstructionType)
-        }
+      if (event.code === "KeyP" && event.shiftKey) {
+        event.preventDefault();
+        setInstrument(InstructionType.PointCutInstructionType);
+      }
+
+      if (event.code === "KeyV" && event.shiftKey) {
+        event.preventDefault();
+        setInstrument(InstructionType.VerticalCutInstructionType);
+      }
+
+      if (event.code === "KeyH" && event.shiftKey) {
+        event.preventDefault();
+        setInstrument(InstructionType.HorizontalCutInstructionType);
+      }
+
+      if (event.code === "KeyS" && event.shiftKey) {
+        event.preventDefault();
+        setInstrument(InstructionType.SwapInstructionType);
+      }
+
+      if (event.code === "KeyM" && event.shiftKey) {
+        event.preventDefault();
+        setInstrument(InstructionType.MergeInstructionType);
+      }
+
+      if (event.code === "KeyR" && event.shiftKey) {
+        event.preventDefault();
+        setInstrument(InstructionType.Rectangle);
+      }
+
+      if (event.code === "KeyO" && event.shiftKey) {
+        event.preventDefault();
+        setInstrument(InstructionType.ColorMerge);
+      }
+
+      if (event.code === "Digit1" && event.shiftKey) {
+        event.preventDefault();
+        setChosenColor(1);
+      }
+
+      if (event.code === "Digit2" && event.shiftKey) {
+        event.preventDefault();
+        setChosenColor(2);
+      }
+
+      if (event.code === "Digit3" && event.shiftKey) {
+        event.preventDefault();
+        setChosenColor(3);
+      }
     };
 
-    document.addEventListener('keydown', handler);
+    document.addEventListener("keydown", handler);
 
-    return () => document.removeEventListener('keydown', handler);
+    return () => document.removeEventListener("keydown", handler);
   }, [handleClickRenderCanvas, playgroundCode]);
 
   const onPlayClick = () => {
-    setIsPlaying(isPlaying => !isPlaying);
+    setIsPlaying((isPlaying) => !isPlaying);
     setPlayingLine(0);
   };
 
   useEffect(() => {
     if (isPlaying) {
-        const intervalId = setInterval(() => {
-            setPlayingLine(playingLine => playingLine + 1);
-        }, playSpeed);
+      const intervalId = setInterval(() => {
+        setPlayingLine((playingLine) => playingLine + 1);
+      }, playSpeed);
 
-        return () => clearInterval(intervalId);
+      return () => clearInterval(intervalId);
     }
   }, [isPlaying, playSpeed]);
 
   useEffect(() => {
     if (!isPlaying && playingLine === 0) {
-        return;
+      return;
     }
-    handleClickRenderCanvas(playgroundCode.split('\n').slice(0, playingLine).join('\n'))
+    handleClickRenderCanvas(playgroundCode.split("\n").slice(0, playingLine).join("\n"));
   }, [handleClickRenderCanvas, isPlaying, playingLine, playgroundCode]);
 
   const onMakeCode = () => {
-    const code = '';
+    const code = "";
 
     setPlaygroundCode(code);
   };
@@ -247,10 +311,17 @@ console.log(result.canvas.blocks)
           </label>
         </div>
         <div>
-            <label>Play speed<input type="number" value={playSpeed} onChange={event => setPlaySpeed(Number(event.target.value))} /></label>
-            <button onClick={onPlayClick}>{isPlaying ? 'Stop' : 'Play'}</button>
-            <button onClick={() => setPlayingLine(playingLine + 1)}>{'Next Step'}</button>
-            <button onClick={() => setPlayingLine(playingLine - 1)}>{'Prev Step'}</button>
+          <label>
+            Play speed
+            <input
+              type="number"
+              value={playSpeed}
+              onChange={(event) => setPlaySpeed(Number(event.target.value))}
+            />
+          </label>
+          <button onClick={onPlayClick}>{isPlaying ? "Stop" : "Play"}</button>
+          <button onClick={() => setPlayingLine(playingLine + 1)}>{"Next Step"}</button>
+          <button onClick={() => setPlayingLine(playingLine - 1)}>{"Prev Step"}</button>
         </div>
         <div>
           <div>
@@ -330,9 +401,9 @@ console.log(result.canvas.blocks)
               playgroundCode
             );
             if (instruction) {
-              const code = Array.isArray(instruction) ?
-                `${playgroundCode}\n${instruction.map(i => instructionToString(i)).join('\n')}` :
-                `${playgroundCode}\n${instructionToString(instruction)}`;
+              const code = Array.isArray(instruction)
+                ? `${playgroundCode}\n${instruction.map((i) => instructionToString(i)).join("\n")}`
+                : `${playgroundCode}\n${instructionToString(instruction)}`;
               setPlaygroundCode(code);
               handleClickRenderCanvas(code);
             }
@@ -365,16 +436,26 @@ console.log(result.canvas.blocks)
         />
         <div>
           Hovering: {hoveringPoint ? `(${hoveringPoint.px},${hoveringPoint.py})` : ""}{" "}
-          {hoveringBlocks.map((b) => [b.id, `size: ${b.size.px}x${b.size.py}`, `bottomLeft: ${b.bottomLeft.px} ${b.bottomLeft.py}`].join('; ')).join(", ")}
+          {hoveringBlocks
+            .map((b) =>
+              [
+                b.id,
+                `size: ${b.size.px}x${b.size.py}`,
+                `bottomLeft: ${b.bottomLeft.px} ${b.bottomLeft.py}`,
+              ].join("; ")
+            )
+            .join(", ")}
         </div>
         <div>Cost: {interpretedResult?.cost}</div>
         <div>Similarity: {similarity}</div>
         <div>Total: {total}</div>
-        <div style={{ color: diff > 0 ? 'red' : 'green' }}>Diff: {diff}</div>
+        <div style={{ color: diff > 0 ? "red" : "green" }}>Diff: {diff}</div>
       </div>
       <CommandsPanel
-        color={color}
-        setColor={setColor}
+        colorRecord={colorRecord}
+        setColor={onSetColor}
+        activeColorNumber={chosenColor}
+        setActiveColorNumber={setChosenColor}
         instrument={instrument}
         setInstrument={setInstrument}
       />

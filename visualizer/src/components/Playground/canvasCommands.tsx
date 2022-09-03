@@ -172,6 +172,16 @@ export function getClickInstruction(
         blockId: currentBlock!.id,
       };
       const instructions: Instruction[] = [colorMove];
+      const blocksList = [...blocks.values()];
+
+      if (blocksList.length === 2) {
+        instructions.push({
+            typ: InstructionType.MergeInstructionType,
+            blockId1: blocksList[0].id,
+            blockId2: blocksList[1].id
+        });
+      }
+
       const maxBlock = getMaxBlock(blocks);
       const mergeBlock = getAdjustentBlock(blocks, maxBlock)!;
       instructions.push({
@@ -179,7 +189,7 @@ export function getClickInstruction(
         blockId1: maxBlock.id,
         blockId2: mergeBlock.id
       });
-      const otherBlocks = [...blocks.values()].filter(b => b.id !== maxBlock.id && b.id !== mergeBlock.id);
+      const otherBlocks = blocksList.filter(b => b.id !== maxBlock.id && b.id !== mergeBlock.id);
       instructions.push({
         typ: InstructionType.MergeInstructionType,
         blockId1: otherBlocks[0].id,

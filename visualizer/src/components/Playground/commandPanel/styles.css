@@ -22,4 +22,5 @@
 
 .commandPanel__item-with-color {
   display: flex;
+  gap: 10px;
 }
