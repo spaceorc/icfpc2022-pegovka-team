@@ -36,19 +36,21 @@ namespace submitter
                         var sol = SolutionRepo.GetBestSolutionBySolverId(problemId, "manual").GetAwaiter().GetResult();
                         if (sol.Solution == program)
                         {
-                            Console.WriteLine($"duplicate {fileName}");
+                            Console.WriteLine($"duplicated solution {fileName}");
                             continue;
                         }
                         if (sol.ScoreEstimated >= score)
                         {
-                            Console.WriteLine($"Have better solution for {fileName}: score: {score} vs bestScore: {sol.ScoreEstimated}");
+                            Console.WriteLine($"{fileName} with score {score} is not good enough - bestScore: {sol.ScoreEstimated}");
                             continue;
                         }
 
                         var solution = new ContestSolution(problemId, score, program, new SolverMeta(), "manual");
                         SolutionRepo.Submit(solution);
-                        Console.WriteLine($"Send {fileName} to repo");
+                        Console.WriteLine($"Send {fileName} to repo with score {score}");
                     }
+
+                    Console.WriteLine("Sleeping");
                     Thread.Sleep(60_000);
                 }
                 // var scoresById = SolutionRepo.GetBestScoreByProblemId().GetAwaiter().GetResult();
