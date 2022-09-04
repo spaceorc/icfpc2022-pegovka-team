@@ -13,6 +13,7 @@ public class BadMoveException : Exception
 
 public class Canvas
 {
+    public Screen Problem;
     public int Width;
     public int Height;
     public Dictionary<string, Block> Blocks;
@@ -36,14 +37,16 @@ public class Canvas
 
     public Canvas(Screen problem)
     {
+        Problem = problem;
         Width = problem.Width;
         Height = problem.Height;
         Blocks = problem.InitialBlocks.ToDictionary(x => x.Id, x => (Block)x);
         TopLevelIdCounter = problem.InitialBlocks.Length - 1;
     }
 
-    public Canvas(int width, int height, Dictionary<string, Block> blocks, int topLevelIdCounter, int totalCost)
+    public Canvas(Screen problem, int width, int height, Dictionary<string, Block> blocks, int topLevelIdCounter, int totalCost)
     {
+        Problem = problem;
         Width = width;
         Height = height;
         Blocks = blocks;
@@ -54,7 +57,7 @@ public class Canvas
     public void ApplyColor(ColorMove move)
     {
         var block = Blocks[move.BlockId];
-        var cost = Move.GetCost(ScalarSize, block.ScalarSize, move.BaseCost);
+        var cost = move.GetCost(this);
 
         switch (block)
         {
@@ -133,7 +136,7 @@ public class Canvas
     public (Block leftBlock, Block rightBlock) ApplyVCut(VCutMove move)
     {
         var block = Blocks[move.BlockId];
-        var cost = Move.GetCost(ScalarSize, block.ScalarSize, move.BaseCost);
+        var cost = move.GetCost(this);
         if (!(block.BottomLeft.X <= move.LineNumber && move.LineNumber <= block.TopRight.X))
         {
             throw new BadMoveException($"Vertical Line X={move.LineNumber} is out of block {block}");
@@ -210,7 +213,7 @@ public class Canvas
     public (Block bottomBlock, Block topBlock) ApplyHCut(HCutMove move)
     {
         var block = Blocks[move.BlockId];
-        var cost = Move.GetCost(ScalarSize, block.ScalarSize, move.BaseCost);
+        var cost = move.GetCost(this);
         if (!(block.BottomLeft.Y <= move.LineNumber && move.LineNumber <= block.TopRight.Y))
         {
             throw new BadMoveException($"Horizontal Line Y={move.LineNumber} is out of block {block}");
@@ -228,7 +231,7 @@ public class Canvas
     {
         var block1 = Blocks[move.Block1Id];
         var block2 = Blocks[move.Block2Id];
-        var cost = Move.GetCost(ScalarSize, Math.Max(block1.ScalarSize, block2.ScalarSize), move.BaseCost);
+        var cost = move.GetCost(this);
         var bottomToTop = (block1.BottomLeft.Y == block2.TopRight.Y ||
                            block1.TopRight.Y == block2.BottomLeft.Y) &&
                           block1.BottomLeft.X == block2.BottomLeft.X &&
@@ -328,7 +331,7 @@ public class Canvas
             block2 = complexBlock2 with {Children = children2};
         }
 
-        var cost = Move.GetCost(ScalarSize, block1.ScalarSize, move.BaseCost);
+        var cost = move.GetCost(this);
         Blocks[block1.Id] = block1 with
         {
             BottomLeft = block2.BottomLeft,
@@ -556,7 +559,7 @@ public class Canvas
     public (Block bottomLeftBlock, Block bottomRightBlock, Block topRightBlock, Block topLeftBlock) ApplyPCut(PCutMove move)
     {
         var block = Blocks[move.BlockId];
-        var cost = Move.GetCost(ScalarSize, block.ScalarSize, move.BaseCost);
+        var cost = move.GetCost(this);
 
         if (!move.Point.IsStrictlyInside(block.BottomLeft, block.TopRight))
             throw new BadMoveException($"Point {move.Point} is out of block{block}");
@@ -640,6 +643,6 @@ public class Canvas
 
     public Canvas Copy()
     {
-        return new(Width, Height, Blocks.ToDictionary(t => t.Key, t => t.Value), TopLevelIdCounter, TotalCost);
+        return new(Problem, Width, Height, Blocks.ToDictionary(t => t.Key, t => t.Value), TopLevelIdCounter, TotalCost);
     }
 }
