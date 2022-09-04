@@ -5,6 +5,7 @@ import { Point } from "../../contest-logic/Point";
 import { canMergeBlocks, getMousePoint, mergeAllRectangles } from "./shared/helpers";
 import { RGBA } from "../../contest-logic/Color";
 import { Interpreter } from "../../contest-logic/Interpreter";
+import _ from "lodash";
 
 let prevPoint: Point | null = null;
 let prevSelectedBlockId: string | undefined;
@@ -208,6 +209,70 @@ export function getClickInstruction(
 
     case InstructionType.AllAreMerged: {
       return mergeAllRectangles(interpreter.initialBlocks?.length ?? 1);
+    }
+
+    case InstructionType.LineMerge: {
+      if (!prevSelectedBlockId) {
+        // @ts-ignore
+        prevSelectedBlockId = currentBlock.id;
+        return;
+      }
+
+      const diff = blocks
+        .get(currentBlock!.id)!
+        .bottomLeft.getDiff(blocks.get(prevSelectedBlockId!)!.bottomLeft);
+
+      console.log(currentBlock, prevSelectedBlockId);
+      console.log(diff);
+
+      if (diff.px > 0 && diff.py > 0) {
+        alert("not a line");
+        return;
+      }
+
+      const lineBlocks: Block[] = [...blocks.values()].filter((block: Block) => {
+        return diff.px === 0
+          ? block.bottomLeft.px === currentBlock?.bottomLeft.px
+          : block.bottomLeft.py === currentBlock?.bottomLeft.py;
+      });
+      lineBlocks.sort((a, b) =>
+        diff.px === 0 ? a.bottomLeft.py - b.bottomLeft.py : a.bottomLeft.px - b.bottomLeft.px
+      );
+      let startIndex = lineBlocks.findIndex((block) => block.id === currentBlock?.id);
+      let endIndex = lineBlocks.findIndex((block) => block.id === prevSelectedBlockId);
+
+      const maxId = [...blocks.values()].reduce((maxId, block) => {
+        const mainId = Number(block.id.split(".")[0]);
+        if (mainId > maxId) {
+          return mainId;
+        }
+        return maxId;
+      }, 0);
+
+      if (startIndex > endIndex) {
+        [startIndex, endIndex] = [endIndex, startIndex];
+      }
+
+      const instructions: Instruction[] = [];
+
+      instructions.push({
+        typ: InstructionType.MergeInstructionType,
+        blockId1: lineBlocks[startIndex].id,
+        blockId2: lineBlocks[startIndex + 1].id,
+      });
+
+      let currentId = maxId + 1;
+      for (let i = startIndex + 1; i < endIndex; i++) {
+        instructions.push({
+          typ: InstructionType.MergeInstructionType,
+          blockId1: String(currentId),
+          blockId2: lineBlocks[i + 1].id,
+        });
+        currentId++;
+      }
+
+      prevSelectedBlockId = undefined;
+      return instructions;
     }
   }
 }

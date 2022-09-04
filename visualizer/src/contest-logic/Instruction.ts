@@ -17,6 +17,7 @@ export enum InstructionType {
   Rectangle = "RECTANGLE",
   ColorMerge = "COLOR_MERGE",
   AllAreMerged = "ALL_ARE_MERGED",
+  LineMerge = "LINE_MERGE"
 }
 
 export type NopInstruction = {

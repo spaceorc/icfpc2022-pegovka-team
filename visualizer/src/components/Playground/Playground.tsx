@@ -52,8 +52,17 @@ export const Playground = (): JSX.Element => {
   const [exampleId, _setExampleId] = useState(
     sessionStorage.getItem("exampleId") ? Number(sessionStorage.getItem("exampleId")) : 1
   );
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+    const [useImage, setUseImage] = useState(false);
 
   const initialBlocks = useMemo(() => {
+    if (useImage) {
+        const imageData = getImageData(imgRef.current!);
+        const colors = SimilarityChecker.bufferToFrame(imageData!);
+        return [new PngBlock('0', new Point([0, 0]), new Point([400, 400]), colors)];
+    }
+
     const preset = presets[`../../../../problems/problem${exampleId}.json`];
     const blocks: (SimpleBlock | PngBlock)[] | undefined =
       preset &&
@@ -81,7 +90,7 @@ export const Playground = (): JSX.Element => {
         }
       );
     return blocks;
-  }, [exampleId]);
+  }, [exampleId, useImage]);
   const interpreter = useMemo(() => {
     return new Interpreter(initialBlocks);
   }, [initialBlocks]);
@@ -135,7 +144,6 @@ export const Playground = (): JSX.Element => {
   };
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const imgRef = useRef<HTMLImageElement | null>(null);
   const handlePlaygroundCode = (e: any) => {
     setPlaygroundCode(e.target.value as string);
   };
@@ -354,6 +362,11 @@ export const Playground = (): JSX.Element => {
         event.preventDefault();
         setExpectedOpacity(Math.max(Math.min(expectedOpacity - 0.5, 1), 0));
       }
+
+      if (event.code === "KeyL" && event.shiftKey) {
+        event.preventDefault();
+        setInstrument(InstructionType.LineMerge);
+      }
     };
 
     document.addEventListener("keydown", handler);
@@ -458,6 +471,7 @@ export const Playground = (): JSX.Element => {
           <button onClick={handleClickGenerateInstruction}>Generate Instruction</button>
           <button onClick={() => handleClickRenderCanvas(playgroundCode)}>Render Canvas</button>
           <button onClick={handleReset}>Reset</button>
+          <button onClick={() => setUseImage(useImage => !useImage)}>Use image</button>
           {/* <button onClick={onMakeCode}>Make code</button> */}
           <label>
             <input
