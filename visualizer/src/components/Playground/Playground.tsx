@@ -52,9 +52,9 @@ export const Playground = (): JSX.Element => {
     sessionStorage.getItem("exampleId") ? Number(sessionStorage.getItem("exampleId")) : 1
   );
 
-  const interpreter = useMemo(() => {
+  const initialBlocks = useMemo(() => {
     const preset = presets[`../../../../problems/problem${exampleId}.json`];
-    const blocks =
+    const blocks: SimpleBlock[] | undefined =
       preset &&
       (preset as any).blocks.map(
         (block: {
@@ -71,8 +71,25 @@ export const Playground = (): JSX.Element => {
           );
         }
       );
-    return new Interpreter(blocks);
+    return blocks;
   }, [exampleId]);
+  const interpreter = useMemo(() => {
+    return new Interpreter(initialBlocks);
+  }, [initialBlocks]);
+  const initialBlocksColors = useMemo(() => {
+    if (!initialBlocks) {
+        return;
+    }
+
+    return initialBlocks
+        .reduce<RGBA[]>((colors, block) => {
+            if (colors.every(color => !color.isEqual(block.color))) {
+                colors.push(block.color);
+            }
+
+            return colors;
+        }, []);
+  }, [initialBlocks]);
 
   const setExampleId = (exampleId: number) => {
     sessionStorage.setItem("exampleId", exampleId.toString());
@@ -572,6 +589,17 @@ export const Playground = (): JSX.Element => {
         <div style={{ color: diff > 0 ? "red" : "green" }}>Diff: {diff}</div>
         {playgroundCode.split("\n")[playingLine] && (
           <div>Playing command: {playgroundCode.split("\n")[playingLine]}</div>
+        )}
+        {initialBlocksColors && (
+            <div>
+                Initial colors:
+                {initialBlocksColors.map(color => (
+                    <div key={color.toString()}>
+                        <span style={{ display: 'inline-block', width: 10, height: 10, background: color.toString(), border: '1px solid white', outline: '1px solid black', marginRight: 5 }}></span>
+                        {color.toString()}
+                    </div>
+                ))}
+            </div>
         )}
       </div>
       <CommandsPanel
