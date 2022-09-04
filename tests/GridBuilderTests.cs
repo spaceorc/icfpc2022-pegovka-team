@@ -21,7 +21,7 @@ public class GridBuilderTests
     public void TestOptimizeRowHeights()
     {
         var problem = Screen.LoadProblem(23);
-        var grid = GridBuilder.BuildRegularGrid(problem, 13, 13);
+        var grid = GridBuilder.BuildRegularGrid(problem, 6, 13);
         double estimation;
 
         problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "regular.png"), grid);
