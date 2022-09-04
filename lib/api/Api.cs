@@ -75,6 +75,19 @@ namespace lib.api
             return response.Content.ReadFromJsonAsync<SubmissionResult>().GetAwaiter().GetResult();
         }
 
+        public ResultsStatus? GetResults()
+        {
+            var response = Client.GetAsync($"{sendingHost}/api/results/user").GetAwaiter().GetResult();
+            var g = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            Console.WriteLine(g);
+            return response.Content.ReadFromJsonAsync<ResultsStatus>().GetAwaiter().GetResult();
+        }
+
+        public record ResultsStatus(ResultStatus[] results);
+
+        public record ResultStatus(long problem_id, long min_cost, long overall_best_cost, int submission_count, DateTime last_submitted_at);
+
+
         public record SubmissionResult(int Submission_Id);
 
 
