@@ -8,7 +8,7 @@ namespace enhancer
     {
         private static void Main(string[] args)
         {
-            var excludedAlgoPrefixes = new HashSet<string>{"Simple"};
+            var excludedAlgoPrefixes = new HashSet<string>{"Layers", "Simple"};
 
             while (true)
             {
