@@ -17,7 +17,7 @@ namespace lib.api
         private readonly string sendingHost;
         private const string pathToSave = "..\\..\\..\\..\\problems";
 
-        private const string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InhvcG9zaGl5QGJrLnJ1IiwiZXhwIjoxNjYyMjg3OTE0LCJvcmlnX2lhdCI6MTY2MjIwMTUxNH0.OdVR0eA2uSrPNOQZM139X_7jAEZEUxkzzc2T_4-QvEA";
+        private const string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InhvcG9zaGl5QGJrLnJ1IiwiZXhwIjoxNjYyMzc1ODA1LCJvcmlnX2lhdCI6MTY2MjI4OTQwNX0.H0aX8HKsOfuuoXcGqAEQp2QwIDTuEd8B6buquejdcXw";
 
         public Api(string sendingHost = "https://robovinci.xyz", string basicHost = "https://cdn.robovinci.xyz")
         {
