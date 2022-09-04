@@ -20,3 +20,16 @@ export class InstructionCostCalculator {
     return totalCost;
   }
 }
+
+export class PngInstructionCostCalculator extends InstructionCostCalculator {
+    static baseCostMap: Map<InstructionType, number> = new Map([
+      [InstructionType.NopInstructionType, 0],
+      [InstructionType.CommentInstructionType, 0],
+      [InstructionType.ColorInstructionType, 5],
+      [InstructionType.VerticalCutInstructionType, 2],
+      [InstructionType.HorizontalCutInstructionType, 2],
+      [InstructionType.PointCutInstructionType, 3],
+      [InstructionType.SwapInstructionType, 3],
+      [InstructionType.MergeInstructionType, 1],
+    ]);
+  }

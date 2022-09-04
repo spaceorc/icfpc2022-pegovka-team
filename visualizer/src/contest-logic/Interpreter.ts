@@ -13,7 +13,7 @@ import {
   SwapInstruction,
   VerticalCutInstruction,
 } from "./Instruction";
-import { InstructionCostCalculator } from "./InstructionCostCalculator";
+import { InstructionCostCalculator, PngInstructionCostCalculator } from "./InstructionCostCalculator";
 import { Parser } from "./Parser";
 import { Point } from "./Point";
 import { Program } from "./Program";
@@ -37,10 +37,12 @@ export class InterpreterResult {
 export class Interpreter {
   topLevelIdCounter: number;
   initialBlocks?: Block[];
+  instructionCostCalculator: typeof InstructionCostCalculator;
 
   constructor(initialBlocks?: Block[]) {
     this.initialBlocks = initialBlocks;
     this.topLevelIdCounter = (initialBlocks?.length ?? 1) - 1;
+    this.instructionCostCalculator = initialBlocks?.some(block => block.typ === BlockType.PngBlockType) ? PngInstructionCostCalculator : InstructionCostCalculator;
   }
 
   run(code: string): InterpreterResult {
@@ -128,7 +130,7 @@ export class Interpreter {
     // TypeCheck Ends
 
     // Scoring Starts
-    const cost = InstructionCostCalculator.getCost(
+    const cost = this.instructionCostCalculator.getCost(
       InstructionType.ColorInstructionType,
       block.size.getScalarSize(),
       context.size.getScalarSize()
@@ -173,7 +175,7 @@ export class Interpreter {
     // TypeCheck Ends
 
     // Scoring Starts
-    const cost = InstructionCostCalculator.getCost(
+    const cost = this.instructionCostCalculator.getCost(
       InstructionType.PointCutInstructionType,
       block.size.getScalarSize(),
       context.size.getScalarSize()
@@ -454,7 +456,7 @@ export class Interpreter {
     // TypeCheck Ends
 
     // Scoring Starts
-    const cost = InstructionCostCalculator.getCost(
+    const cost = this.instructionCostCalculator.getCost(
       InstructionType.VerticalCutInstructionType,
       block.size.getScalarSize(),
       context.size.getScalarSize()
@@ -570,7 +572,7 @@ export class Interpreter {
     // TypeCheck Ends
 
     // Scoring Starts
-    const cost = InstructionCostCalculator.getCost(
+    const cost = this.instructionCostCalculator.getCost(
       InstructionType.HorizontalCutInstructionType,
       block.size.getScalarSize(),
       context.size.getScalarSize()
@@ -681,7 +683,7 @@ export class Interpreter {
     // TypeCheck Ends
 
     // Scoring Starts
-    const cost = InstructionCostCalculator.getCost(
+    const cost = this.instructionCostCalculator.getCost(
       InstructionType.SwapInstructionType,
       block1.size.getScalarSize(),
       context.size.getScalarSize()
@@ -759,7 +761,7 @@ export class Interpreter {
     // TypeCheck Ends
 
     // Scoring Starts
-    const cost = InstructionCostCalculator.getCost(
+    const cost = this.instructionCostCalculator.getCost(
       InstructionType.MergeInstructionType,
       Math.max(block1.size.getScalarSize(), block2.size.getScalarSize()),
       context.size.getScalarSize()
