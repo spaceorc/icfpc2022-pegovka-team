@@ -98,28 +98,5 @@ namespace submitter
                 }
             }
         }
-
-        private static void RefreshDashboard(List<string> logMessages, Api api, SubmissionRepo submissionRepo)
-        {
-            // var worldBestDislikes = new ProblemTableApi().FetchDislikesAsync().Result.ToDictionary(t => t.ProblemId);
-
-            var problemIds = ScreenRepo.GetProblemIds();
-            var submitterRepo = new SubmissionRepo(new Settings());
-
-            foreach (var id in problemIds)
-            {
-
-                var problem = ScreenRepo.GetProblem(id);
-                // var state = new State();
-
-                var result = api.PostSolution(id, " ");
-                // submissionRepo.PutFile()
-                Console.WriteLine(result);
-
-            }
-
-            Console.Clear();
-            AnsiConsole.Write("");
-        }
     }
 }
