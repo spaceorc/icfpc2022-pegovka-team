@@ -74,16 +74,14 @@ public class ColorEnhancer : ISolutionEnhancer
         for (int dr = -1; dr <= 1; dr++)
         for (int dg = -1; dg <= 1; dg++)
         for (int db = -1; db <= 1; db++)
-        for (int da = -1; da <= 1; da++)
         {
             var r = col.Color.R + dr * delta;
             var g = col.Color.G + dg * delta;
             var b = col.Color.B + db * delta;
-            var a = col.Color.A + da * delta;
+            var a = col.Color.A;
             if (r is >= 0 and <= 255
                 && g is >= 0 and <= 255
-                && b is >= 0 and <= 255
-                && a is >= 0 and <= 255)
+                && b is >= 0 and <= 255)
                 yield return col with { Color = new Rgba(r, g, b, a) };
         }
     }

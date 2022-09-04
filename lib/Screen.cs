@@ -56,6 +56,8 @@ public class Screen
         for (int y = 0; y < bitmap.Height; y++)
         {
             var p = bitmap[x, y];
+            if (p.A != 255)
+                throw new Exception("Alpha is not 255?!?");
             ps[x, bitmap.Height - y - 1] = new Rgba(p.R, p.G, p.B, p.A);
         }
         return new Screen(ps);
