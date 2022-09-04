@@ -4,31 +4,43 @@ namespace lib.Algorithms;
 
 public static class MinMatchFinder
 {
-    public static int[] FindMinMatch(int [,] w)
+    public static int[] FindMinMatch(double [,] w)
     {
+        var minValue = double.PositiveInfinity;
+        for (int i = 0; i < w.GetLength(0); i++)
+        for (int j = 0; j < w.GetLength(1); j++)
+        {
+            if (w[i, j] < minValue)
+                minValue = w[i, j];
+        }
+        for (int i = 0; i < w.GetLength(0); i++)
+        for (int j = 0; j < w.GetLength(1); j++)
+            w[i, j] -= minValue;
+
+
         var n = w.GetLength(0);
         var m = w.GetLength(0);
-        var u = new int [n + 1];
-        var v = new int [m + 1];
+        var u = new double [n + 1];
+        var v = new double [m + 1];
         var p = new int [m + 1];
         var way = new int [m + 1];
         for (int i=1; i<=n; ++i)
         {
             p[0] = i;
             int j0 = 0;
-            var minv = new int[m + 1];
-            Array.Fill(minv, int.MaxValue);
+            var minv = new double[m + 1];
+            Array.Fill(minv, double.MaxValue);
             var used = new bool[m + 1];
             Array.Fill(used, false);
             do
             {
                 used[j0] = true;
                 int i0 = p[j0];
-                var delta = int.MaxValue;
+                var delta = double.MaxValue;
                 int j1 = 0;
                 for (int j=1; j<=m; ++j)
                     if (!used[j]) {
-                        int cur = w[i0 - 1,j - 1]-u[i0]-v[j];
+                        double cur = w[i0 - 1,j - 1]-u[i0]-v[j];
                         if (cur < minv[j])
                         {
                             minv[j] = cur;
