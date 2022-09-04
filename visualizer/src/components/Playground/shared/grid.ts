@@ -50,16 +50,14 @@ export const getGridByBlocks = (blocks: Map<string, Block>): SimpleGrid => {
             .map(key => groups[key]);
 
         rows.forEach((row: Block[]) => {
-            console.log(row);
             const columns: Block[] = [...row].sort((a, b) => Number(a.bottomLeft.px) - Number(b.bottomLeft.px));
             grid.rows.push({
                 height: row[0].size.py,
                 columns: columns.map(column => ({
                     width: column.size.px
                 }))
-            })
-        })
-        console.log(grid);
+            });
+        });
 
         return mapToSimple(grid);
     } catch (error) {

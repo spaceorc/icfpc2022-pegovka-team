@@ -615,7 +615,7 @@ export const Playground = (): JSX.Element => {
         )}
         <details>
             <summary>grid</summary>
-            <textarea style={{ width: 400, height: 200 }}>{JSON.stringify(grid, null, 4)}</textarea>
+            <textarea style={{ width: 400, height: 200 }} value={JSON.stringify(grid, null, 4)} />
         </details>
       </div>
       <CommandsPanel
