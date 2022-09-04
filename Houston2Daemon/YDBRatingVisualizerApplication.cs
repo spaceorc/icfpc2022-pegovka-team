@@ -144,33 +144,33 @@ public class YDBRatingVisualizerApplication : VostokScheduledApplication
         {
             DateTime.UtcNow.AddHours(5).ToString("t", CultureInfo.InvariantCulture),
             "Type"
-        }.Concat(Enumerable.Range(1, (int) maxProblemId).Select(i => "#"+i.ToString())).ToList();
+        }.Concat(Enumerable.Range(1, (int) maxProblemId).Select(i => "#"+i.ToString())).Concat(new[] {DateTime.UtcNow.AddHours(5).ToString("t", CultureInfo.InvariantCulture)}).ToList();
 
         var bestResults = new[]
         {
             "Overall",
             " "
-        }.Concat(serverResults is null ? new List<string>() : serverResults.results.OrderBy(i => i.problem_id).Select(e=>e.overall_best_cost.ToString())).ToList();
+        }.Concat(serverResults is null ? new List<string>() : serverResults.results.OrderBy(i => i.problem_id).Select(e=>e.overall_best_cost.ToString())).Concat(new[] {"Overall"}).ToList();
 
         var bestOurResult = new[]
         {
             "OurBest",
             " "
-        }.Concat(serverResults is null ? new List<string>() : serverResults.results.OrderBy(i => i.problem_id).Select(e=>e.min_cost.ToString())).ToList();
+        }.Concat(serverResults is null ? new List<string>() : serverResults.results.OrderBy(i => i.problem_id).Select(e=>e.min_cost.ToString())).Concat(new[] {"OurBest"}).ToList();
 
         var diff = new[]
         {
             "Diff",
             " "
-        }.Concat(serverResults is null ? new List<string>() : serverResults.results.OrderBy(i => i.problem_id).Select(e=>(e.min_cost -e.overall_best_cost).ToString())).ToList();
+        }.Concat(serverResults is null ? new List<string>() : serverResults.results.OrderBy(i => i.problem_id).Select(e=>(e.min_cost -e.overall_best_cost).ToString())).Concat(new[] {"Diff"}).ToList();
 
         var data = new List<List<string>> {headers, diff, new(), new(), bestResults, bestOurResult, new()};
 
         foreach (var solverId in f)
         {
-            data.Add(FormatLine(solverId, new List<string> {solverId, "Base"}, baseDict, maxProblemId));
-            data.Add(FormatLine(solverId, new List<string> {" ", "Ench1"}, e1Dict, maxProblemId));
-            data.Add(FormatLine(solverId, new List<string> {" ", "Ench2"}, e2Dict, maxProblemId));
+            data.Add(FormatLine(solverId, new List<string> {solverId, "Base"}, baseDict, maxProblemId).Append("Base").Append(solverId).ToList());
+            data.Add(FormatLine(solverId, new List<string> {" ", "Ench1"}, e1Dict, maxProblemId).Append("Ench1").ToList());
+            data.Add(FormatLine(solverId, new List<string> {" ", "Ench2"}, e2Dict, maxProblemId).Append("Ench2").ToList());
         }
 
         static List<string> FormatLine(string solverId, List<string> result, Dictionary<long, List<(long?, string?)>> dict, long maxProblemId)

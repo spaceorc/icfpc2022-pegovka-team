@@ -16,7 +16,7 @@ public static class Moves
     }
 }
 
-public abstract record Move(int BaseCost)
+public abstract record Move
 {
     public static int GetCost(int canvasSize, int blockSize, int baseCost)
     {
@@ -25,10 +25,12 @@ public abstract record Move(int BaseCost)
 
     public int GetCost(Canvas canvas)
     {
-        return GetCost(canvas.ScalarSize, GetBlockScalarSize(canvas), BaseCost);
+        return GetCost(canvas.ScalarSize, GetBlockScalarSize(canvas), GetBaseCost(canvas));
     }
 
     protected abstract int GetBlockScalarSize(Canvas canvas);
+
+    protected abstract int GetBaseCost(Canvas canvas);
 
     public static Move Parse(string s)
     {
@@ -42,9 +44,11 @@ public abstract record Move(int BaseCost)
     }
 }
 
-public record NopMove(string Comment = "") : Move(0)
+public record NopMove(string Comment = "") : Move()
 {
     protected override int GetBlockScalarSize(Canvas canvas) => 1;
+
+    protected override int GetBaseCost(Canvas canvas) => 0;
 
     public override string ToString()
     {
@@ -52,18 +56,20 @@ public record NopMove(string Comment = "") : Move(0)
     }
 }
 
-public record ColorMove(string BlockId, Rgba Color) : Move(5)
+public record ColorMove(string BlockId, Rgba Color) : Move()
 {
     protected override int GetBlockScalarSize(Canvas canvas)
     {
         return canvas.Blocks[BlockId].ScalarSize;
     }
 
+    protected override int GetBaseCost(Canvas canvas) => 5;
+
     public override string ToString() => $"color [{BlockId}] {Color}";
 
     public static ColorMove? TryParse(string s)
     {
-        var re = new Regex(@"^color\s+\[(?<blockId>[^]]*)\]\s+\[(?<r>\d+),\s+(?<g>\d+),\s+(?<b>\d+),\s+(?<a>\d+)\]$");
+        var re = new Regex(@"^color\s*\[(?<blockId>[^]]*)\]\s*\[(?<r>\d+),\s*(?<g>\d+),\s*(?<b>\d+),\s*(?<a>\d+)\]$");
         var m = re.Match(s.ToLower());
         if (!m.Success)
             return null;
@@ -79,20 +85,25 @@ public record ColorMove(string BlockId, Rgba Color) : Move(5)
     }
 }
 
-public abstract record CutMove(string BlockId, int BaseCost) : Move(BaseCost);
+public abstract record CutMove(string BlockId) : Move;
 
-public record PCutMove(string BlockId, V Point) : CutMove(BlockId, 10)
+public record PCutMove(string BlockId, V Point) : CutMove(BlockId)
 {
     protected override int GetBlockScalarSize(Canvas canvas)
     {
         return canvas.Blocks[BlockId].ScalarSize;
     }
 
+    protected override int GetBaseCost(Canvas canvas)
+    {
+        return canvas.Problem.GetPointCutCost();
+    }
+
     public override string ToString() => $"cut [{BlockId}] {Point}";
 
     public static PCutMove? TryParse(string s)
     {
-        var re = new Regex(@"^cut\s+\[(?<blockId>[^]]*)\]\s+\[(?<x>\d+),\s*(?<y>\d+)\]$");
+        var re = new Regex(@"^cut\s*\[(?<blockId>[^]]*)\]\s*\[(?<x>\d+),\s*(?<y>\d+)\]$");
         var m = re.Match(s.ToLower());
         if (!m.Success)
             return null;
@@ -106,18 +117,23 @@ public record PCutMove(string BlockId, V Point) : CutMove(BlockId, 10)
     }
 }
 
-public record HCutMove(string BlockId, int LineNumber) : CutMove(BlockId, 7)
+public record HCutMove(string BlockId, int LineNumber) : CutMove(BlockId)
 {
     protected override int GetBlockScalarSize(Canvas canvas)
     {
         return canvas.Blocks[BlockId].ScalarSize;
     }
 
+    protected override int GetBaseCost(Canvas canvas)
+    {
+        return canvas.Problem.GetLineCutCost();
+    }
+
     public override string ToString() => $"cut [{BlockId}] [y] [{LineNumber}]";
 
     public static HCutMove? TryParse(string s)
     {
-        var re = new Regex(@"^cut\s+\[(?<blockId>[^]]*)\]\s+\[y\]\s+\[(?<lineNumber>\d+)\]$");
+        var re = new Regex(@"^cut\s*\[(?<blockId>[^]]*)\]\s*\[y\]\s*\[(?<lineNumber>\d+)\]$");
         var m = re.Match(s.ToLower());
         if (!m.Success)
             return null;
@@ -128,18 +144,23 @@ public record HCutMove(string BlockId, int LineNumber) : CutMove(BlockId, 7)
     }
 }
 
-public record VCutMove(string BlockId, int LineNumber) : CutMove(BlockId, 7)
+public record VCutMove(string BlockId, int LineNumber) : CutMove(BlockId)
 {
     protected override int GetBlockScalarSize(Canvas canvas)
     {
         return canvas.Blocks[BlockId].ScalarSize;
     }
 
+    protected override int GetBaseCost(Canvas canvas)
+    {
+        return canvas.Problem.GetLineCutCost();
+    }
+
     public override string ToString() => $"cut [{BlockId}] [x] [{LineNumber}]";
 
     public static VCutMove? TryParse(string s)
     {
-        var re = new Regex(@"^cut\s+\[(?<blockId>[^]]*)\]\s+\[x\]\s+\[(?<lineNumber>\d+)\]$");
+        var re = new Regex(@"^cut\s*\[(?<blockId>[^]]*)\]\s*\[x\]\s*\[(?<lineNumber>\d+)\]$");
         var m = re.Match(s.ToLower());
         if (!m.Success)
             return null;
@@ -150,18 +171,20 @@ public record VCutMove(string BlockId, int LineNumber) : CutMove(BlockId, 7)
     }
 }
 
-public record SwapMove(string Block1Id, string Block2Id) : Move(3)
+public record SwapMove(string Block1Id, string Block2Id) : Move
 {
     protected override int GetBlockScalarSize(Canvas canvas)
     {
         return canvas.Blocks[Block1Id].ScalarSize;
     }
 
+    protected override int GetBaseCost(Canvas canvas) => 3;
+
     public override string ToString() => $"swap [{Block1Id}] [{Block2Id}]";
 
     public static SwapMove? TryParse(string s)
     {
-        var re = new Regex(@"^swap\s+\[(?<block1Id>[^]]*)\]\s+\[(?<block2Id>[^]]*)\]$");
+        var re = new Regex(@"^swap\s*\[(?<block1Id>[^]]*)\]\s*\[(?<block2Id>[^]]*)\]$");
         var m = re.Match(s.ToLower());
         if (!m.Success)
             return null;
@@ -172,18 +195,21 @@ public record SwapMove(string Block1Id, string Block2Id) : Move(3)
     }
 }
 
-public record MergeMove(string Block1Id, string Block2Id) : Move(1)
+public record MergeMove(string Block1Id, string Block2Id) : Move
 {
     protected override int GetBlockScalarSize(Canvas canvas)
     {
         return Math.Max(canvas.Blocks[Block1Id].ScalarSize, canvas.Blocks[Block2Id].ScalarSize);
     }
 
+    protected override int GetBaseCost(Canvas canvas) => 1;
+
+
     public override string ToString() => $"merge [{Block1Id}] [{Block2Id}]";
 
     public static MergeMove? TryParse(string s)
     {
-        var re = new Regex(@"^merge\s+\[(?<block1Id>[^]]*)\]\s+\[(?<block2Id>[^]]*)\]$");
+        var re = new Regex(@"^merge\s*\[(?<block1Id>[^]]*)\]\s*\[(?<block2Id>[^]]*)\]$");
         var m = re.Match(s.ToLower());
         if (!m.Success)
             return null;

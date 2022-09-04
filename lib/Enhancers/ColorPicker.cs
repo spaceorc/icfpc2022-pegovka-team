@@ -240,7 +240,7 @@ public class ColorPicker : ISolutionEnhancer
 
                 return m;
             });
-            var blocks = copy.Flatten().Where(x => x.Color == filled).Select(x => (x.BottomLeft, x.TopRight)).ToArray();
+            var blocks = copy.Flatten().OfType<SimpleBlock>().Where(x => x.Color == filled).Select(x => (x.BottomLeft, x.TopRight)).ToArray();
             if (blocks.Any())
                 map[colorMove.BlockId] = blocks;
         }

@@ -20,7 +20,7 @@ public class GridBuilderTests
     [Test]
     public void TestOptimizeRowHeights()
     {
-        var problem = Screen.LoadProblem(23);
+        var problem = Screen.LoadProblem(39);
         var grid = GridBuilder.BuildRegularGrid(problem, 6, 13);
         double estimation;
 
@@ -76,5 +76,8 @@ public class GridBuilderTests
         (moves, score) = new GridGuidedPainter(grid, problem).GetBestResult();
         problem.MovesToImage(moves, Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "solved_after_merge_and_move3.png"));
         Console.Out.WriteLine(score);
+
+
+        Console.WriteLine(moves.StrJoin("\n"));
     }
 }
