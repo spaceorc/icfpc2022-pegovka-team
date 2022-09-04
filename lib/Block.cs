@@ -44,6 +44,8 @@ public abstract record Block
         return left < right && bottom < top;
     }
     public abstract IEnumerable<SimpleBlock> GetChildren();
+    public Block MoveTo(Block other) => MoveTo(other.BottomLeft, other.TopRight);
+    public abstract Block MoveTo(V bottomLeft, V topRight);
 
     public abstract bool IsFilledWithColor(Rgba color, V bottomLeft, int width, int height, double colorTolerance);
 }
@@ -51,12 +53,34 @@ public abstract record Block
 public record SimpleBlock(string Id, V BottomLeft, V TopRight, Rgba Color) : Block(Id, BottomLeft, TopRight)
 {
     public override IEnumerable<SimpleBlock> GetChildren() => new[] { this };
+
+    public override Block MoveTo(V bottomLeft, V topRight)
+    {
+        if (topRight - bottomLeft != Size)
+            throw new Exception("topRight - bottomLeft != Size");
+
+        return this with {BottomLeft = bottomLeft, TopRight = topRight};
+    }
     public override bool IsFilledWithColor(Rgba color, V bottomLeft, int width, int height, double colorTolerance) => color.DiffTo(Color) <= colorTolerance;
 }
 
 public record ComplexBlock(string Id, V BottomLeft, V TopRight, SimpleBlock[] Children) : Block(Id, BottomLeft, TopRight)
 {
     public override IEnumerable<SimpleBlock> GetChildren() => Children;
+
+    public override Block MoveTo(V bottomLeft, V topRight)
+    {
+        if (topRight - bottomLeft != Size)
+            throw new Exception("topRight - bottomLeft != Size");
+
+        var diff = bottomLeft - BottomLeft;
+        return this with
+        {
+            BottomLeft = bottomLeft,
+            TopRight = topRight,
+            Children = Children.Select(x => (SimpleBlock)x.MoveTo(x.BottomLeft + diff, x.TopRight + diff)).ToArray()
+        };
+    }
     public override bool IsFilledWithColor(Rgba color, V bottomLeft, int width, int height, double colorTolerance)
     {
         return !Children.Any(child => child.IntersectsWith(bottomLeft, width, height) && child.Color.DiffTo(color) > colorTolerance);

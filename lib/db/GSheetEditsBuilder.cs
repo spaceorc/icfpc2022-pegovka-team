@@ -134,7 +134,7 @@ namespace lib.db
                         },
                         Rows = rows,
                         Fields = "*",
-                        
+
                     }
                 });
             return this;
@@ -157,7 +157,7 @@ namespace lib.db
                     {
                         NumberValue = x
                     },
-                    
+
                 };
             if (value is double d)
                 return new CellData
@@ -509,6 +509,33 @@ namespace lib.db
                             Color = borderColor,
                             Style = "SOLID"
                         }
+                    }
+                });
+            return this;
+        }
+
+        public GSheetEditsBuilder AddBottomBorders(ValueTuple<int, int> rangeStart, ValueTuple<int, int> rangeEnd, Color borderColor)
+        {
+            var (top, leftIndex) = rangeStart;
+            var (bottom, rightIndex) = rangeEnd;
+            requests.Add(
+                new Request
+                {
+                    UpdateBorders = new UpdateBordersRequest
+                    {
+                        Range = new GridRange
+                        {
+                            SheetId = sheetId,
+                            StartRowIndex = top,
+                            StartColumnIndex = leftIndex,
+                            EndRowIndex = bottom + 1,
+                            EndColumnIndex = rightIndex + 1
+                        },
+                        Bottom = new Border
+                        {
+                            Color = borderColor,
+                            Style = "SOLID"
+                        },
                     }
                 });
             return this;

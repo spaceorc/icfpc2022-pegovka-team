@@ -318,44 +318,36 @@ public class Canvas
         if (block1.Size != block2.Size)
             throw new BadMoveException($"Blocks are not the same size, {block1} and {block2}");
 
-        var diffX = block1.BottomLeft.X - block2.BottomLeft.X;
-        var diffY = block1.BottomLeft.Y - block2.BottomLeft.Y;
+        var diff = block1.BottomLeft - block2.BottomLeft;
 
-        var temp1 = block1.BottomLeft;
-        var temp2 = block1.TopRight;
-
-        block1.BottomLeft = block2.BottomLeft;
-        block2.BottomLeft = temp1;
-
-        block1.TopRight = block2.TopRight;
-        block2.TopRight = temp2;
-
-        if (block1 is ComplexBlock complexBlock1) {
-            var children1 = complexBlock1.Children.Select(subBlock => subBlock with {
-                BottomLeft = new V(subBlock.BottomLeft.X - diffX, subBlock.BottomLeft.Y - diffY),
-                TopRight = new V(subBlock.TopRight.X - diffX, subBlock.TopRight.Y - diffY),
+        if (block1 is ComplexBlock complexBlock1)
+        {
+            var children1 = complexBlock1.Children.Select(subBlock => subBlock with
+            {
+                BottomLeft = subBlock.BottomLeft - diff,
+                TopRight = subBlock.TopRight - diff
             }).ToArray();
             block1 = complexBlock1 with {Children = children1};
         }
 
-        if (block2 is ComplexBlock complexBlock2) {
-            var children2 = complexBlock2.Children.Select(subBlock => subBlock with {
-                BottomLeft = new V(subBlock.BottomLeft.X + diffX, subBlock.BottomLeft.Y + diffY),
-                TopRight = new V(subBlock.TopRight.X + diffX, subBlock.TopRight.Y + diffY),
+        if (block2 is ComplexBlock complexBlock2)
+        {
+            var children2 = complexBlock2.Children.Select(subBlock => subBlock with
+            {
+                BottomLeft = subBlock.BottomLeft + diff,
+                TopRight = subBlock.TopRight + diff
             }).ToArray();
             block2 = complexBlock2 with {Children = children2};
         }
 
         var cost = Move.GetCost(ScalarSize, block1.ScalarSize, move.BaseCost);
-        Blocks[block1.Id] = block2 with
+        Blocks[block1.Id] = block1 with
         {
-            Id = block1.Id,
             BottomLeft = block2.BottomLeft,
             TopRight = block2.TopRight,
         };
-        Blocks[block2.Id] = block1 with
+        Blocks[block2.Id] = block2 with
         {
-            Id = block2.Id,
             BottomLeft = block1.BottomLeft,
             TopRight = block1.TopRight,
         };

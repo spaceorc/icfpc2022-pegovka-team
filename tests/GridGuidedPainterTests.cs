@@ -14,18 +14,22 @@ public class GridGuidedPainterTests
 {
     [Test]
     [Parallelizable(ParallelScope.All)]
-    public async Task Run([Range(1, 23)] int problemId)
+    public async Task Run([Range(10, 10)] int problemId)
     {
         var bestScore = double.PositiveInfinity;
 
         foreach (var colorTolerance in new[]{50})
-        foreach (var size in new[]{20})
+        foreach (var size in new[]{17})
         {
             var screen = Screen.LoadProblem(problemId);
             var grid = CreateRegularGrid(size);
-            screen.ToImage($"{problemId}-{size}.png", grid);
-            var solver = new GridGuidedPainter(grid, screen, colorTolerance);
-            var (moves, score, canvas) = solver.GetBestResultWithCanvas();
+
+            var res = GridGuidedPainterRunner.Solve(problemId, size, size);
+            var (moves, score, canvas) = (res.Moves, res.Score, res.Canvas);
+
+            // var solver = new GridGuidedPainter(grid, screen, colorTolerance);
+            // var (moves, score, canvas) = solver.GetBestResultWithCanvas();
+
             var solution = moves.StrJoin("\n");
             //List<Move> moves2 = Enhancer.Enhance2(screen, moves);
             //score = screen.GetScore(moves2);

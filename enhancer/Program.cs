@@ -8,13 +8,13 @@ namespace enhancer
     {
         private static void Main(string[] args)
         {
-            var excludedAlgoPrefixes = new HashSet<string>{"Layers", "Simple"};
+            var excludedAlgoPrefixes = new HashSet<string> { "Layers", "Simple" };
 
             while (true)
             {
-                var scoreByProblemId = SolutionRepo.GetBestScoreByProblemIdAndSolverId().GetAwaiter().GetResult();
+                var scoreByProblemId = SolutionRepo.GetBestScoreByProblemIdAndSolverId(excludedAlgoPrefixes.ToList()).GetAwaiter().GetResult();
 
-                Console.WriteLine("getting solutions from DB");
+                Console.WriteLine($"getting {scoreByProblemId.Count} solutions from DB");
                 var solutions = scoreByProblemId.ToDictionary(
                     e => (e.problemId, e.solverId),
                     e => SolutionRepo.GetSolutionByProblemIdAndSolverIdAndScore(e.problemId, e.solverId, e.score).GetAwaiter().GetResult());
@@ -24,46 +24,43 @@ namespace enhancer
                 {
                     var (problemId, solverId, score) = parms;
                     var solution = solutions[(problemId, solverId)];
-                    if (!solution.SolverId.EndsWith("-enchanced") && !excludedAlgoPrefixes.Any(p => solution.SolverId.StartsWith(p)))
+                    solution.SolverMeta.Enhanced_By ??= new List<string>();
+                    var screen = ScreenRepo.GetProblem((int)solution.ProblemId);
+
+                    // enhancer 1
+                    if (!solution.SolverMeta.Enhanced_By.Contains("enchancer"))
                     {
-                        solution.SolverMeta.Enhanced_By ??= new List<string>();
-                        var screen = ScreenRepo.GetProblem((int)solution.ProblemId);
+                        Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} not enhanced");
+                        var eMoves = Enhancer.Enhance(screen, Moves.Parse(solution.Solution));
+                        var eSolution = new ContestSolution(
+                            solution.ProblemId,
+                            screen.CalculateScore(eMoves),
+                            eMoves.StrJoin("\n"),
+                            new SolverMeta(solution.ScoreEstimated, solution.SolverId),
+                            solution.SolverId + "-enchanced");
+                        Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} enhanced from score {solution.ScoreEstimated} to {eSolution.ScoreEstimated}");
+                        SolutionRepo.Submit(eSolution);
 
-                        // enhancer 1
-                        if (!solution.SolverMeta.Enhanced_By.Contains("enchancer"))
-                        {
-                            Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} not enhanced");
-                            var eMoves = Enhancer.Enhance(screen, Moves.Parse(solution.Solution));
-                            var eSolution = new ContestSolution(
-                                solution.ProblemId,
-                                screen.CalculateScore(eMoves),
-                                eMoves.StrJoin("\n"),
-                                new SolverMeta(solution.ScoreEstimated, solution.SolverId),
-                                solution.SolverId + "-enchanced");
-                            Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} enhanced from score {solution.ScoreEstimated} to {eSolution.ScoreEstimated}");
-                            SolutionRepo.Submit(eSolution);
+                        solution.SolverMeta.Enhanced_By.Add("enchancer");
+                        SolutionRepo.Submit(solution);
+                    }
 
-                            solution.SolverMeta.Enhanced_By.Add("enchancer");
-                            SolutionRepo.Submit(solution);
-                        }
+                    // enhancer 2
+                    if (!solution.SolverMeta.Enhanced_By.Contains("enchancer2"))
+                    {
+                        Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} not enhanced2");
+                        var eMoves = Enhancer.Enhance2(screen, Moves.Parse(solution.Solution));
+                        var eSolution = new ContestSolution(
+                            solution.ProblemId,
+                            screen.CalculateScore(eMoves),
+                            eMoves.StrJoin("\n"),
+                            new SolverMeta(solution.ScoreEstimated, solution.SolverId),
+                            solution.SolverId + "-2-enchanced");
+                        Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} enhanced2 from score {solution.ScoreEstimated} to {eSolution.ScoreEstimated}");
+                        SolutionRepo.Submit(eSolution);
 
-                        // enhancer 2
-                        if (!solution.SolverMeta.Enhanced_By.Contains("enchancer2"))
-                        {
-                            Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} not enhanced2");
-                            var eMoves = Enhancer.Enhance2(screen, Moves.Parse(solution.Solution));
-                            var eSolution = new ContestSolution(
-                                solution.ProblemId,
-                                screen.CalculateScore(eMoves),
-                                eMoves.StrJoin("\n"),
-                                new SolverMeta(solution.ScoreEstimated, solution.SolverId),
-                                solution.SolverId + "-2-enchanced");
-                            Console.WriteLine($"solution {solution.SolverId} for problem {solution.ProblemId} enhanced2 from score {solution.ScoreEstimated} to {eSolution.ScoreEstimated}");
-                            SolutionRepo.Submit(eSolution);
-
-                            solution.SolverMeta.Enhanced_By.Add("enchancer2");
-                            SolutionRepo.Submit(solution);
-                        }
+                        solution.SolverMeta.Enhanced_By.Add("enchancer2");
+                        SolutionRepo.Submit(solution);
                     }
                 });
 

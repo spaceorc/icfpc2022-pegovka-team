@@ -17,7 +17,7 @@ namespace lib.api
         private readonly string sendingHost;
         private const string pathToSave = "..\\..\\..\\..\\problems";
 
-        private const string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InhvcG9zaGl5QGJrLnJ1IiwiZXhwIjoxNjYyMjg3OTE0LCJvcmlnX2lhdCI6MTY2MjIwMTUxNH0.OdVR0eA2uSrPNOQZM139X_7jAEZEUxkzzc2T_4-QvEA";
+        private const string token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InhvcG9zaGl5QGJrLnJ1IiwiZXhwIjoxNjYyMzc1ODA1LCJvcmlnX2lhdCI6MTY2MjI4OTQwNX0.H0aX8HKsOfuuoXcGqAEQp2QwIDTuEd8B6buquejdcXw";
 
         public Api(string sendingHost = "https://robovinci.xyz", string basicHost = "https://cdn.robovinci.xyz")
         {
@@ -74,6 +74,19 @@ namespace lib.api
 
             return response.Content.ReadFromJsonAsync<SubmissionResult>().GetAwaiter().GetResult();
         }
+
+        public ResultsStatus? GetResults()
+        {
+            var response = Client.GetAsync($"{sendingHost}/api/results/user").GetAwaiter().GetResult();
+            var g = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            Console.WriteLine(g);
+            return response.Content.ReadFromJsonAsync<ResultsStatus>().GetAwaiter().GetResult();
+        }
+
+        public record ResultsStatus(ResultStatus[] results);
+
+        public record ResultStatus(long problem_id, long min_cost, long overall_best_cost, int submission_count, DateTime last_submitted_at);
+
 
         public record SubmissionResult(int Submission_Id);
 
