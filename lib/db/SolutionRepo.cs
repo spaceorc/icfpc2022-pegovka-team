@@ -329,6 +329,34 @@ public static class SolutionRepo
         return queryResponse.Result.ResultSets[0].Rows.Select(x => (long?)x["problem_id"] ?? throw new Exception("WTF")).ToArray();
     }
 
+    public record ProblemStat(long problem_id, long? best_score, string? solver_id);
+
+    public static async Task<List<ProblemStat>> GetAllBestStats()
+    {
+        var client = await CreateTableClient();
+        var response = await client.SessionExec(async session =>
+
+            await session.ExecuteDataQuery(
+                query: @$"
+                select * from (select problem_id, min(score_estimated) as best_score, solver_id from Solutions group by problem_id, solver_id);",
+                txControl: TxControl.BeginSerializableRW().Commit(),
+                parameters: new Dictionary<string, YdbValue>
+                {
+                }
+            ));
+        response.Status.EnsureSuccess();
+        var ans = new List<ProblemStat>();
+        var queryResponse = (ExecuteDataQueryResponse) response;
+        foreach (var row in queryResponse.Result.ResultSets[0].Rows)
+        {
+            var problemId = (long?) row["problem_id"] ?? throw new ArgumentException();
+            var solverId = (string?)row["solver_id"] ?? throw new ArgumentException();
+            var bestScore = (long?) row["best_score"] ?? throw new ArgumentException();
+            ans.Add(new ProblemStat(problemId, bestScore, solverId));
+        }
+        return ans;
+    }
+
     private static async Task<TableClient> CreateTableClient()
     {
         var settings = new Settings();

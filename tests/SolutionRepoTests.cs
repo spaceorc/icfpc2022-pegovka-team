@@ -147,4 +147,12 @@ public class SolutionRepoTests
             }
         }
     }
+
+    [Test]
+    [Explicit]
+    public void GetAllBestStatByIds()
+    {
+        var stats = SolutionRepo.GetAllBestStats().GetAwaiter().GetResult();
+        Console.WriteLine(string.Join("\n", stats.Select(e => $"{e.problem_id} {e.best_score} {e.solver_id}")));
+    }
 }
