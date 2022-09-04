@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { Block, BlockType, ComplexBlock, SimpleBlock } from "./Block";
+import { Block, BlockType, ComplexBlock, PngBlock, SimpleBlock } from "./Block";
 import { Canvas } from "./Canvas";
 import { RGBA } from "./Color";
 import {
@@ -142,7 +142,7 @@ export class Interpreter {
       return new InterpreterResult(context, cost);
     }
 
-    if (block.typ === BlockType.ComplexBlockType) {
+    if (block.typ === BlockType.ComplexBlockType || block.typ === BlockType.PngBlockType) {
       let actualBlock = block as ComplexBlock;
       context.blocks.set(
         blockId,
@@ -401,6 +401,39 @@ export class Interpreter {
       context.blocks.set(blockId + ".2", topRightBlock);
       context.blocks.set(blockId + ".3", topLeftBlock);
       return new InterpreterResult(context, cost);
+    }
+
+    if (block.typ === BlockType.PngBlockType) {
+        const bottomLeftBlock = new PngBlock(
+            blockId + ".0",
+            block.bottomLeft,
+            point,
+            (block as PngBlock).bytes
+          );
+          const bottomRightBlock = new PngBlock(
+            blockId + ".1",
+            new Point([point.px, block.bottomLeft.py]),
+            new Point([block.topRight.px, point.py]),
+            (block as PngBlock).bytes
+          );
+          const topRightBlock = new PngBlock(
+            blockId + ".2",
+            point,
+            block.topRight,
+            (block as PngBlock).bytes
+          );
+          const topLeftBlock = new PngBlock(
+            blockId + ".3",
+            new Point([block.bottomLeft.px, point.py]),
+            new Point([point.px, block.topRight.py]),
+            (block as PngBlock).bytes
+          );
+          context.blocks.delete(blockId);
+          context.blocks.set(blockId + ".0", bottomLeftBlock);
+          context.blocks.set(blockId + ".1", bottomRightBlock);
+          context.blocks.set(blockId + ".2", topRightBlock);
+          context.blocks.set(blockId + ".3", topLeftBlock);
+          return new InterpreterResult(context, cost);
     }
     // Processing Ends
 
