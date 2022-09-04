@@ -19,7 +19,7 @@ public class GridGuidedPainterTests
         var bestScore = double.PositiveInfinity;
 
         foreach (var colorTolerance in new[]{50})
-        foreach (var size in new[]{11})
+        foreach (var size in new[]{17})
         {
             var screen = Screen.LoadProblem(problemId);
             var grid = CreateRegularGrid(size);

@@ -44,7 +44,7 @@ public static class GridGuidedPainterRunner
         problem.ToImage($"{problemId}-grid-{rows}-{cols}.png", grid);
 
         GridGuidedPainterResult? bestResult = null;
-        foreach (var colorTolerance in new[]{8, 16, 32, 48})
+        foreach (var colorTolerance in new[]{0, 1, 2, 4, 8, 16, 32, 48})
         {
             var (moves, score, canvas) = new GridGuidedPainter(grid, problem, colorTolerance).GetBestResultWithCanvas();
             if (bestResult == null || score < bestResult.Score)
