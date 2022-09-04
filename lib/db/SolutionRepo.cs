@@ -156,14 +156,15 @@ public static class SolutionRepo
         return ans;
     }
 
-    public static async Task<List<(long problemId, string solverId, long score)>> GetBestScoreByProblemIdAndSolverId()
+    public static async Task<List<(long problemId, string solverId, long score)>> GetBestScoreByProblemIdAndSolverId(List<string> ignoreSolverPrefixes)
     {
         var ans = new List<(long, string, long)>();
         var client = await CreateTableClient();
+        var ignoreClause = ignoreSolverPrefixes.StrJoin("|");
         var response = await client.SessionExec(async session =>
 
             await session.ExecuteDataQuery(
-                query: @"SELECT problem_id, solver_id, min(score_estimated) AS score FROM Solutions GROUP BY problem_id, solver_id;",
+                query: $"SELECT problem_id, solver_id, min(score_estimated) AS score FROM Solutions WHERE solver_id NOT REGEXP '^({ignoreClause})' AND solver_id NOT REGEXP '-enchanced$' GROUP BY problem_id, solver_id",
                 txControl: TxControl.BeginSerializableRW().Commit(),
                 parameters: new Dictionary<string, YdbValue> {}
 
