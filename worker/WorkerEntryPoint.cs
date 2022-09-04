@@ -16,19 +16,15 @@ public static class WorkerEntryPoint
     {
         var args = new[]
         {
-            (5, 40),
-            (7, 40),
-            (9, 40),
-            (11, 40),
-            (13, 40),
-            (15, 40)
+            (20, 20),
+            (40, 40),
         };
 
         var works = Enumerable.Range(1, 40)
             .SelectMany(problemId => args.Select(a => new { problemId, rows = a.Item1, cols = a.Item2 }))
             .SelectMany(a => Enumerable.Range(0, 8).Select(o => new { a.problemId, a.rows, a.cols, orientation = o }))
             .Where(x => x.problemId <= 25)
-            .Where(x => x.orientation == 0)
+            .Where(x => x.orientation < 4)
             .ToArray();
 
         Console.WriteLine($"Total: {works.Length}");
