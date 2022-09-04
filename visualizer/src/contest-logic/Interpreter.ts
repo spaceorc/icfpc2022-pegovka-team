@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { Block, BlockType, ComplexBlock, PngBlock, SimpleBlock } from "./Block";
+import { Block, BlockType, ComplexBlock, PngBlock, SimpleBlock, Size } from "./Block";
 import { Canvas } from "./Canvas";
 import { RGBA } from "./Color";
 import {
@@ -33,6 +33,10 @@ export class InterpreterResult {
     this.instructionCosts = instructionCosts ?? [];
   }
 }
+
+const getColorsFrame = (colors: RGBA[], bottomLeft: Point, szie: Size): RGBA[] => {
+    return [];
+};
 
 export class Interpreter {
   topLevelIdCounter: number;
@@ -404,29 +408,30 @@ export class Interpreter {
     }
 
     if (block.typ === BlockType.PngBlockType) {
+        //  TODO PNGBlock
         const bottomLeftBlock = new PngBlock(
             blockId + ".0",
             block.bottomLeft,
             point,
-            (block as PngBlock).bytes
+            (block as PngBlock).colors
           );
           const bottomRightBlock = new PngBlock(
             blockId + ".1",
             new Point([point.px, block.bottomLeft.py]),
             new Point([block.topRight.px, point.py]),
-            (block as PngBlock).bytes
+            (block as PngBlock).colors
           );
           const topRightBlock = new PngBlock(
             blockId + ".2",
             point,
             block.topRight,
-            (block as PngBlock).bytes
+            (block as PngBlock).colors
           );
           const topLeftBlock = new PngBlock(
             blockId + ".3",
             new Point([block.bottomLeft.px, point.py]),
             new Point([point.px, block.topRight.py]),
-            (block as PngBlock).bytes
+            (block as PngBlock).colors
           );
           context.blocks.delete(blockId);
           context.blocks.set(blockId + ".0", bottomLeftBlock);

@@ -69,6 +69,14 @@ public class GridGuidedPainter
     {
         var color = screen.GetAverageColorByGeometricMedian(bottomLeft.X, bottomLeft.Y, cell.Width, height);
         if (Block.IsFilledWithColor(color, bottomLeft, cell.Width, height, colorTolerance)) return;
+        var similarityPenaltyWith = screen.DiffTo(bottomLeft, bottomLeft + new V(cell.Width, height), color);
+        var similarityPenaltyWithout = screen.DiffTo(Block, bottomLeft, cell.Width, height);
+        var cost = Move.GetCost(canvas.ScalarSize, (bottomLeft.X + cell.Width) * (canvas.Height - bottomLeft.Y), 5) + 13;
+        if (cost >= similarityPenaltyWithout - similarityPenaltyWith)
+        {
+            return;
+        }
+
         if (bottomLeft.Y == 0)
         {
             if (bottomLeft.X + cell.Width == canvas.Width)
@@ -90,6 +98,14 @@ public class GridGuidedPainter
     {
         var color = screen.GetAverageColorByGeometricMedian(bottomLeft.X, bottomLeft.Y, cell.Width, height);
         if (Block.IsFilledWithColor(color, bottomLeft, cell.Width, height, colorTolerance)) return;
+        var similarityPenaltyWith = screen.DiffTo(bottomLeft, bottomLeft + new V(cell.Width, height), color);
+        var similarityPenaltyWithout = screen.DiffTo(Block, bottomLeft, cell.Width, height);
+        var cost = Move.GetCost(canvas.ScalarSize, (canvas.Width - bottomLeft.X) * (canvas.Height - bottomLeft.Y), 5) + 13;
+        if (cost >= similarityPenaltyWithout - similarityPenaltyWith)
+        {
+            return;
+        }
+
         if (bottomLeft.Y == 0)
         {
             if (bottomLeft.X == 0)

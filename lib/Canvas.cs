@@ -19,6 +19,16 @@ public class Canvas
     public int TopLevelIdCounter;
     public int TotalCost;
 
+    public Dictionary<string, StatValue> CostByMoveType = new()
+    {
+        { "color", new StatValue() },
+        { "vcut", new StatValue() },
+        { "hcut", new StatValue() },
+        { "pcut", new StatValue() },
+        { "merge", new StatValue() },
+        { "swap", new StatValue() },
+    };
+
     public V Size => new(Width, Height);
     public int ScalarSize => Width * Height;
 
@@ -67,6 +77,7 @@ public class Canvas
         }
 
         TotalCost += cost;
+        CostByMoveType["color"].Add(cost);
     }
 
     public static (Block leftBlock, Block rightBlock) PreApplyVCut(Block block, int offset)
@@ -151,6 +162,7 @@ public class Canvas
         Blocks[block.Id + ".0"] = a;
         Blocks[block.Id + ".1"] = b;
         TotalCost += cost;
+        CostByMoveType["vcut"].Add(cost);
         return (a, b);
     }
 
@@ -235,6 +247,7 @@ public class Canvas
         Blocks[block.Id + ".0"] = a;
         Blocks[block.Id + ".1"] = b;
         TotalCost += cost;
+        CostByMoveType["color"].Add(cost);
         return (a, b);
     }
 
@@ -272,6 +285,7 @@ public class Canvas
             Blocks.Remove(block1.Id);
             Blocks.Remove(block2.Id);
             TotalCost += cost;
+            CostByMoveType["merge"].Add(cost);
             return newBlock;
         }
 
@@ -304,6 +318,7 @@ public class Canvas
             Blocks.Remove(block1.Id);
             Blocks.Remove(block2.Id);
             TotalCost += cost;
+            CostByMoveType["merge"].Add(cost);
             return newBlock;
         }
 
@@ -352,6 +367,7 @@ public class Canvas
             TopRight = block1.TopRight,
         };
         TotalCost += cost;
+        CostByMoveType["swap"].Add(cost);
     }
 
     public static (Block bl, Block br, Block tl, Block tr) PreApplyPCut(Block block, V point)
@@ -600,6 +616,7 @@ public class Canvas
         Blocks[topRightBlock.Id] = topRightBlock;
         Blocks[topLeftBlock.Id] = topLeftBlock;
         TotalCost += cost;
+        CostByMoveType["pcut"].Add(cost);
         return (bottomLeftBlock, bottomRightBlock, topRightBlock, topLeftBlock);
     }
 

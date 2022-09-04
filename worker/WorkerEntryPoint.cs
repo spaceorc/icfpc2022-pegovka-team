@@ -16,6 +16,7 @@ public static class WorkerEntryPoint
         {
             (15, 15),
             (17, 17),
+            (19, 19)
         };
 
         var works = Enumerable.Range(1, 25).SelectMany(problemId => args.Select(a => new { problemId, rows = a.Item1, cols = a.Item2 })).ToArray();

@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-import { Block, SimpleBlock } from "./Block";
+import { Block, PngBlock, SimpleBlock } from "./Block";
 import { RGBA } from "./Color";
 import { Point } from "./Point";
 
@@ -37,8 +37,8 @@ export class Canvas {
     return new Point([this.width, this.height]);
   }
 
-  simplify(): SimpleBlock[] {
-    let simplifiedBlocks: SimpleBlock[] = [];
+  simplify(): (SimpleBlock | PngBlock)[] {
+    let simplifiedBlocks: (SimpleBlock | PngBlock)[] = [];
     this.blocks.forEach((value) => {
       simplifiedBlocks = simplifiedBlocks.concat(value.getChildren());
     });

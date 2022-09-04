@@ -99,17 +99,21 @@ export class PngBlock {
 
   size: Size;
 
-  bytes: Uint8ClampedArray;
+  colors: RGBA[];
 
-  constructor(id: string, bottomLeft: Point, topRight: Point, bytes: Uint8ClampedArray) {
+  constructor(id: string, bottomLeft: Point, topRight: Point, colors: RGBA[]) {
     this.typ = BlockType.PngBlockType;
     this.id = id;
     this.bottomLeft = bottomLeft;
     this.topRight = topRight;
     this.size = topRight.getDiff(bottomLeft);
-    this.bytes = bytes;
+    this.colors = colors;
     if (this.bottomLeft.px > this.topRight.px || this.bottomLeft.py > this.topRight.py) {
     }
+  }
+
+  getChildren() {
+    return [this];
   }
 
   clone() {
@@ -117,7 +121,7 @@ export class PngBlock {
       this.id,
       this.bottomLeft.clone(),
       this.topRight.clone(),
-      this.bytes
+      this.colors.slice()
     );
   }
 }

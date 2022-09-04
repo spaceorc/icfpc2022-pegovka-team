@@ -199,6 +199,11 @@ public class Screen
         return GeometricMedian.GetGeometricMedian(this, left, left+width, bottom, bottom+height);
     }
 
+    // public Rgba GetAverageColor(int left, int bottom, int width, int height)
+    // {
+    //
+    // }
+
     public void ToImage(string pngPath)
     {
         using var image = new Image<Rgba32>(Width, Height);
@@ -210,6 +215,7 @@ public class Screen
         }
         image.Save(pngPath, new PngEncoder());
     }
+
     public void ToImage(string pngPath, Grid grid)
     {
         using var image = new Image<Rgba32>(Width, Height);
@@ -256,5 +262,23 @@ public class Screen
         foreach (var move in moves)
             canvas.Apply(move);
         canvas.ToScreen().ToImage(filename);
+    }
+
+    public double DiffTo(Block block, V bottomLeft, int width, int height)
+    {
+        switch (block)
+        {
+            case ComplexBlock cb:
+                return cb.Children.Sum(c => DiffTo(c, bottomLeft, width, height));
+            case SimpleBlock sb:
+                var left = Math.Max(sb.Left, bottomLeft.X);
+                var right = Math.Min(sb.Right, bottomLeft.X + width);
+                var bottom = Math.Max(sb.Bottom, bottomLeft.Y);
+                var top = Math.Min(sb.Top, bottomLeft.Y + height);
+                if (left >= right || bottom >= top) return 0;
+                return DiffTo(new V(left, bottom), new V(right, top), sb.Color);
+            default:
+                throw new Exception(block.ToString());
+        }
     }
 }
