@@ -48,7 +48,10 @@ public static class WorkerEntryPoint
                     var rows = w.rows;
                     var cols = w.cols;
 
-                    long prevBestScore;
+                    var res = GridGuidedPainterRunner.Solve(problemId, rows, cols, w.orientation);
+                    var score = res.Score;
+
+                    long prevBestScore = -1;
                     try
                     {
                         prevBestScore = SolutionRepo.GetBestSolutionByProblemId(problemId).GetAwaiter().GetResult()!.ScoreEstimated;
@@ -56,18 +59,15 @@ public static class WorkerEntryPoint
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
-                        return;
                     }
 
-                    var res = GridGuidedPainterRunner.Solve(problemId, rows, cols, w.orientation);
-                    var score = res.Score;
                     if (score < prevBestScore)
                         Console.WriteLine($"BEST! {localCurrent + 1}/{works.Length} submitted score={prevBestScore}->{score} problem={problemId} rows={rows} cols={cols} orientation={w.orientation}");
                     else
                         Console.WriteLine($"{localCurrent + 1}/{works.Length} submitted score={prevBestScore}->{score} problem={problemId} rows={rows} cols={cols} orientation={w.orientation}");
 
 
-                    File.WriteAllText(Path.Combine(FileHelper.FindDirectoryUpwards("worker-solutions"), $"{problemId}-grid-{rows}-{cols}-{w.orientation}.txt"), res.Moves.StrJoin("\n"));
+                    // File.WriteAllText(Path.Combine(FileHelper.FindDirectoryUpwards("worker-solutions"), $"{problemId}-grid-{rows}-{cols}-{w.orientation}.txt"), res.Moves.StrJoin("\n"));
 
                     try
                     {
