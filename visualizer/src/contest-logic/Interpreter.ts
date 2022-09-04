@@ -34,8 +34,15 @@ export class InterpreterResult {
   }
 }
 
-const getColorsFrame = (colors: RGBA[], bottomLeft: Point, szie: Size): RGBA[] => {
-    return [];
+const getColorsFrame = (colors: RGBA[], bottomLeft: Point, size: Size): RGBA[] => {
+  const frameColors = [];
+
+  for (let i = 0; i < size.px; i++) {
+    for (let j = 0; j < size.py; j++) {
+        frameColors.push(colors[0]);
+    }
+  }
+  return frameColors;
 };
 
 export class Interpreter {
@@ -408,37 +415,61 @@ export class Interpreter {
     }
 
     if (block.typ === BlockType.PngBlockType) {
-        //  TODO PNGBlock
-        const bottomLeftBlock = new PngBlock(
-            blockId + ".0",
-            block.bottomLeft,
-            point,
-            (block as PngBlock).colors
-          );
-          const bottomRightBlock = new PngBlock(
-            blockId + ".1",
-            new Point([point.px, block.bottomLeft.py]),
-            new Point([block.topRight.px, point.py]),
-            (block as PngBlock).colors
-          );
-          const topRightBlock = new PngBlock(
-            blockId + ".2",
-            point,
-            block.topRight,
-            (block as PngBlock).colors
-          );
-          const topLeftBlock = new PngBlock(
-            blockId + ".3",
-            new Point([block.bottomLeft.px, point.py]),
-            new Point([point.px, block.topRight.py]),
-            (block as PngBlock).colors
-          );
-          context.blocks.delete(blockId);
-          context.blocks.set(blockId + ".0", bottomLeftBlock);
-          context.blocks.set(blockId + ".1", bottomRightBlock);
-          context.blocks.set(blockId + ".2", topRightBlock);
-          context.blocks.set(blockId + ".3", topLeftBlock);
-          return new InterpreterResult(context, cost);
+      //  TODO PNGBlock
+      let bl = block.bottomLeft;
+      let tr = point;
+      const bottomLeftBlock = new PngBlock(
+        blockId + ".0",
+        bl,
+        tr,
+        getColorsFrame(
+          (block as PngBlock).colors,
+          block.bottomLeft.getDiff(bl),
+          tr.getDiff(block.bottomLeft)
+        )
+      );
+      bl = new Point([point.px, block.bottomLeft.py]);
+      tr = new Point([block.topRight.px, point.py]);
+      const bottomRightBlock = new PngBlock(
+        blockId + ".1",
+        bl,
+        tr,
+        getColorsFrame(
+          (block as PngBlock).colors,
+          block.bottomLeft.getDiff(bl),
+          tr.getDiff(block.bottomLeft)
+        )
+      );
+      bl = point;
+      tr = block.topRight;
+      const topRightBlock = new PngBlock(
+        blockId + ".2",
+        point,
+        block.topRight,
+        getColorsFrame(
+          (block as PngBlock).colors,
+          block.bottomLeft.getDiff(bl),
+          tr.getDiff(block.bottomLeft)
+        )
+      );
+      bl = new Point([block.bottomLeft.px, point.py]);
+      tr = new Point([point.px, block.topRight.py]);
+      const topLeftBlock = new PngBlock(
+        blockId + ".3",
+        bl,
+        tr,
+        getColorsFrame(
+          (block as PngBlock).colors,
+          block.bottomLeft.getDiff(bl),
+          tr.getDiff(block.bottomLeft)
+        )
+      );
+      context.blocks.delete(blockId);
+      context.blocks.set(blockId + ".0", bottomLeftBlock);
+      context.blocks.set(blockId + ".1", bottomRightBlock);
+      context.blocks.set(blockId + ".2", topRightBlock);
+      context.blocks.set(blockId + ".3", topLeftBlock);
+      return new InterpreterResult(context, cost);
     }
     // Processing Ends
 
@@ -533,6 +564,37 @@ export class Interpreter {
         block.topRight,
         rightBlocks
       );
+      context.blocks.set(blockId + ".0", leftBlock);
+      context.blocks.set(blockId + ".1", rightBlock);
+      return new InterpreterResult(context, cost);
+    }
+
+    if (block.typ === BlockType.PngBlockType) {
+      let bl = block.bottomLeft;
+      let tr = new Point([lineNumber, block.topRight.py]);
+      const leftBlock = new PngBlock(
+        blockId + ".0",
+        bl,
+        tr,
+        getColorsFrame(
+          (block as PngBlock).colors,
+          block.bottomLeft.getDiff(bl),
+          tr.getDiff(block.bottomLeft)
+        )
+      );
+      bl = new Point([lineNumber, block.bottomLeft.py]);
+      tr = block.topRight;
+      const rightBlock = new PngBlock(
+        blockId + ".1",
+        bl,
+        block.topRight,
+        getColorsFrame(
+          (block as PngBlock).colors,
+          block.bottomLeft.getDiff(bl),
+          tr.getDiff(block.bottomLeft)
+        )
+      );
+      context.blocks.delete(blockId);
       context.blocks.set(blockId + ".0", leftBlock);
       context.blocks.set(blockId + ".1", rightBlock);
       return new InterpreterResult(context, cost);
@@ -634,6 +696,37 @@ export class Interpreter {
       context.blocks.set(blockId + ".1", topBlock);
       return new InterpreterResult(context, cost);
     }
+
+    if (block.typ === BlockType.PngBlockType) {
+      let bl = block.bottomLeft;
+      let tr = new Point([block.topRight.px, lineNumber]);
+      const bottomBlock = new PngBlock(
+        blockId + ".0",
+        bl,
+        tr,
+        getColorsFrame(
+          (block as PngBlock).colors,
+          block.bottomLeft.getDiff(bl),
+          tr.getDiff(block.bottomLeft)
+        )
+      );
+      bl = new Point([block.bottomLeft.px, lineNumber]);
+      tr = block.topRight;
+      const topBlock = new PngBlock(
+        blockId + ".1",
+        bl,
+        tr,
+        getColorsFrame(
+          (block as PngBlock).colors,
+          block.bottomLeft.getDiff(bl),
+          tr.getDiff(block.bottomLeft)
+        )
+      );
+      context.blocks.delete(blockId);
+      context.blocks.set(blockId + ".0", bottomBlock);
+      context.blocks.set(blockId + ".1", topBlock);
+      return new InterpreterResult(context, cost);
+    }
     // Processing Ends
 
     throw Error(`At ${line}, encountered unreachable code!`);
@@ -662,7 +755,6 @@ export class Interpreter {
 
     // Processing Starts
     if (block1.size.equals(block2.size)) {
-
       const diffX = block1.bottomLeft.px - block2.bottomLeft.px;
       const diffY = block1.bottomLeft.py - block2.bottomLeft.py;
 
