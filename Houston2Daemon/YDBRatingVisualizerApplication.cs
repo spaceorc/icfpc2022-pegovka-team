@@ -35,8 +35,9 @@ public class YDBRatingVisualizerApplication : VostokScheduledApplication
     {
         environment.Log.Info("Start updating..");
         var bestStats = SolutionRepo.GetAllBestStats().GetAwaiter().GetResult();
-        environment.Log.Info("Start executing builder..");
+        environment.Log.Info("Start executing stats builder..");
         BuildStats(bestStats);
+        environment.Log.Info("Start executing better stats builder..");
         BuildBestStat(bestStats);
         environment.Log.Info("Finished updating");
     }
