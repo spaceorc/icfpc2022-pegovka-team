@@ -41,7 +41,6 @@ public class GridGuidedPainter
 
     private void PaintRow(GridRow row, V rowBottomLeft)
     {
-        Console.WriteLine($"{row.Cells[0].Width} < {row.Cells.Last().Width}");
         if (row.Cells[0].Width < row.Cells.Last().Width)
             PaintRowLeftToRight(row, rowBottomLeft);
         else
