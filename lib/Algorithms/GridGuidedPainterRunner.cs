@@ -1,19 +1,19 @@
-using System;
 using System.Collections.Generic;
-using lib.db;
+using System.Linq;
 
 namespace lib.Algorithms;
 
 
 public class GridGuidedPainterResult
 {
-    public GridGuidedPainterResult(IList<Move> moves, int rows, int cols, int colorTolerance, int score, Canvas canvas)
+    public GridGuidedPainterResult(IList<Move> moves, int rows, int cols, int colorTolerance, int score, int orientation, Canvas canvas)
     {
         Canvas = canvas;
         Moves = moves;
         Rows = rows;
         Cols = cols;
         ColorTolerance = colorTolerance;
+        Orientation = orientation;
         Score = score;
     }
 
@@ -21,15 +21,17 @@ public class GridGuidedPainterResult
     public IList<Move> Moves;
     public int Rows, Cols;
     public int ColorTolerance;
+    public int Orientation;
     public int Score;
 }
 
 public static class GridGuidedPainterRunner
 {
-
-    public static GridGuidedPainterResult Solve(int problemId, int rows, int cols)
+    public static GridGuidedPainterResult Solve(int problemId, int rows, int cols, int orientation = 0)
     {
-        var problem = Screen.LoadProblem(problemId);
+        var originalProblem = Screen.LoadProblem(problemId);
+        var problem = Rotator.Rotate(originalProblem, orientation);
+
         var grid = GridBuilder.BuildRegularGrid(problem, rows, cols);
         double estimation;
 
@@ -41,7 +43,7 @@ public static class GridGuidedPainterRunner
         (grid, estimation) = GridBuilder.OptimizeRowHeights(problem, grid);
         (grid, estimation) = GridBuilder.OptimizeCellWidths(problem, grid);
 
-        problem.ToImage($"{problemId}-grid-{rows}-{cols}.png", grid);
+        problem.ToImage($"{problemId}-grid-{rows}-{cols}-{orientation}.png", grid);
 
         GridGuidedPainterResult? bestResult = null;
         foreach (var colorTolerance in new[]{0, 1, 2, 4, 8, 16, 32, 48})
@@ -49,10 +51,15 @@ public static class GridGuidedPainterRunner
             var (moves, score, canvas) = new GridGuidedPainter(grid, problem, colorTolerance).GetBestResultWithCanvas();
             if (bestResult == null || score < bestResult.Score)
             {
-                bestResult = new GridGuidedPainterResult(moves, rows, cols, colorTolerance, score, canvas);
+                bestResult = new GridGuidedPainterResult(moves, rows, cols, colorTolerance, score, 0, canvas);
             }
         }
 
-        return bestResult!;
+        var rMoves = Rotator.RotateBack(problem, bestResult!.Moves.ToList(), orientation);
+        var rCanvas = new Canvas(originalProblem);
+        foreach (var rMove in rMoves)
+            rCanvas.Apply(rMove);
+
+        return new GridGuidedPainterResult(rMoves, rows, cols, bestResult!.ColorTolerance, bestResult!.Score, orientation, rCanvas);
     }
 }
