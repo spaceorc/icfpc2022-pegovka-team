@@ -69,7 +69,7 @@ public record ColorMove(string BlockId, Rgba Color) : Move()
 
     public static ColorMove? TryParse(string s)
     {
-        var re = new Regex(@"^color\s+\[(?<blockId>[^]]*)\]\s+\[(?<r>\d+),\s+(?<g>\d+),\s+(?<b>\d+),\s+(?<a>\d+)\]$");
+        var re = new Regex(@"^color\s*\[(?<blockId>[^]]*)\]\s*\[(?<r>\d+),\s*(?<g>\d+),\s*(?<b>\d+),\s*(?<a>\d+)\]$");
         var m = re.Match(s.ToLower());
         if (!m.Success)
             return null;
@@ -103,7 +103,7 @@ public record PCutMove(string BlockId, V Point) : CutMove(BlockId)
 
     public static PCutMove? TryParse(string s)
     {
-        var re = new Regex(@"^cut\s+\[(?<blockId>[^]]*)\]\s+\[(?<x>\d+),\s*(?<y>\d+)\]$");
+        var re = new Regex(@"^cut\s*\[(?<blockId>[^]]*)\]\s*\[(?<x>\d+),\s*(?<y>\d+)\]$");
         var m = re.Match(s.ToLower());
         if (!m.Success)
             return null;
@@ -133,7 +133,7 @@ public record HCutMove(string BlockId, int LineNumber) : CutMove(BlockId)
 
     public static HCutMove? TryParse(string s)
     {
-        var re = new Regex(@"^cut\s+\[(?<blockId>[^]]*)\]\s+\[y\]\s+\[(?<lineNumber>\d+)\]$");
+        var re = new Regex(@"^cut\s*\[(?<blockId>[^]]*)\]\s*\[y\]\s*\[(?<lineNumber>\d+)\]$");
         var m = re.Match(s.ToLower());
         if (!m.Success)
             return null;
@@ -160,7 +160,7 @@ public record VCutMove(string BlockId, int LineNumber) : CutMove(BlockId)
 
     public static VCutMove? TryParse(string s)
     {
-        var re = new Regex(@"^cut\s+\[(?<blockId>[^]]*)\]\s+\[x\]\s+\[(?<lineNumber>\d+)\]$");
+        var re = new Regex(@"^cut\s*\[(?<blockId>[^]]*)\]\s*\[x\]\s*\[(?<lineNumber>\d+)\]$");
         var m = re.Match(s.ToLower());
         if (!m.Success)
             return null;
@@ -184,7 +184,7 @@ public record SwapMove(string Block1Id, string Block2Id) : Move
 
     public static SwapMove? TryParse(string s)
     {
-        var re = new Regex(@"^swap\s+\[(?<block1Id>[^]]*)\]\s+\[(?<block2Id>[^]]*)\]$");
+        var re = new Regex(@"^swap\s*\[(?<block1Id>[^]]*)\]\s*\[(?<block2Id>[^]]*)\]$");
         var m = re.Match(s.ToLower());
         if (!m.Success)
             return null;
@@ -209,7 +209,7 @@ public record MergeMove(string Block1Id, string Block2Id) : Move
 
     public static MergeMove? TryParse(string s)
     {
-        var re = new Regex(@"^merge\s+\[(?<block1Id>[^]]*)\]\s+\[(?<block2Id>[^]]*)\]$");
+        var re = new Regex(@"^merge\s*\[(?<block1Id>[^]]*)\]\s*\[(?<block2Id>[^]]*)\]$");
         var m = re.Match(s.ToLower());
         if (!m.Success)
             return null;

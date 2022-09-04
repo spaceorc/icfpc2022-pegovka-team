@@ -57,7 +57,7 @@ public class Screen
                     for (int i = 0; i < colors.Length; i++)
                     {
                         var pixel = colors[i];
-                        sourcePng[i % 400, i / 400] = new Rgba(pixel[0], pixel[1], pixel[2], pixel[3]);
+                        sourcePng[i % 400, 399-i / 400] = new Rgba(pixel[0], pixel[1], pixel[2], pixel[3]);
                     }
                     initialBlocks.Add(new PngBlock(blockId, new V(left, bottom), new V(right, top), new V(pngBottomLeft[0], pngBottomLeft[1]), sourcePng));
                 }
