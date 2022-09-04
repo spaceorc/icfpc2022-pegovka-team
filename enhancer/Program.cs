@@ -14,7 +14,7 @@ namespace enhancer
             {
                 var scoreByProblemId = SolutionRepo.GetBestScoreByProblemIdAndSolverId().GetAwaiter().GetResult();
 
-                Console.WriteLine("getting solutions from DB");
+                Console.WriteLine($"getting {scoreByProblemId.Count} solutions from DB");
                 var solutions = scoreByProblemId.ToDictionary(
                     e => (e.problemId, e.solverId),
                     e => SolutionRepo.GetSolutionByProblemIdAndSolverIdAndScore(e.problemId, e.solverId, e.score).GetAwaiter().GetResult());
