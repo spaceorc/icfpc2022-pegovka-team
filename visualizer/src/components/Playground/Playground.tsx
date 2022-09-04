@@ -339,10 +339,12 @@ export const Playground = (): JSX.Element => {
       }
 
       if (event.code === "KeyZ" && (event.ctrlKey || event.metaKey)) {
-        event.preventDefault();
-        const newCode = playgroundCode.split("\n").slice(0, -1).join("\n");
-        setPlaygroundCode(newCode);
-        handleClickRenderCanvas(newCode);
+        if (document.activeElement !== document.getElementById('codeTextArea')){
+            event.preventDefault();
+            const newCode = playgroundCode.split("\n").slice(0, -1).join("\n");
+            setPlaygroundCode(newCode);
+            handleClickRenderCanvas(newCode);
+        }
       }
 
       if (event.code === "Equal" && event.shiftKey) {
@@ -522,6 +524,7 @@ export const Playground = (): JSX.Element => {
                 }}
               >
                 <textarea
+                    id={'codeTextArea'}
                   style={{
                     width: "500px",
                     height: "400px",
