@@ -34,17 +34,6 @@ export class InterpreterResult {
   }
 }
 
-const getColorsFrame = (colors: RGBA[], bottomLeft: Point, size: Size): RGBA[] => {
-  const frameColors = [];
-
-  for (let i = 0; i < size.px; i++) {
-    for (let j = 0; j < size.py; j++) {
-        frameColors.push(colors[0]);
-    }
-  }
-  return frameColors;
-};
-
 export class Interpreter {
   topLevelIdCounter: number;
   initialBlocks?: Block[];
@@ -422,10 +411,9 @@ export class Interpreter {
         blockId + ".0",
         bl,
         tr,
-        getColorsFrame(
-          (block as PngBlock).colors,
-          block.bottomLeft.getDiff(bl),
-          tr.getDiff(block.bottomLeft)
+        block.getColorsFrame(
+          bl.getDiff(block.bottomLeft),
+          tr.getDiff(bl)
         )
       );
       bl = new Point([point.px, block.bottomLeft.py]);
@@ -434,10 +422,9 @@ export class Interpreter {
         blockId + ".1",
         bl,
         tr,
-        getColorsFrame(
-          (block as PngBlock).colors,
-          block.bottomLeft.getDiff(bl),
-          tr.getDiff(block.bottomLeft)
+        block.getColorsFrame(
+          bl.getDiff(block.bottomLeft),
+          tr.getDiff(bl)
         )
       );
       bl = point;
@@ -446,10 +433,9 @@ export class Interpreter {
         blockId + ".2",
         point,
         block.topRight,
-        getColorsFrame(
-          (block as PngBlock).colors,
-          block.bottomLeft.getDiff(bl),
-          tr.getDiff(block.bottomLeft)
+        block.getColorsFrame(
+          bl.getDiff(block.bottomLeft),
+          tr.getDiff(bl)
         )
       );
       bl = new Point([block.bottomLeft.px, point.py]);
@@ -458,10 +444,9 @@ export class Interpreter {
         blockId + ".3",
         bl,
         tr,
-        getColorsFrame(
-          (block as PngBlock).colors,
-          block.bottomLeft.getDiff(bl),
-          tr.getDiff(block.bottomLeft)
+        block.getColorsFrame(
+          bl.getDiff(block.bottomLeft),
+          tr.getDiff(bl)
         )
       );
       context.blocks.delete(blockId);
@@ -576,10 +561,9 @@ export class Interpreter {
         blockId + ".0",
         bl,
         tr,
-        getColorsFrame(
-          (block as PngBlock).colors,
-          block.bottomLeft.getDiff(bl),
-          tr.getDiff(block.bottomLeft)
+        block.getColorsFrame(
+          bl.getDiff(block.bottomLeft),
+          tr.getDiff(bl)
         )
       );
       bl = new Point([lineNumber, block.bottomLeft.py]);
@@ -587,11 +571,10 @@ export class Interpreter {
       const rightBlock = new PngBlock(
         blockId + ".1",
         bl,
-        block.topRight,
-        getColorsFrame(
-          (block as PngBlock).colors,
-          block.bottomLeft.getDiff(bl),
-          tr.getDiff(block.bottomLeft)
+        tr,
+        block.getColorsFrame(
+          bl.getDiff(block.bottomLeft),
+          tr.getDiff(bl)
         )
       );
       context.blocks.delete(blockId);
@@ -704,10 +687,9 @@ export class Interpreter {
         blockId + ".0",
         bl,
         tr,
-        getColorsFrame(
-          (block as PngBlock).colors,
-          block.bottomLeft.getDiff(bl),
-          tr.getDiff(block.bottomLeft)
+        block.getColorsFrame(
+          bl.getDiff(block.bottomLeft),
+          tr.getDiff(bl)
         )
       );
       bl = new Point([block.bottomLeft.px, lineNumber]);
@@ -716,10 +698,9 @@ export class Interpreter {
         blockId + ".1",
         bl,
         tr,
-        getColorsFrame(
-          (block as PngBlock).colors,
-          block.bottomLeft.getDiff(bl),
-          tr.getDiff(block.bottomLeft)
+        block.getColorsFrame(
+          bl.getDiff(block.bottomLeft),
+          tr.getDiff(bl)
         )
       );
       context.blocks.delete(blockId);

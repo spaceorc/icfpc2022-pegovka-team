@@ -124,4 +124,16 @@ export class PngBlock {
       this.colors.slice()
     );
   }
+
+  getColorsFrame = (bottomLeft: Point, size: Size): RGBA[] => {
+    console.log(this.colors, bottomLeft, size);
+    const offsetY = this.size.py - bottomLeft.py - size.py;
+  const frameColors = [];
+  for (let j = 0; j < size.py; j++) {
+      for (let i = 0; i < size.px; i++) {
+        frameColors.push(this.colors[(offsetY + j) * this.size.px + (bottomLeft.px + i)]);
+    }
+  }
+  return frameColors;
+};
 }

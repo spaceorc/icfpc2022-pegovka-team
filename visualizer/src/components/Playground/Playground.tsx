@@ -91,7 +91,7 @@ export const Playground = (): JSX.Element => {
     }
 
     return initialBlocks.reduce<RGBA[]>((colors, block) => {
-      if (colors.every((color) => !color.isEqual(block.color))) {
+      if (block.typ === BlockType.SimpleBlockType && colors.every((color) => !color.isEqual(block.color))) {
         colors.push(block.color);
       }
 
