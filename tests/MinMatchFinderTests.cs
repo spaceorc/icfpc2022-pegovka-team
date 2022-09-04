@@ -9,7 +9,7 @@ public class MinMatchFinderTests
     [Test]
     public void Test1()
     {
-        var w = new[,]
+        var w = new double[,]
         {
             {1, 2, 3},
             {5, 5, 6},
@@ -21,7 +21,7 @@ public class MinMatchFinderTests
     [Test]
     public void Test2()
     {
-        var w = new[,]
+        var w = new double[,]
         {
             {2, 1, 1},
             {3, 1, 5},

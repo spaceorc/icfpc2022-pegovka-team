@@ -20,10 +20,10 @@ public class GridBuilderTests
     [Test]
     public void TestOptimizeRowHeights()
     {
-        Func<SimpleBlock,double,double> estimateBlock = (block, similarity) => 1.0 * similarity + 400.0 * 400 / block.ScalarSize;
+        Func<SimpleBlock,double,double> estimateBlock = (block, similarity) => 1.0 * similarity + 5*400.0 * 400 / ((400 - block.Left)*(400 - block.Bottom));
 
-        var problem = Screen.LoadProblem(8);
-        var grid = GridBuilder.BuildRegularGrid(problem, 11, 10);
+        var problem = Screen.LoadProblem(23);
+        var grid = GridBuilder.BuildRegularGrid(problem, 13, 13);
         double estimation;
 
         problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "regular.png"), grid);
@@ -44,7 +44,7 @@ public class GridBuilderTests
         problem.MovesToImage(moves, Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "solved0.png"));
         Console.Out.WriteLine(score);
 
-        for (int i = 0; i < 11; i++)
+        for (int i = 0; i < grid.Rows.Count; i++)
         {
             (grid, estimation) = GridBuilder.OptimizeCellsViaMerge(problem, grid, i, estimateBlock);
             problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), $"optimizedM{i}.png"), grid);
