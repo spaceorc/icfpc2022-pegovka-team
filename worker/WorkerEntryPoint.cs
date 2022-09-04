@@ -35,7 +35,7 @@ public static class WorkerEntryPoint
         var current = 0;
 
         var tasks = new List<Task>();
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 94; i++)
         {
             tasks.Add(Task.Run(() =>
             {
