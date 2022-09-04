@@ -48,6 +48,10 @@ export class SimpleBlock {
       this.color.clone()
     );
   }
+
+  getSubBlock = (id: string, bottomLeft: Point, topRight: Point): SimpleBlock => {
+    return new SimpleBlock(id, bottomLeft, topRight, this.color);
+  };
 }
 
 export class ComplexBlock {
@@ -61,9 +65,14 @@ export class ComplexBlock {
 
   size: Size;
 
-  subBlocks: SimpleBlock[];
+  subBlocks: (SimpleBlock | PngBlock)[];
 
-  constructor(id: string, bottomLeft: Point, topRight: Point, subBlocks: SimpleBlock[]) {
+  constructor(
+    id: string,
+    bottomLeft: Point,
+    topRight: Point,
+    subBlocks: (SimpleBlock | PngBlock)[]
+  ) {
     this.typ = BlockType.ComplexBlockType;
     this.id = id;
     this.bottomLeft = bottomLeft;
@@ -128,12 +137,21 @@ export class PngBlock {
   getColorsFrame = (bottomLeft: Point, size: Size): RGBA[] => {
     console.log(this.colors, bottomLeft, size);
     const offsetY = this.size.py - bottomLeft.py - size.py;
-  const frameColors = [];
-  for (let j = 0; j < size.py; j++) {
+    const frameColors = [];
+    for (let j = 0; j < size.py; j++) {
       for (let i = 0; i < size.px; i++) {
         frameColors.push(this.colors[(offsetY + j) * this.size.px + (bottomLeft.px + i)]);
+      }
     }
-  }
-  return frameColors;
-};
+    return frameColors;
+  };
+
+  getSubBlock = (id: string, bottomLeft: Point, topRight: Point): PngBlock => {
+    return new PngBlock(
+      id,
+      bottomLeft,
+      topRight,
+      this.getColorsFrame(bottomLeft.getDiff(this.bottomLeft), topRight.getDiff(bottomLeft))
+    );
+  };
 }

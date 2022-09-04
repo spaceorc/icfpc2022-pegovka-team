@@ -215,10 +215,10 @@ export class Interpreter {
     }
 
     if (block.typ === BlockType.ComplexBlockType) {
-      let bottomLeftBlocks: SimpleBlock[] = [];
-      let bottomRightBlocks: SimpleBlock[] = [];
-      let topRightBlocks: SimpleBlock[] = [];
-      let topLeftBlocks: SimpleBlock[] = [];
+      let bottomLeftBlocks: (SimpleBlock | PngBlock)[] = [];
+      let bottomRightBlocks: (SimpleBlock | PngBlock)[] = [];
+      let topRightBlocks: (SimpleBlock | PngBlock)[] = [];
+      let topLeftBlocks: (SimpleBlock | PngBlock)[] = [];
       (block as ComplexBlock).subBlocks.forEach((subBlock) => {
         /**
          * __________________________
@@ -255,25 +255,23 @@ export class Interpreter {
         // Case 5
         if (point.isInside(subBlock.bottomLeft, subBlock.topRight)) {
           bottomLeftBlocks.push(
-            new SimpleBlock("bl_child", subBlock.bottomLeft, point, (subBlock as SimpleBlock).color)
+            subBlock.getSubBlock("bl_child", subBlock.bottomLeft, point)
           );
           bottomRightBlocks.push(
-            new SimpleBlock(
+            subBlock.getSubBlock(
               "br_child",
               new Point([point.px, subBlock.bottomLeft.py]),
-              new Point([subBlock.topRight.px, point.py]),
-              (subBlock as SimpleBlock).color
+              new Point([subBlock.topRight.px, point.py])
             )
           );
           topRightBlocks.push(
-            new SimpleBlock("tr_child", point, subBlock.topRight, (subBlock as SimpleBlock).color)
+            subBlock.getSubBlock("tr_child", point, subBlock.topRight)
           );
           topLeftBlocks.push(
-            new SimpleBlock(
+            subBlock.getSubBlock(
               "tl_child",
               new Point([subBlock.bottomLeft.px, point.py]),
-              new Point([point.px, subBlock.topRight.py]),
-              (subBlock as SimpleBlock).color
+              new Point([point.px, subBlock.topRight.py])
             )
           );
           return;
@@ -286,19 +284,17 @@ export class Interpreter {
           point.py < subBlock.bottomLeft.py
         ) {
           topLeftBlocks.push(
-            new SimpleBlock(
+            subBlock.getSubBlock(
               "case2_tl_child",
               subBlock.bottomLeft,
-              new Point([point.px, subBlock.topRight.py]),
-              (subBlock as SimpleBlock).color
+              new Point([point.px, subBlock.topRight.py])
             )
           );
           topRightBlocks.push(
-            new SimpleBlock(
+            subBlock.getSubBlock(
               "case2_tr_child",
               new Point([point.px, subBlock.bottomLeft.py]),
-              subBlock.topRight,
-              (subBlock as SimpleBlock).color
+              subBlock.topRight
             )
           );
           return;
@@ -310,19 +306,17 @@ export class Interpreter {
           point.py > subBlock.topRight.py
         ) {
           bottomLeftBlocks.push(
-            new SimpleBlock(
+            subBlock.getSubBlock(
               "case8_bl_child",
               subBlock.bottomLeft,
-              new Point([point.px, subBlock.topRight.py]),
-              (subBlock as SimpleBlock).color
+              new Point([point.px, subBlock.topRight.py])
             )
           );
           bottomRightBlocks.push(
-            new SimpleBlock(
+            subBlock.getSubBlock(
               "case8_br_child",
               new Point([point.px, subBlock.bottomLeft.py]),
-              subBlock.topRight,
-              (subBlock as SimpleBlock).color
+              subBlock.topRight
             )
           );
           return;
@@ -334,19 +328,17 @@ export class Interpreter {
           point.px < subBlock.bottomLeft.px
         ) {
           bottomRightBlocks.push(
-            new SimpleBlock(
+            subBlock.getSubBlock(
               "case4_br_child",
               subBlock.bottomLeft,
-              new Point([subBlock.topRight.px, point.py]),
-              (subBlock as SimpleBlock).color
+              new Point([subBlock.topRight.px, point.py])
             )
           );
           topRightBlocks.push(
-            new SimpleBlock(
+            subBlock.getSubBlock(
               "case4_tr_child",
               new Point([subBlock.bottomLeft.px, point.py]),
-              subBlock.topRight,
-              (subBlock as SimpleBlock).color
+              subBlock.topRight
             )
           );
           return;
@@ -358,19 +350,17 @@ export class Interpreter {
           point.px > subBlock.topRight.px
         ) {
           bottomLeftBlocks.push(
-            new SimpleBlock(
+            subBlock.getSubBlock(
               "case6_bl_child",
               subBlock.bottomLeft,
-              new Point([subBlock.topRight.px, point.py]),
-              (subBlock as SimpleBlock).color
+              new Point([subBlock.topRight.px, point.py])
             )
           );
           topLeftBlocks.push(
-            new SimpleBlock(
+            subBlock.getSubBlock(
               "case6_br_child",
               new Point([subBlock.bottomLeft.px, point.py]),
-              subBlock.topRight,
-              (subBlock as SimpleBlock).color
+              subBlock.topRight
             )
           );
           return;
@@ -407,47 +397,31 @@ export class Interpreter {
       //  TODO PNGBlock
       let bl = block.bottomLeft;
       let tr = point;
-      const bottomLeftBlock = new PngBlock(
-        blockId + ".0",
-        bl,
-        tr,
-        block.getColorsFrame(
-          bl.getDiff(block.bottomLeft),
-          tr.getDiff(bl)
-        )
+      const bottomLeftBlock = block.getSubBlock(
+          blockId + ".0",
+          bl,
+          tr,
       );
       bl = new Point([point.px, block.bottomLeft.py]);
       tr = new Point([block.topRight.px, point.py]);
-      const bottomRightBlock = new PngBlock(
+      const bottomRightBlock = block.getSubBlock(
         blockId + ".1",
         bl,
         tr,
-        block.getColorsFrame(
-          bl.getDiff(block.bottomLeft),
-          tr.getDiff(bl)
-        )
       );
       bl = point;
       tr = block.topRight;
-      const topRightBlock = new PngBlock(
+      const topRightBlock = block.getSubBlock(
         blockId + ".2",
         point,
         block.topRight,
-        block.getColorsFrame(
-          bl.getDiff(block.bottomLeft),
-          tr.getDiff(bl)
-        )
       );
       bl = new Point([block.bottomLeft.px, point.py]);
       tr = new Point([point.px, block.topRight.py]);
-      const topLeftBlock = new PngBlock(
+      const topLeftBlock = block.getSubBlock(
         blockId + ".3",
         bl,
         tr,
-        block.getColorsFrame(
-          bl.getDiff(block.bottomLeft),
-          tr.getDiff(bl)
-        )
       );
       context.blocks.delete(blockId);
       context.blocks.set(blockId + ".0", bottomLeftBlock);
@@ -508,8 +482,8 @@ export class Interpreter {
     }
 
     if (block.typ === BlockType.ComplexBlockType) {
-      let leftBlocks: SimpleBlock[] = [];
-      let rightBlocks: SimpleBlock[] = [];
+      let leftBlocks: (SimpleBlock | PngBlock)[] = [];
+      let rightBlocks: (SimpleBlock | PngBlock)[] = [];
       (block as ComplexBlock).subBlocks.forEach((subBlock) => {
         if (subBlock.bottomLeft.px >= lineNumber) {
           rightBlocks.push(subBlock);
@@ -520,19 +494,17 @@ export class Interpreter {
           return;
         }
         leftBlocks.push(
-          new SimpleBlock(
+          subBlock.getSubBlock(
             "child",
             subBlock.bottomLeft,
             new Point([lineNumber, subBlock.topRight.py]),
-            (subBlock as SimpleBlock).color
           )
         );
         rightBlocks.push(
-          new SimpleBlock(
+          subBlock.getSubBlock(
             "child",
             new Point([lineNumber, subBlock.bottomLeft.py]),
             subBlock.topRight,
-            (subBlock as SimpleBlock).color
           )
         );
       });
@@ -557,25 +529,17 @@ export class Interpreter {
     if (block.typ === BlockType.PngBlockType) {
       let bl = block.bottomLeft;
       let tr = new Point([lineNumber, block.topRight.py]);
-      const leftBlock = new PngBlock(
+      const leftBlock = block.getSubBlock(
         blockId + ".0",
         bl,
         tr,
-        block.getColorsFrame(
-          bl.getDiff(block.bottomLeft),
-          tr.getDiff(bl)
-        )
       );
       bl = new Point([lineNumber, block.bottomLeft.py]);
       tr = block.topRight;
-      const rightBlock = new PngBlock(
+      const rightBlock = block.getSubBlock(
         blockId + ".1",
         bl,
-        tr,
-        block.getColorsFrame(
-          bl.getDiff(block.bottomLeft),
-          tr.getDiff(bl)
-        )
+        block.topRight,
       );
       context.blocks.delete(blockId);
       context.blocks.set(blockId + ".0", leftBlock);
@@ -634,8 +598,8 @@ export class Interpreter {
     }
 
     if (block.typ === BlockType.ComplexBlockType) {
-      let bottomBlocks: SimpleBlock[] = [];
-      let topBlocks: SimpleBlock[] = [];
+      let bottomBlocks: (SimpleBlock | PngBlock)[] = [];
+      let topBlocks: (SimpleBlock | PngBlock)[] = [];
       (block as ComplexBlock).subBlocks.forEach((subBlock) => {
         if (subBlock.bottomLeft.py >= lineNumber) {
           topBlocks.push(subBlock);
@@ -646,19 +610,17 @@ export class Interpreter {
           return;
         }
         bottomBlocks.push(
-          new SimpleBlock(
+          subBlock.getSubBlock(
             "child",
             subBlock.bottomLeft,
-            new Point([subBlock.topRight.px, lineNumber]),
-            (subBlock as SimpleBlock).color
+            new Point([subBlock.topRight.px, lineNumber])
           )
         );
         topBlocks.push(
-          new SimpleBlock(
+          subBlock.getSubBlock(
             "child",
             new Point([subBlock.bottomLeft.px, lineNumber]),
-            subBlock.topRight,
-            (subBlock as SimpleBlock).color
+            subBlock.topRight
           )
         );
       });
@@ -683,25 +645,17 @@ export class Interpreter {
     if (block.typ === BlockType.PngBlockType) {
       let bl = block.bottomLeft;
       let tr = new Point([block.topRight.px, lineNumber]);
-      const bottomBlock = new PngBlock(
+      const bottomBlock = block.getSubBlock(
         blockId + ".0",
         bl,
         tr,
-        block.getColorsFrame(
-          bl.getDiff(block.bottomLeft),
-          tr.getDiff(bl)
-        )
       );
       bl = new Point([block.bottomLeft.px, lineNumber]);
       tr = block.topRight;
-      const topBlock = new PngBlock(
+      const topBlock = block.getSubBlock(
         blockId + ".1",
         bl,
         tr,
-        block.getColorsFrame(
-          bl.getDiff(block.bottomLeft),
-          tr.getDiff(bl)
-        )
       );
       context.blocks.delete(blockId);
       context.blocks.set(blockId + ".0", bottomBlock);
