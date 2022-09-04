@@ -11,9 +11,9 @@ public static class SwapSolver
         var canvas = new Canvas(problem);
 
         var moves = new List<Move>();
-        MergeV(problem, canvas, moves);
-        MergeH(problem, canvas, moves);
-        GreedySwap(problem, canvas, moves);
+        MergeV(problem, canvas, moves, 20);
+        // MergeH(problem, canvas, moves, 4);
+        Swap(problem, canvas, moves);
 
         return moves;
     }
@@ -54,25 +54,31 @@ public static class SwapSolver
         }
     }
 
-    public static void MergeV(Screen problem, Canvas canvas, List<Move> moves)
+    public static void MergeV(Screen problem, Canvas canvas, List<Move> moves, int count = 2)
     {
-        var blocks = canvas.Blocks.Values.OrderBy(x => x.Left).ThenBy(x => x.Bottom).ToArray();
-        for (int i = 0; i < blocks.Length; i += 2)
-        {
-            var mergeMove = new MergeMove(blocks[i].Id, blocks[i + 1].Id);
-            moves.Add(mergeMove);
-            canvas.Apply(mergeMove);
-        }
+        Merge(problem, canvas, moves, true, count);
     }
 
-    public static void MergeH(Screen problem, Canvas canvas, List<Move> moves)
+    public static void MergeH(Screen problem, Canvas canvas, List<Move> moves, int count = 2)
     {
-        var blocks = canvas.Blocks.Values.OrderBy(x => x.Bottom).ThenBy(x => x.Left).ToArray();
-        for (int i = 0; i < blocks.Length; i += 2)
+        Merge(problem, canvas, moves, false, count);
+    }
+
+    public static void Merge(Screen problem, Canvas canvas, List<Move> moves, bool vert, int count = 2)
+    {
+        var blocks = vert
+            ? canvas.Blocks.Values.OrderBy(x => x.Left).ThenBy(x => x.Bottom).ToArray()
+            : canvas.Blocks.Values.OrderBy(x => x.Bottom).ThenBy(x => x.Left).ToArray();
+        for (int i = 0; i < blocks.Length; i += count)
         {
-            var mergeMove = new MergeMove(blocks[i].Id, blocks[i + 1].Id);
-            moves.Add(mergeMove);
-            canvas.Apply(mergeMove);
+            var id = blocks[i].Id;
+            for (int j = i + 1; j < i + count; j++)
+            {
+                var mergeMove = new MergeMove(id, blocks[j].Id);
+                moves.Add(mergeMove);
+                var complexBlock = canvas.ApplyMerge(mergeMove);
+                id = complexBlock.Id;
+            }
         }
     }
 
