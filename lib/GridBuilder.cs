@@ -244,6 +244,63 @@ public static class GridBuilder
         }
     }
 
+    public static (Grid grid, double estimation) OptimizeRowsViaMerge(Screen problem, Grid grid)
+    {
+        var bestEstimation = EstimateGrid(problem, grid);
+
+        while (true)
+        {
+            var optimized = false;
+            for (int i = 0; i < grid.Rows.Count - 1; i++)
+            {
+                var copy = grid.Copy();
+                copy.Rows[i].Height += copy.Rows[i + 1].Height;
+                copy.Rows.RemoveAt(i + 1);
+
+                copy.Rows[i].Cells.Clear();
+
+                var leftsSet = new HashSet<int>();
+                var left = 0;
+                leftsSet.Add(400);
+                for (int j = 0; j < grid.Rows[i].Cells.Count; j++)
+                {
+                    leftsSet.Add(left);
+                    left += grid.Rows[i].Cells[j].Width;
+                }
+                left = 0;
+                for (int j = 0; j < grid.Rows[i + 1].Cells.Count; j++)
+                {
+                    leftsSet.Add(left);
+                    left += grid.Rows[i + 1].Cells[j].Width;
+                }
+
+                var lefts = leftsSet.ToArray();
+                Array.Sort(lefts);
+                for (var j = 0; j < lefts.Length - 1; j++)
+                {
+                    var l = lefts[j];
+                    var r = lefts[j + 1];
+                    copy.Rows[i].Cells.Add(new GridCell(r - l));
+                }
+
+                var (optimizedGrid, nextEstimation) = OptimizeCellWidths(problem, copy, i);
+                (optimizedGrid, nextEstimation) = OptimizeCellsViaMerge(problem, copy, i);
+                (optimizedGrid, nextEstimation) = OptimizeRowHeights(problem, optimizedGrid);
+
+                if (nextEstimation < bestEstimation)
+                {
+                    bestEstimation = nextEstimation;
+                    grid = optimizedGrid;
+                    optimized = true;
+                    break;
+                }
+            }
+
+            if (!optimized)
+                return (grid, bestEstimation);
+        }
+    }
+
     public static (Grid grid, double estimation) OptimizeRowHeights(Screen problem, Grid grid, int delta)
     {
         var bestEstimation = EstimateGrid(problem, grid);
@@ -334,8 +391,8 @@ public static class GridBuilder
                 block = block with { Color = color };
                 var similarity = problem.DiffTo(block);
                 var estimation = leftToRight
-                    ? similarity + 7*400.0 * 400 / ((400 - block.Left)*(400 - block.Bottom))
-                    : similarity + 7*400.0 * 400 / (block.Right*(400 - block.Bottom));
+                    ? similarity + 6*400.0 * 400 / ((400 - block.Left)*(400 - block.Bottom))
+                    : similarity + 6*400.0 * 400 / (block.Right*(400 - block.Bottom));
                 totalEstimation += estimation;
                 left += cell.Width;
             }
@@ -378,8 +435,8 @@ public static class GridBuilder
                         var color = problem.GetAverageColor(bl, tr);
                         var similarity = problem.DiffTo(bl, tr, color);
                         var estimation = leftToRight
-                            ? similarity + 7 * 400.0 * 400 / ((400 - l) * (400 - b))
-                            : similarity + 7 * 400.0 * 400 / (r * (400 - b));
+                            ? similarity + 6 * 400.0 * 400 / ((400 - l) * (400 - b))
+                            : similarity + 6 * 400.0 * 400 / (r * (400 - b));
 
                         totalEstimation += estimation;
                         left += cell.Width;

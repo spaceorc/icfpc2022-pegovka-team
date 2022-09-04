@@ -25,7 +25,7 @@ public class GridBuilderTests
         var problem = Screen.LoadProblem(39);
         problem = Rotator.Rotate(problem, 0);
 
-        var grid = GridBuilder.BuildRegularGrid(problem, 20, 40);
+        var grid = GridBuilder.BuildRegularGrid(problem, 40, 40);
         double estimation;
 
         problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "regular.png"), grid);
@@ -38,23 +38,30 @@ public class GridBuilderTests
         problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "optimizedC.png"), grid);
         Console.Out.WriteLine($"cells={estimation}");
 
-        // (grid, estimation) = GridBuilder.OptimizeCellsViaMerge(problem, grid, estimateBlock);
-        // problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "optimizedM.png"), grid);
-        // Console.Out.WriteLine($"merge={estimation}");
-
         var (moves, score) = new GridGuidedPainter(grid, problem).GetBestResult();
         problem.MovesToImage(moves, Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "solved0.png"));
         Console.Out.WriteLine(score);
 
-        for (int i = 0; i < grid.Rows.Count; i++)
-        {
-            (grid, estimation) = GridBuilder.OptimizeCellsViaMerge(problem, grid, i);
-            problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), $"optimizedM{i}.png"), grid);
-            Console.Out.WriteLine($"merge{i}={estimation}");
-        }
+        (grid, estimation) = GridBuilder.OptimizeCellsViaMerge(problem, grid);
+        problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "optimizedM.png"), grid);
+        Console.Out.WriteLine($"merge={estimation}");
+        // for (int i = 0; i < grid.Rows.Count; i++)
+        // {
+        //     (grid, estimation) = GridBuilder.OptimizeCellsViaMerge(problem, grid, i);
+        //     problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), $"optimizedM{i}.png"), grid);
+        //     Console.Out.WriteLine($"merge{i}={estimation}");
+        // }
 
         (moves, score) = new GridGuidedPainter(grid, problem).GetBestResult();
         problem.MovesToImage(moves, Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "solved_after_merge.png"));
+        Console.Out.WriteLine(score);
+
+        (grid, estimation) = GridBuilder.OptimizeRowsViaMerge(problem, grid);
+        problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "optimizedRVM.png"), grid);
+        Console.Out.WriteLine($"rowsVM={estimation}");
+
+        (moves, score) = new GridGuidedPainter(grid, problem).GetBestResult();
+        problem.MovesToImage(moves, Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "solved_RWM.png"));
         Console.Out.WriteLine(score);
 
         (grid, estimation) = GridBuilder.OptimizeRowHeights(problem, grid);
