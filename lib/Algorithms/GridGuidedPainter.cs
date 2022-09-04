@@ -9,16 +9,24 @@ public class GridGuidedPainter
     private readonly Screen screen;
     private readonly Canvas canvas;
     private readonly List<Move> moves;
+    private double colorTolerance;
 
-    public GridGuidedPainter(Grid grid, Screen screen)
+    public GridGuidedPainter(Grid grid, Screen screen, double colorTolerance = 0)
     {
         this.grid = grid;
         this.screen = screen;
+        this.colorTolerance = colorTolerance;
         canvas = new Canvas(screen);
         moves = new List<Move>();
     }
 
-    public (IList<Move>, double Score) GetBestResult()
+    public (List<Move> moves, int) GetBestResult()
+    {
+        var (ms, score, _) = GetBestResultWithCanvas();
+        return (ms, score);
+    }
+
+    public (List<Move> moves, int, Canvas canvas) GetBestResultWithCanvas()
     {
         var start = V.Zero;
         var rowBottomLeft = start;
@@ -28,7 +36,7 @@ public class GridGuidedPainter
             PaintRow(gridRow, cellBottomLeft);
             rowBottomLeft += V.Down * gridRow.Height;
         }
-        return (moves, canvas.GetScore(screen));
+        return (moves, canvas.GetScore(screen), canvas);
     }
 
     private void PaintRow(GridRow gridRow, V cellBottomLeft)
@@ -42,49 +50,73 @@ public class GridGuidedPainter
 
     private void PaintGridCell(GridCell cell, V bottomLeft, int height)
     {
+        var color = screen.GetAverageColorByGeometricMedian(bottomLeft.X, bottomLeft.Y, cell.Width, height);
+        if (Block.IsFilledWithColor(color, bottomLeft, cell.Width, height, colorTolerance)) return;
         if (bottomLeft.Y == 0)
         {
             if (bottomLeft.X == 0)
-                PaintInitialCell(cell, height);
+                PaintInitialCell(color);
             else
-                PaintBottomCell(cell, bottomLeft, height);
+                PaintBottomCell(bottomLeft, color);
         }
         else
         {
             if (bottomLeft.X == 0)
-                PaintFirstCellInRow(cell, bottomLeft, height);
+                PaintFirstCellInRow(bottomLeft, color);
             else
-                PaintInnerCell(cell, bottomLeft, height);
+                PaintInnerCell(bottomLeft, color);
         }
     }
 
-    private void PaintInnerCell(GridCell cell, V bottomLeft, int height)
+    private void PaintInnerCell(V bottomLeft, Rgba color)
     {
-        var pCut = new PCutMove(Block.Id, bottomLeft);
-        var (bottomLeftBlock, bottomRightBlock, topRightBlock, topLeftBlock) = canvas.ApplyPCut(pCut);
-        moves.Add(pCut);
-        DoColor(cell.Width, height, topRightBlock);
+        var (bottomLeftBlock, bottomRightBlock, topRightBlock, topLeftBlock) = DoPCut(Block, bottomLeft);
+        DoColor(topRightBlock, color);
         var rightBlock = DoMerge(topRightBlock, bottomRightBlock);
         var leftBlock = DoMerge(topLeftBlock, bottomLeftBlock);
         DoMerge(rightBlock, leftBlock);
     }
 
-    private void PaintFirstCellInRow(GridCell cell, V bottomLeft, int height)
+    private (Block bottomLeftBlock, Block bottomRightBlock, Block topRightBlock, Block topLeftBlock) DoPCut(Block block, V bottomLeft)
     {
-        var hCut = new HCutMove(Block.Id, bottomLeft.Y);
-        var (bottom, top) = canvas.ApplyHCut(hCut);
-        moves.Add(hCut);
-        DoColor(cell.Width, height, top);
+        var pCut = new PCutMove(block.Id, bottomLeft);
+        var (bottomLeftBlock, bottomRightBlock, topRightBlock, topLeftBlock) = canvas.ApplyPCut(pCut);
+        moves.Add(pCut);
+        return (bottomLeftBlock, bottomRightBlock, topRightBlock, topLeftBlock);
+    }
+
+    private void PaintFirstCellInRow(V bottomLeft, Rgba color)
+    {
+        var (bottom, top) = DoHCut(Block, bottomLeft);
+        DoColor(top, color);
         DoMerge(bottom, top);
     }
 
-    private void PaintBottomCell(GridCell cell, V bottomLeft, int height)
+    private void PaintBottomCell(V bottomLeft, Rgba color)
     {
-        var vCut = new VCutMove(Block.Id, bottomLeft.X);
+        var (left, right) = DoVCut(Block, bottomLeft);
+        DoColor(right, color);
+        DoMerge(left, right);
+    }
+
+    private void PaintInitialCell(Rgba color)
+    {
+        DoColor(Block, color);
+    }
+
+    private (Block left, Block right) DoVCut(Block block, V bottomLeft)
+    {
+        var vCut = new VCutMove(block.Id, bottomLeft.X);
         var (left, right) = canvas.ApplyVCut(vCut);
         moves.Add(vCut);
-        DoColor(cell.Width, height, right);
-        DoMerge(left, right);
+        return (left, right);
+    }
+
+    private (Block bottom, Block top) DoHCut(Block block, V bottomLeft)
+    {
+        var hCut = new HCutMove(block.Id, bottomLeft.Y);
+        moves.Add(hCut);
+        return canvas.ApplyHCut(hCut);
     }
 
     private ComplexBlock DoMerge(Block left, Block right)
@@ -94,18 +126,12 @@ public class GridGuidedPainter
         return canvas.ApplyMerge(merge);
     }
 
-    private void PaintInitialCell(GridCell cell, int height)
+    private void DoColor(Block block, Rgba color)
     {
-        DoColor(cell.Width, height, Block);
-    }
-
-    private void DoColor(int width, int height, Block block)
-    {
-        var color = screen.GetAverageColorByGeometricMedian(block.Left, block.Bottom, width, height);
         var colorMove = new ColorMove(block.Id, color);
         moves.Add(colorMove);
         canvas.ApplyColor(colorMove);
     }
 
-    public Block Block => canvas.Blocks.Values.Single();
+    private Block Block => canvas.Blocks.Values.Single();
 }

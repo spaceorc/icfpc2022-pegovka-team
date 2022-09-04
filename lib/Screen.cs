@@ -61,6 +61,20 @@ public class Screen
         return new Screen(ps);
     }
 
+    public int GetScore(List<Move> moves)
+    {
+        var canvas = GetCanvasAfter(moves);
+        return canvas.GetScore(this);
+    }
+
+    public Canvas GetCanvasAfter(List<Move> moves)
+    {
+        var canvas = new Canvas(this);
+        foreach (var move in moves)
+            canvas.Apply(move);
+        return canvas;
+    }
+
     public Screen(int width, int height)
         : this(new Rgba[width, height])
     {
