@@ -25,7 +25,7 @@ public class GridBuilderTests
         var problem = Screen.LoadProblem(39);
         problem = Rotator.Rotate(problem, 0);
 
-        var grid = GridBuilder.BuildRegularGrid(problem, 13, 40);
+        var grid = GridBuilder.BuildRegularGrid(problem, 20, 40);
         double estimation;
 
         problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "regular.png"), grid);

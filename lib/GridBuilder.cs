@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -154,10 +155,18 @@ public static class GridBuilder
 
             var newCellsToOptimize = new HashSet<int>();
 
+            var bottom = 0;
+            for (int i = 0; i < rowIndex; i++)
+                bottom += grid.Rows[i].Height;
+
             for (int i = 0; i < grid.Rows[rowIndex].Cells.Count - 1; i++)
             {
                 if (!cellsToOptimize.Contains(i))
                     continue;
+
+                var bottomLeft = new V(0, bottom);
+                var topRight = new V(400, bottom + grid.Rows[rowIndex].Height);
+                var oldRegionEstimation = EstimateGridRegion(problem, grid, bottomLeft, topRight);
 
                 for (int d = -1; d <= 1; d += 2)
                 {
@@ -168,7 +177,15 @@ public static class GridBuilder
                         continue;
                     if (copy.Rows[rowIndex].Cells[i + 1].Width <= 0)
                         continue;
-                    var nextEstimation = EstimateGrid(problem, copy);
+
+                    // var nextEstimation = EstimateGrid(problem, copy);
+
+                    var newRegionEstimation = EstimateGridRegion(problem, copy, bottomLeft, topRight);
+                    var nextEstimation = bestEstimation - oldRegionEstimation + newRegionEstimation;
+
+                    // if (Math.Abs(nextEstimationCandidate - nextEstimation) > 1e-5)
+                    //     throw new Exception($"WTF?: {nextEstimation} {nextEstimationCandidate}");
+
                     if (nextEstimation < bestEstimation)
                     {
                         bestEstimation = nextEstimation;
@@ -321,6 +338,53 @@ public static class GridBuilder
                     : similarity + 7*400.0 * 400 / (block.Right*(400 - block.Bottom));
                 totalEstimation += estimation;
                 left += cell.Width;
+            }
+
+            bottom += row.Height;
+        }
+
+        return totalEstimation;
+    }
+
+    public static double EstimateGridRegion(Screen problem, Grid grid, V bottomLeft, V topRight)
+    {
+        Interlocked.Increment(ref estimations);
+        var bottom = 0;
+        var totalEstimation = 0.0;
+        foreach (var row in grid.Rows)
+        {
+            if (bottom >= topRight.Y)
+                break;
+
+            if (bottom + row.Height > bottomLeft.Y)
+            {
+                var leftToRight = row.Cells[0].Width <= row.Cells.Last().Width;
+                var left = 0;
+                foreach (var cell in row.Cells)
+                {
+                    if (left >= topRight.X)
+                        break;
+
+                    if (left + cell.Width > bottomLeft.X)
+                    {
+                        var l = Math.Max(left, bottomLeft.X);
+                        var r = Math.Min(left + cell.Width, topRight.X);
+                        var b = Math.Max(bottom, bottomLeft.Y);
+                        var t = Math.Min(bottom + row.Height, topRight.Y);
+
+                        var bl = new V(l, b);
+                        var tr = new V(r, t);
+
+                        var color = problem.GetAverageColor(bl, tr);
+                        var similarity = problem.DiffTo(bl, tr, color);
+                        var estimation = leftToRight
+                            ? similarity + 7 * 400.0 * 400 / ((400 - l) * (400 - b))
+                            : similarity + 7 * 400.0 * 400 / (r * (400 - b));
+
+                        totalEstimation += estimation;
+                        left += cell.Width;
+                    }
+                }
             }
 
             bottom += row.Height;
