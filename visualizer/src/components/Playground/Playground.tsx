@@ -8,7 +8,7 @@ import { RandomInstructionGenerator } from "../../contest-logic/RandomInstructio
 import { CommandsPanel } from "./commandPanel";
 
 import { Point } from "../../contest-logic/Point";
-import {Block, BlockType, SimpleBlock} from "../../contest-logic/Block";
+import { Block, BlockType, SimpleBlock } from "../../contest-logic/Block";
 import { getClickInstruction } from "./canvasCommands";
 import { getMousePoint, mergeAllRectangles, shiftIdsBy } from "./shared/helpers";
 import { SimilarityChecker } from "../../contest-logic/SimilarityCheck";
@@ -78,22 +78,22 @@ export const Playground = (): JSX.Element => {
   }, [initialBlocks]);
   const initialBlocksColors = useMemo(() => {
     if (!initialBlocks) {
-        return;
+      return;
     }
 
-    return initialBlocks
-        .reduce<RGBA[]>((colors, block) => {
-            if (colors.every(color => !color.isEqual(block.color))) {
-                colors.push(block.color);
-            }
+    return initialBlocks.reduce<RGBA[]>((colors, block) => {
+      if (colors.every((color) => !color.isEqual(block.color))) {
+        colors.push(block.color);
+      }
 
-            return colors;
-        }, []);
+      return colors;
+    }, []);
   }, [initialBlocks]);
 
   const setExampleId = (exampleId: number) => {
     sessionStorage.setItem("exampleId", exampleId.toString());
     _setExampleId(exampleId);
+    handleSoftReset();
   };
   const [similarity, setSimilarity] = useState(0);
   const [oldTotal, setOldTotal] = useState(0);
@@ -183,12 +183,16 @@ export const Playground = (): JSX.Element => {
       setSimilarity(SimilarityChecker.imageDiff(expectedFrame, actualFrame));
     }
   };
-  const handleReset = () => {
-    setPlaygroundCode("");
+  const handleSoftReset = () => {
     clearCanvas();
     setInterpreterResult(
       new InterpreterResult(new Canvas(400, 400, new RGBA([255, 255, 255, 255])), 0)
     );
+    setIsPlaying(false);
+  };
+  const handleReset = () => {
+    setPlaygroundCode("");
+    handleSoftReset();
   };
   const [drawBorder, setDrawBorder] = useState(true);
   const drawBlocks = (interpretedResult: InterpreterResult) => {
@@ -368,7 +372,11 @@ export const Playground = (): JSX.Element => {
     if (!isPlaying && playingLine === 0) {
       return;
     }
-    handleClickRenderCanvas(playgroundCode.split("\n").slice(0, playingLine).join("\n"));
+    try {
+      handleClickRenderCanvas(playgroundCode.split("\n").slice(0, playingLine).join("\n"));
+    } catch (e) {
+      console.log(e);
+    }
   }, [handleClickRenderCanvas, isPlaying, playingLine, playgroundCode]);
 
   const onMakeCode = () => {
@@ -573,12 +581,15 @@ export const Playground = (): JSX.Element => {
         />
         <div>
           Hovering: {hoveringPoint ? `(${hoveringPoint.px},${hoveringPoint.py})` : ""}{" "}
-          {hoveringBlock && [
+          {hoveringBlock &&
+            [
               hoveringBlock.id,
               `size: ${hoveringBlock.size.px}x${hoveringBlock.size.py}`,
               `bottomLeft: ${hoveringBlock.bottomLeft.px} ${hoveringBlock.bottomLeft.py}`,
-              hoveringBlock.typ === BlockType.SimpleBlockType ? `color ${(hoveringBlock as SimpleBlock).color}` : 'Complex block',
-          ].join("; ")}
+              hoveringBlock.typ === BlockType.SimpleBlockType
+                ? `color ${(hoveringBlock as SimpleBlock).color}`
+                : "Complex block",
+            ].join("; ")}
         </div>
         <div>Cost: {interpretedResult?.cost}</div>
         <div>Similarity: {similarity}</div>
@@ -588,15 +599,25 @@ export const Playground = (): JSX.Element => {
           <div>Playing command: {playgroundCode.split("\n")[playingLine]}</div>
         )}
         {initialBlocksColors && (
-            <div>
-                Initial colors:
-                {initialBlocksColors.map(color => (
-                    <div key={color.toString()}>
-                        <span style={{ display: 'inline-block', width: 10, height: 10, background: color.toString(), border: '1px solid white', outline: '1px solid black', marginRight: 5 }}></span>
-                        {color.toString()}
-                    </div>
-                ))}
-            </div>
+          <div>
+            Initial colors:
+            {initialBlocksColors.map((color) => (
+              <div key={color.toString()}>
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 10,
+                    height: 10,
+                    background: color.toString(),
+                    border: "1px solid white",
+                    outline: "1px solid black",
+                    marginRight: 5,
+                  }}
+                ></span>
+                {color.toString()}
+              </div>
+            ))}
+          </div>
         )}
       </div>
       <CommandsPanel
