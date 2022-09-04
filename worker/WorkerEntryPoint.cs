@@ -30,14 +30,14 @@ public static class WorkerEntryPoint
             var problemId = w.problemId;
             var rows = w.rows;
             var cols = w.cols;
-            var moves = GridGuidedPainterRunner.Solve(problemId, rows, cols);
-            var score = Screen.LoadProblem(problemId).CalculateScore(moves);
+            var res = GridGuidedPainterRunner.Solve(problemId, rows, cols);
+            var score = res.Score;
             SolutionRepo.Submit(
                 new ContestSolution(
                     problemId,
                     score,
-                    moves.StrJoin("\n"),
-                    new SolverMeta{Description = $"{rows}*{cols}"},
+                    res.Moves.StrJoin("\n"),
+                    new SolverMeta{Description = $"{rows}*{cols} colTolerance={res.ColorTolerance}"},
                     "GridGuidedPainter"));
 
             var incremented = Interlocked.Increment(ref processed);
