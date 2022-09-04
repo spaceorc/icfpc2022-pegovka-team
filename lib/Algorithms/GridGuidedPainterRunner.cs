@@ -29,20 +29,17 @@ public static class GridGuidedPainterRunner
 
     public static GridGuidedPainterResult Solve(int problemId, int rows, int cols)
     {
-        Func<SimpleBlock,double,double> estimateBlock = (block, similarity) => 1.0 * similarity + 5*400.0 * 400 / ((400 - block.Left)*(400 - block.Bottom));
-
         var problem = Screen.LoadProblem(problemId);
         var grid = GridBuilder.BuildRegularGrid(problem, rows, cols);
         double estimation;
 
-
-        (grid, estimation) = GridBuilder.OptimizeRowHeights(problem, grid, estimateBlock);
-        (grid, estimation) = GridBuilder.OptimizeCellWidths(problem, grid, estimateBlock);
-        (grid, estimation) = GridBuilder.OptimizeCellsViaMerge(problem, grid, estimateBlock);
-        (grid, estimation) = GridBuilder.OptimizeRowHeights(problem, grid, estimateBlock);
-        (grid, estimation) = GridBuilder.OptimizeCellWidths(problem, grid, estimateBlock);
-        (grid, estimation) = GridBuilder.OptimizeRowHeights(problem, grid, estimateBlock);
-        (grid, estimation) = GridBuilder.OptimizeCellWidths(problem, grid, estimateBlock);
+        (grid, estimation) = GridBuilder.OptimizeRowHeights(problem, grid);
+        (grid, estimation) = GridBuilder.OptimizeCellWidths(problem, grid);
+        (grid, estimation) = GridBuilder.OptimizeCellsViaMerge(problem, grid);
+        (grid, estimation) = GridBuilder.OptimizeRowHeights(problem, grid);
+        (grid, estimation) = GridBuilder.OptimizeCellWidths(problem, grid);
+        (grid, estimation) = GridBuilder.OptimizeRowHeights(problem, grid);
+        (grid, estimation) = GridBuilder.OptimizeCellWidths(problem, grid);
 
         problem.ToImage($"{problemId}-grid-{rows}-{cols}.png", grid);
 

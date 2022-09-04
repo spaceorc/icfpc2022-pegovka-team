@@ -1,29 +1,29 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using lib.Algorithms;
 
 namespace lib;
 
 public static class GridBuilder
 {
-    public static Grid BuildOptimalGrid(Screen problem, Func<SimpleBlock, double, double> estimateBlock)
+    public static Grid BuildOptimalGrid(Screen problem)
     {
         var grid = BuildRegularRows(problem, 10);
-        (grid, _) = OptimizeRowsCount(problem, grid, estimateBlock);
+        (grid, _) = OptimizeRowsCount(problem, grid);
 
-        var (optimizedGrid, _) = OptimizeGrid(problem, grid, estimateBlock);
+        var (optimizedGrid, _) = OptimizeGrid(problem, grid);
 
         return optimizedGrid;
     }
 
-    public static (Grid grid, double estimation) OptimizeGrid(Screen problem, Grid grid, Func<SimpleBlock, double, double> estimateBlock)
+    public static (Grid grid, double estimation) OptimizeGrid(Screen problem, Grid grid)
     {
-        var bestEstimation = EstimateGrid(problem, grid, estimateBlock);
+        var bestEstimation = EstimateGrid(problem, grid);
 
         while (true)
         {
-            var (gr, _) = OptimizeRowHeights(problem, grid, estimateBlock);
-            var (optimizedGrid, nextEstimation) = OptimizeAllGridRows(problem, gr, estimateBlock);
+            var (gr, _) = OptimizeRowHeights(problem, grid);
+            var (optimizedGrid, nextEstimation) = OptimizeAllGridRows(problem, gr);
             if (nextEstimation >= bestEstimation)
                 return (grid, bestEstimation);
 
@@ -33,16 +33,16 @@ public static class GridBuilder
         }
     }
 
-    public static (Grid grid, double estimation) OptimizeAllGridRows(Screen problem, Grid grid, Func<SimpleBlock, double, double> estimateBlock)
+    public static (Grid grid, double estimation) OptimizeAllGridRows(Screen problem, Grid grid)
     {
-        var bestEstimation = EstimateGrid(problem, grid, estimateBlock);
+        var bestEstimation = EstimateGrid(problem, grid);
 
         while (true)
         {
             var optimized = false;
             for (int i = 0; i < grid.Rows.Count; i++)
             {
-                var (copy, estimation) = OptimizeCells(problem, grid, i, estimateBlock);
+                var (copy, estimation) = OptimizeCells(problem, grid, i);
                 if (estimation < bestEstimation)
                 {
                     bestEstimation = estimation;
@@ -57,9 +57,9 @@ public static class GridBuilder
         }
     }
 
-    public static (Grid grid, double estimation) OptimizeRowsCount(Screen problem, Grid grid, Func<SimpleBlock, double, double> estimateBlock)
+    public static (Grid grid, double estimation) OptimizeRowsCount(Screen problem, Grid grid)
     {
-        var bestEstimation = EstimateGrid(problem, grid, estimateBlock);
+        var bestEstimation = EstimateGrid(problem, grid);
 
         while (true)
         {
@@ -75,7 +75,7 @@ public static class GridBuilder
                 var newRow = copy.Rows[i].Copy();
                 newRow.Height = dh;
                 copy.Rows.Insert(i + 1, newRow);
-                var (optimizedGrid, nextEstimation) = OptimizeRowHeights(problem, copy, estimateBlock);
+                var (optimizedGrid, nextEstimation) = OptimizeRowHeights(problem, copy);
                 if (nextEstimation < bestEstimation)
                 {
                     bestEstimation = nextEstimation;
@@ -90,9 +90,9 @@ public static class GridBuilder
         }
     }
 
-    public static (Grid grid, double estimation) OptimizeCells(Screen problem, Grid grid, int rowIndex, Func<SimpleBlock, double, double> estimateBlock)
+    public static (Grid grid, double estimation) OptimizeCells(Screen problem, Grid grid, int rowIndex)
     {
-        var bestEstimation = EstimateGrid(problem, grid, estimateBlock);
+        var bestEstimation = EstimateGrid(problem, grid);
 
         while (true)
         {
@@ -106,7 +106,7 @@ public static class GridBuilder
                 var dw = width / 2;
                 copy.Rows[rowIndex].Cells[i].Width -= dw;
                 copy.Rows[rowIndex].Cells.Insert(i + 1, new GridCell(dw));
-                var (optimizedGrid, nextEstimation) = OptimizeCellWidths(problem, copy, rowIndex, estimateBlock);
+                var (optimizedGrid, nextEstimation) = OptimizeCellWidths(problem, copy, rowIndex);
                 if (nextEstimation < bestEstimation)
                 {
                     bestEstimation = nextEstimation;
@@ -121,29 +121,29 @@ public static class GridBuilder
         }
     }
 
-    public static (Grid grid, double estimation) OptimizeCellWidths(Screen problem, Grid grid, Func<SimpleBlock, double, double> estimateBlock)
+    public static (Grid grid, double estimation) OptimizeCellWidths(Screen problem, Grid grid)
     {
         double estimation = double.PositiveInfinity;
         for (int i = 0; i < grid.Rows.Count; i++)
-            (grid, estimation) = OptimizeCellWidths(problem, grid, i, estimateBlock);
+            (grid, estimation) = OptimizeCellWidths(problem, grid, i);
         return (grid, estimation);
     }
 
-    public static (Grid grid, double estimation) OptimizeCellWidths(Screen problem, Grid grid, int rowIndex, Func<SimpleBlock, double, double> estimateBlock)
+    public static (Grid grid, double estimation) OptimizeCellWidths(Screen problem, Grid grid, int rowIndex)
     {
-        (grid, _) = OptimizeCellWidths(problem, grid, rowIndex, 3, estimateBlock);
-        return OptimizeCellWidths(problem, grid, rowIndex, 1, estimateBlock);
+        (grid, _) = OptimizeCellWidths(problem, grid, rowIndex, 3);
+        return OptimizeCellWidths(problem, grid, rowIndex, 1);
     }
 
-    public static (Grid grid, double estimation) OptimizeRowHeights(Screen problem, Grid grid, Func<SimpleBlock, double, double> estimateBlock)
+    public static (Grid grid, double estimation) OptimizeRowHeights(Screen problem, Grid grid)
     {
-        (grid, _) = OptimizeRowHeights(problem, grid, 3, estimateBlock);
-        return OptimizeRowHeights(problem, grid, 1, estimateBlock);
+        (grid, _) = OptimizeRowHeights(problem, grid, 3);
+        return OptimizeRowHeights(problem, grid, 1);
     }
 
-    public static (Grid grid, double estimation) OptimizeCellWidths(Screen problem, Grid grid, int rowIndex, int delta, Func<SimpleBlock, double, double> estimateBlock)
+    public static (Grid grid, double estimation) OptimizeCellWidths(Screen problem, Grid grid, int rowIndex, int delta)
     {
-        var bestEstimation = EstimateGrid(problem, grid, estimateBlock);
+        var bestEstimation = EstimateGrid(problem, grid);
 
         while (true)
         {
@@ -159,7 +159,7 @@ public static class GridBuilder
                         continue;
                     if (copy.Rows[rowIndex].Cells[i + 1].Width <= 0)
                         continue;
-                    var nextEstimation = EstimateGrid(problem, copy, estimateBlock);
+                    var nextEstimation = EstimateGrid(problem, copy);
                     if (nextEstimation < bestEstimation)
                     {
                         bestEstimation = nextEstimation;
@@ -175,17 +175,17 @@ public static class GridBuilder
         }
     }
 
-    public static (Grid grid, double estimation) OptimizeCellsViaMerge(Screen problem, Grid grid, Func<SimpleBlock, double, double> estimateBlock)
+    public static (Grid grid, double estimation) OptimizeCellsViaMerge(Screen problem, Grid grid)
     {
         double estimation = double.PositiveInfinity;
         for (int i = 0; i < grid.Rows.Count; i++)
-            (grid, estimation) = OptimizeCellsViaMerge(problem, grid, i, estimateBlock);
+            (grid, estimation) = OptimizeCellsViaMerge(problem, grid, i);
         return (grid, estimation);
     }
 
-    public static (Grid grid, double estimation) OptimizeCellsViaMerge(Screen problem, Grid grid, int rowIndex, Func<SimpleBlock, double, double> estimateBlock)
+    public static (Grid grid, double estimation) OptimizeCellsViaMerge(Screen problem, Grid grid, int rowIndex)
     {
-        var bestEstimation = EstimateGrid(problem, grid, estimateBlock);
+        var bestEstimation = EstimateGrid(problem, grid);
 
         while (true)
         {
@@ -196,7 +196,7 @@ public static class GridBuilder
                 copy.Rows[rowIndex].Cells[i].Width += copy.Rows[rowIndex].Cells[i + 1].Width;
                 copy.Rows[rowIndex].Cells.RemoveAt(i + 1);
 
-                var (optimizedGrid, nextEstimation) = OptimizeCellWidths(problem, copy, rowIndex, estimateBlock);
+                var (optimizedGrid, nextEstimation) = OptimizeCellWidths(problem, copy, rowIndex);
                 if (nextEstimation < bestEstimation)
                 {
                     bestEstimation = nextEstimation;
@@ -211,9 +211,9 @@ public static class GridBuilder
         }
     }
 
-    public static (Grid grid, double estimation) OptimizeRowHeights(Screen problem, Grid grid, int delta, Func<SimpleBlock, double, double> estimateBlock)
+    public static (Grid grid, double estimation) OptimizeRowHeights(Screen problem, Grid grid, int delta)
     {
-        var bestEstimation = EstimateGrid(problem, grid, estimateBlock);
+        var bestEstimation = EstimateGrid(problem, grid);
 
         while (true)
         {
@@ -229,7 +229,7 @@ public static class GridBuilder
                         continue;
                     if (copy.Rows[i + 1].Height <= 0)
                         continue;
-                    var nextEstimation = EstimateGrid(problem, copy, estimateBlock);
+                    var nextEstimation = EstimateGrid(problem, copy);
                     if (nextEstimation < bestEstimation)
                     {
                         bestEstimation = nextEstimation;
@@ -283,12 +283,13 @@ public static class GridBuilder
         return new Grid(rows);
     }
 
-    public static double EstimateGrid(Screen problem, Grid grid, Func<SimpleBlock, double, double> estimateBlock)
+    public static double EstimateGrid(Screen problem, Grid grid)
     {
         var bottom = 0;
         var totalEstimation = 0.0;
         foreach (var row in grid.Rows)
         {
+            var leftToRight = row.Cells[0].Width <= row.Cells.Last().Width;
             var left = 0;
             foreach (var cell in row.Cells)
             {
@@ -296,7 +297,9 @@ public static class GridBuilder
                 var color = problem.GetAverageColor(block);
                 block = block with { Color = color };
                 var similarity = problem.DiffTo(block);
-                var estimation = estimateBlock(block, similarity);
+                var estimation = leftToRight
+                    ? similarity + 7*400.0 * 400 / ((400 - block.Left)*(400 - block.Bottom))
+                    : similarity + 7*400.0 * 400 / (block.Right*(400 - block.Bottom));
                 totalEstimation += estimation;
                 left += cell.Width;
             }
