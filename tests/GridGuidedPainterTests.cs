@@ -24,8 +24,13 @@ public class GridGuidedPainterTests
             var screen = Screen.LoadProblem(problemId);
             var grid = CreateRegularGrid(size);
             screen.ToImage($"{problemId}-{size}.png", grid);
-            var solver = new GridGuidedPainter(grid, screen, colorTolerance);
-            var (moves, score, canvas) = solver.GetBestResultWithCanvas();
+
+            var res = GridGuidedPainterRunner.Solve(problemId, size, size);
+            var (moves, score, canvas) = (res.Moves, res.Score, res.Canvas);
+
+            // var solver = new GridGuidedPainter(grid, screen, colorTolerance);
+            // var (moves, score, canvas) = solver.GetBestResultWithCanvas();
+
             var solution = moves.StrJoin("\n");
             //List<Move> moves2 = Enhancer.Enhance2(screen, moves);
             //score = screen.GetScore(moves2);

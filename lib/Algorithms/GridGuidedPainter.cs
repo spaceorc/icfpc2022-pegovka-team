@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace lib.Algorithms;
@@ -32,30 +33,68 @@ public class GridGuidedPainter
         var rowBottomLeft = start;
         foreach (var gridRow in grid.Rows)
         {
-            var cellBottomLeft = rowBottomLeft;
-            PaintRow(gridRow, cellBottomLeft);
+            PaintRow(gridRow, rowBottomLeft);
             rowBottomLeft += V.Down * gridRow.Height;
         }
         return (moves, canvas.GetScore(screen), canvas);
     }
 
-    private void PaintRow(GridRow gridRow, V cellBottomLeft)
+    private void PaintRow(GridRow row, V rowBottomLeft)
+    {
+        Console.WriteLine($"{row.Cells[0].Width} < {row.Cells.Last().Width}");
+        if (row.Cells[0].Width < row.Cells.Last().Width)
+            PaintRowLeftToRight(row, rowBottomLeft);
+        else
+            PaintRowRightToLeft(row, rowBottomLeft + canvas.Width*V.Right);
+    }
+
+    private void PaintRowLeftToRight(GridRow gridRow, V cellBottomLeft)
     {
         foreach (var cell in gridRow.Cells)
         {
-            PaintGridCell(cell, cellBottomLeft, gridRow.Height);
+            PaintGridCellLeftToRight(cell, cellBottomLeft, gridRow.Height);
             cellBottomLeft += V.Right * cell.Width;
         }
     }
+    private void PaintRowRightToLeft(GridRow gridRow, V rowBottomRight)
+    {
+        var cellBottomLeft = rowBottomRight;
+        foreach (var cell in gridRow.Cells.AsEnumerable().Reverse())
+        {
+            cellBottomLeft += V.Left * cell.Width;
+            PaintGridCellRightToLeft(cell, cellBottomLeft, gridRow.Height);
+        }
+    }
 
-    private void PaintGridCell(GridCell cell, V bottomLeft, int height)
+    private void PaintGridCellRightToLeft(GridCell cell, V bottomLeft, int height)
+    {
+        var color = screen.GetAverageColorByGeometricMedian(bottomLeft.X, bottomLeft.Y, cell.Width, height);
+        if (Block.IsFilledWithColor(color, bottomLeft, cell.Width, height, colorTolerance)) return;
+        if (bottomLeft.Y == 0)
+        {
+            if (bottomLeft.X + cell.Width == canvas.Width)
+                DoColor(Block, color);
+            else
+                PaintBottomCellRightToLeft(bottomLeft + cell.Width * V.Right, color);
+        }
+        else
+        {
+            if (bottomLeft.X + cell.Width == canvas.Width)
+                PaintFirstCellInRow(bottomLeft, color);
+            else
+                PaintInnerCellRightToLeft(bottomLeft + cell.Width * V.Right, color);
+        }
+
+    }
+
+    private void PaintGridCellLeftToRight(GridCell cell, V bottomLeft, int height)
     {
         var color = screen.GetAverageColorByGeometricMedian(bottomLeft.X, bottomLeft.Y, cell.Width, height);
         if (Block.IsFilledWithColor(color, bottomLeft, cell.Width, height, colorTolerance)) return;
         if (bottomLeft.Y == 0)
         {
             if (bottomLeft.X == 0)
-                PaintInitialCell(color);
+                DoColor(Block, color);
             else
                 PaintBottomCell(bottomLeft, color);
         }
@@ -77,9 +116,18 @@ public class GridGuidedPainter
         DoMerge(rightBlock, leftBlock);
     }
 
-    private (Block bottomLeftBlock, Block bottomRightBlock, Block topRightBlock, Block topLeftBlock) DoPCut(Block block, V bottomLeft)
+    private void PaintInnerCellRightToLeft(V bottomRight, Rgba color)
     {
-        var pCut = new PCutMove(block.Id, bottomLeft);
+        var (bottomLeftBlock, bottomRightBlock, topRightBlock, topLeftBlock) = DoPCut(Block, bottomRight);
+        DoColor(topLeftBlock, color);
+        var rightBlock = DoMerge(topRightBlock, bottomRightBlock);
+        var leftBlock = DoMerge(topLeftBlock, bottomLeftBlock);
+        DoMerge(rightBlock, leftBlock);
+    }
+
+    private (Block bottomLeftBlock, Block bottomRightBlock, Block topRightBlock, Block topLeftBlock) DoPCut(Block block, V cutPoint)
+    {
+        var pCut = new PCutMove(block.Id, cutPoint);
         var (bottomLeftBlock, bottomRightBlock, topRightBlock, topLeftBlock) = canvas.ApplyPCut(pCut);
         moves.Add(pCut);
         return (bottomLeftBlock, bottomRightBlock, topRightBlock, topLeftBlock);
@@ -87,7 +135,7 @@ public class GridGuidedPainter
 
     private void PaintFirstCellInRow(V bottomLeft, Rgba color)
     {
-        var (bottom, top) = DoHCut(Block, bottomLeft);
+        var (bottom, top) = DoHCut(Block, bottomLeft.Y);
         DoColor(top, color);
         DoMerge(bottom, top);
     }
@@ -98,10 +146,11 @@ public class GridGuidedPainter
         DoColor(right, color);
         DoMerge(left, right);
     }
-
-    private void PaintInitialCell(Rgba color)
+    private void PaintBottomCellRightToLeft(V bottomRight, Rgba color)
     {
-        DoColor(Block, color);
+        var (left, right) = DoVCut(Block, bottomRight);
+        DoColor(right, color);
+        DoMerge(left, right);
     }
 
     private (Block left, Block right) DoVCut(Block block, V bottomLeft)
@@ -112,9 +161,9 @@ public class GridGuidedPainter
         return (left, right);
     }
 
-    private (Block bottom, Block top) DoHCut(Block block, V bottomLeft)
+    private (Block bottom, Block top) DoHCut(Block block, int y)
     {
-        var hCut = new HCutMove(block.Id, bottomLeft.Y);
+        var hCut = new HCutMove(block.Id, y);
         moves.Add(hCut);
         return canvas.ApplyHCut(hCut);
     }

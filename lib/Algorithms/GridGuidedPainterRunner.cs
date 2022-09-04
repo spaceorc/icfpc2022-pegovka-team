@@ -7,8 +7,9 @@ namespace lib.Algorithms;
 
 public class GridGuidedPainterResult
 {
-    public GridGuidedPainterResult(IList<Move> moves, int rows, int cols, int colorTolerance, int score)
+    public GridGuidedPainterResult(IList<Move> moves, int rows, int cols, int colorTolerance, int score, Canvas canvas)
     {
+        Canvas = canvas;
         Moves = moves;
         Rows = rows;
         Cols = cols;
@@ -16,6 +17,7 @@ public class GridGuidedPainterResult
         Score = score;
     }
 
+    public Canvas Canvas;
     public IList<Move> Moves;
     public int Rows, Cols;
     public int ColorTolerance;
@@ -47,10 +49,10 @@ public static class GridGuidedPainterRunner
         GridGuidedPainterResult? bestResult = null;
         foreach (var colorTolerance in new[]{8, 16, 32, 48})
         {
-            var (moves, score) = new GridGuidedPainter(grid, problem, colorTolerance).GetBestResult();
+            var (moves, score, canvas) = new GridGuidedPainter(grid, problem, colorTolerance).GetBestResultWithCanvas();
             if (bestResult == null || score < bestResult.Score)
             {
-                bestResult = new GridGuidedPainterResult(moves, rows, cols, colorTolerance, score);
+                bestResult = new GridGuidedPainterResult(moves, rows, cols, colorTolerance, score, canvas);
             }
         }
 
