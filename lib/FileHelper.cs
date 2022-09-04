@@ -18,7 +18,7 @@ namespace lib
         private static string WalkDirectoryTree(string filename, Func<string, bool> fileSystemObjectExists, string? baseDirectoryPath = null)
         {
             if (baseDirectoryPath == null)
-                baseDirectoryPath = Directory.GetCurrentDirectory();
+                baseDirectoryPath = AppDomain.CurrentDomain.BaseDirectory;
             var baseDirectory = new DirectoryInfo(baseDirectoryPath);
             while (baseDirectory != null)
             {
