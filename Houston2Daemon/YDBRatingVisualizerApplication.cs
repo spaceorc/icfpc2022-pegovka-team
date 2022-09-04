@@ -142,7 +142,7 @@ public class YDBRatingVisualizerApplication : VostokScheduledApplication
         var maxProblemId = baseDict.Keys.Max();
         var headers = new[]
         {
-            DateTime.Now.ToString("t", CultureInfo.InvariantCulture),
+            DateTime.UtcNow.AddHours(5).ToString("t", CultureInfo.InvariantCulture),
             "Type"
         }.Concat(Enumerable.Range(1, (int) maxProblemId).Select(i => "#"+i.ToString())).ToList();
 
