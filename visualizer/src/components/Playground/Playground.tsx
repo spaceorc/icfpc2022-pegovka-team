@@ -8,7 +8,7 @@ import { RandomInstructionGenerator } from "../../contest-logic/RandomInstructio
 import { CommandsPanel } from "./commandPanel";
 
 import { Point } from "../../contest-logic/Point";
-import { Block, SimpleBlock } from "../../contest-logic/Block";
+import {Block, BlockType, SimpleBlock} from "../../contest-logic/Block";
 import { getClickInstruction } from "./canvasCommands";
 import { getMousePoint, mergeAllRectangles, shiftIdsBy } from "./shared/helpers";
 import { SimilarityChecker } from "../../contest-logic/SimilarityCheck";
@@ -207,13 +207,13 @@ export const Playground = (): JSX.Element => {
   };
 
   const [hoveringPoint, setHoveringPoint] = useState<Point | null>(null);
-  const [hoveringBlocks, setHoveringBlocks] = useState<Block[]>([]);
+  const [hoveringBlock, setHoveringBlock] = useState<Block>();
   const onCanvasHover = (event: React.MouseEvent<HTMLCanvasElement>) => {
     const point = getMousePoint(canvasRef.current, event);
     const block = Array.from(interpretedResult?.canvas.blocks.values() ?? []).filter((b) =>
       point.isInside(b.bottomLeft, b.topRight)
     );
-    setHoveringBlocks(block);
+    setHoveringBlock(block.pop());
     setHoveringPoint(point);
   };
 
@@ -548,7 +548,7 @@ export const Playground = (): JSX.Element => {
           onMouseMove={onCanvasHover}
           onMouseOver={onCanvasHover}
           onMouseLeave={() => {
-            setHoveringBlocks([]);
+            setHoveringBlock(undefined);
             setHoveringPoint(null);
           }}
         />
@@ -573,15 +573,12 @@ export const Playground = (): JSX.Element => {
         />
         <div>
           Hovering: {hoveringPoint ? `(${hoveringPoint.px},${hoveringPoint.py})` : ""}{" "}
-          {hoveringBlocks
-            .map((b) =>
-              [
-                b.id,
-                `size: ${b.size.px}x${b.size.py}`,
-                `bottomLeft: ${b.bottomLeft.px} ${b.bottomLeft.py}`,
-              ].join("; ")
-            )
-            .join(", ")}
+          {hoveringBlock && [
+              hoveringBlock.id,
+              `size: ${hoveringBlock.size.px}x${hoveringBlock.size.py}`,
+              `bottomLeft: ${hoveringBlock.bottomLeft.px} ${hoveringBlock.bottomLeft.py}`,
+              hoveringBlock.typ === BlockType.SimpleBlockType ? `color ${(hoveringBlock as SimpleBlock).color}` : 'Complex block',
+          ].join("; ")}
         </div>
         <div>Cost: {interpretedResult?.cost}</div>
         <div>Similarity: {similarity}</div>
