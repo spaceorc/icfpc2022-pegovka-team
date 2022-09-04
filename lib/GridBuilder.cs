@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using lib.Algorithms;
 
 namespace lib;
@@ -145,11 +146,19 @@ public static class GridBuilder
     {
         var bestEstimation = EstimateGrid(problem, grid);
 
+        var cellsToOptimize = new HashSet<int>(Enumerable.Range(0, grid.Rows[rowIndex].Cells.Count - 1));
+
         while (true)
         {
             var optimized = false;
+
+            var newCellsToOptimize = new HashSet<int>();
+
             for (int i = 0; i < grid.Rows[rowIndex].Cells.Count - 1; i++)
             {
+                if (!cellsToOptimize.Contains(i))
+                    continue;
+
                 for (int d = -1; d <= 1; d += 2)
                 {
                     var copy = grid.Copy();
@@ -165,10 +174,17 @@ public static class GridBuilder
                         bestEstimation = nextEstimation;
                         grid = copy;
                         optimized = true;
+
+                        newCellsToOptimize.Add(i - 1);
+                        newCellsToOptimize.Add(i);
+                        newCellsToOptimize.Add(i + 1);
+
                         break;
                     }
                 }
             }
+
+            cellsToOptimize = newCellsToOptimize;
 
             if (!optimized)
                 return (grid, bestEstimation);
@@ -283,8 +299,11 @@ public static class GridBuilder
         return new Grid(rows);
     }
 
+    public static int estimations;
+
     public static double EstimateGrid(Screen problem, Grid grid)
     {
+        Interlocked.Increment(ref estimations);
         var bottom = 0;
         var totalEstimation = 0.0;
         foreach (var row in grid.Rows)

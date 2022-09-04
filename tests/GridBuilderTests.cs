@@ -20,8 +20,12 @@ public class GridBuilderTests
     [Test]
     public void TestOptimizeRowHeights()
     {
+        GridBuilder.estimations = 0;
+
         var problem = Screen.LoadProblem(39);
-        var grid = GridBuilder.BuildRegularGrid(problem, 6, 13);
+        problem = Rotator.Rotate(problem, 0);
+
+        var grid = GridBuilder.BuildRegularGrid(problem, 13, 40);
         double estimation;
 
         problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "regular.png"), grid);
@@ -78,6 +82,7 @@ public class GridBuilderTests
         Console.Out.WriteLine(score);
 
 
+        Console.WriteLine($"estimations={GridBuilder.estimations}");
         Console.WriteLine(moves.StrJoin("\n"));
     }
 }

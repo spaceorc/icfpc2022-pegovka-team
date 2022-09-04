@@ -12,7 +12,7 @@ public class SwapSolverTests
     [Test]
     public void Run()
     {
-        var problem = Screen.LoadProblem(28);
+        var problem = Screen.LoadProblem(30);
         problem.MovesToImage(Enumerable.Empty<Move>(), Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "swap.png"));
 
         var moves = SwapSolver.Solve(problem);
