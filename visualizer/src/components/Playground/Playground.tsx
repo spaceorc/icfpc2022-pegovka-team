@@ -13,6 +13,7 @@ import { getClickInstruction } from "./canvasCommands";
 import { getMousePoint, mergeAllRectangles, shiftIdsBy } from "./shared/helpers";
 import { SimilarityChecker } from "../../contest-logic/SimilarityCheck";
 import { Parser } from "../../contest-logic/Parser";
+import { getGridByBlocks } from "./shared/grid";
 
 const images = import.meta.glob("../../../../problems/*.png", { as: "url", eager: true });
 const presets = import.meta.glob("../../../../problems/*.json", { eager: true });
@@ -162,7 +163,6 @@ export const Playground = (): JSX.Element => {
     const renderedData = painter.draw(result.canvas);
     const canvas = canvasRef.current!;
     const context = canvas.getContext("2d")!;
-    console.log(result.canvas.blocks);
     canvas.width = result.canvas.width;
     canvas.height = result.canvas.height;
     const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
@@ -395,6 +395,8 @@ export const Playground = (): JSX.Element => {
     }, 10 * 1000);
   };
 
+  const grid = interpretedResult?.canvas.blocks && getGridByBlocks(interpretedResult.canvas.blocks);
+
   return (
     <div
       style={{
@@ -593,14 +595,22 @@ export const Playground = (): JSX.Element => {
         {initialBlocksColors && (
             <div>
                 Initial colors:
-                {initialBlocksColors.map(color => (
-                    <div key={color.toString()}>
-                        <span style={{ display: 'inline-block', width: 10, height: 10, background: color.toString(), border: '1px solid white', outline: '1px solid black', marginRight: 5 }}></span>
-                        {color.toString()}
-                    </div>
-                ))}
+                {initialBlocksColors.map(color => {
+                    const block = hoveringBlocks[0];
+
+                    return (
+                        <div key={color.toString()}>
+                            <span style={{ display: 'inline-block', width: 10, height: 10, background: color.toString(), border: '1px solid white', outline: '1px solid black', marginRight: 5 }}></span>
+                            {color.toString()}
+                        </div>
+                    );
+                })}
             </div>
         )}
+        <details>
+            <summary>grid</summary>
+            <textarea style={{ width: 400, height: 200 }}>{JSON.stringify(grid, null, 4)}</textarea>
+        </details>
       </div>
       <CommandsPanel
         colorRecord={colorRecord}
