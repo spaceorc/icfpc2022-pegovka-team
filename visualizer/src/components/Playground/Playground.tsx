@@ -13,7 +13,7 @@ import { getClickInstruction } from "./canvasCommands";
 import { getMousePoint, mergeAllRectangles, shiftIdsBy } from "./shared/helpers";
 import { SimilarityChecker } from "../../contest-logic/SimilarityCheck";
 import { Parser } from "../../contest-logic/Parser";
-import { getGridByBlocks } from "./shared/grid";
+import { getGridByBlocks, getGridInstructions } from "./shared/grid";
 
 const images = import.meta.glob("../../../../problems/*.png", { as: "url", eager: true });
 const presets = import.meta.glob("../../../../problems/*.json", { eager: true });
@@ -403,7 +403,18 @@ export const Playground = (): JSX.Element => {
     }, 10 * 1000);
   };
 
-  const grid = interpretedResult?.canvas.blocks && getGridByBlocks(interpretedResult.canvas.blocks);
+  const gridCodeRef = useRef(null);
+  const grid = useMemo(() =>interpretedResult?.canvas.blocks && getGridByBlocks(interpretedResult.canvas.blocks), [interpretedResult]);
+  const onGenerateByGrid = () => {
+    const gridCode = gridCodeRef.current!.value;
+    try {
+        const grid = JSON.parse(gridCode);
+        const instructions = getGridInstructions(grid);
+        setPlaygroundCode(instructions.map((i) => instructionToString(i)).join("\n"));
+    } catch (error) {
+        console.error(error);
+    }
+  };
 
   return (
     <div
@@ -615,7 +626,8 @@ export const Playground = (): JSX.Element => {
         )}
         <details>
             <summary>grid</summary>
-            <textarea style={{ width: 400, height: 200 }} value={JSON.stringify(grid, null, 4)} />
+            <textarea ref={gridCodeRef} style={{ width: 400, height: 200 }} value={JSON.stringify(grid, null, 4)} />
+            <button onClick={onGenerateByGrid}>Generate code</button>
         </details>
       </div>
       <CommandsPanel

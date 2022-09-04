@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { Block } from "../../../contest-logic/Block";
+import { Instruction, InstructionType } from '../../../contest-logic/Instruction';
 
 export type GridColumn = {
     width: number;
@@ -65,3 +66,38 @@ export const getGridByBlocks = (blocks: Map<string, Block>): SimpleGrid => {
         return [];
     }
 };
+
+export const getGridInstructions = (grid: SimpleGrid): Instruction[] => {
+    const instructions: Instruction[] = [];
+
+    let currentBlockId = '0';
+    let heightOffset = 0;
+    grid.forEach(([rowHeight, columns], index) => {
+        let nextBlockId = '';
+        if (index !== grid.length - 1) {
+            instructions.push({
+                typ: InstructionType.HorizontalCutInstructionType,
+                blockId: currentBlockId,
+                lineNumber: heightOffset + rowHeight
+            });
+            heightOffset += rowHeight;
+            nextBlockId = `${currentBlockId}.1`;
+            currentBlockId = `${currentBlockId}.0`;
+        }
+        let widthOffset = 0;
+        columns.forEach((column, index) => {
+            if (index !== columns.length - 1) {
+                instructions.push({
+                    typ: InstructionType.VerticalCutInstructionType,
+                    blockId: currentBlockId,
+                    lineNumber: widthOffset + column
+                });
+                widthOffset += column;
+                currentBlockId = `${currentBlockId}.1`;
+            }
+        });
+        currentBlockId = nextBlockId;
+    });
+
+    return instructions;
+}
