@@ -8,7 +8,7 @@ import { RandomInstructionGenerator } from "../../contest-logic/RandomInstructio
 import { CommandsPanel } from "./commandPanel";
 
 import { Point } from "../../contest-logic/Point";
-import { Block, BlockType, SimpleBlock } from "../../contest-logic/Block";
+import { Block, BlockType, PngBlock, SimpleBlock } from "../../contest-logic/Block";
 import { getClickInstruction } from "./canvasCommands";
 import { getMousePoint, mergeAllRectangles, shiftIdsBy } from "./shared/helpers";
 import { SimilarityChecker } from "../../contest-logic/SimilarityCheck";
@@ -55,7 +55,7 @@ export const Playground = (): JSX.Element => {
 
   const initialBlocks = useMemo(() => {
     const preset = presets[`../../../../problems/problem${exampleId}.json`];
-    const blocks: SimpleBlock[] | undefined =
+    const blocks: (SimpleBlock | PngBlock)[] | undefined =
       preset &&
       (preset as any).blocks.map(
         (block: {
@@ -63,13 +63,21 @@ export const Playground = (): JSX.Element => {
           bottomLeft: [px: number, py: number] | undefined;
           topRight: [px: number, py: number] | undefined;
           color: [number, number, number, number] | undefined;
+          colors: [number, number, number, number][];
         }) => {
-          return new SimpleBlock(
-            block.blockId,
-            new Point(block.bottomLeft),
-            new Point(block.topRight),
-            new RGBA(block.color)
-          );
+          return block.colors
+            ? new PngBlock(
+                block.blockId,
+                new Point(block.bottomLeft),
+                new Point(block.topRight),
+                block.colors.map(color => new RGBA(color))
+            )
+            : new SimpleBlock(
+                block.blockId,
+                new Point(block.bottomLeft),
+                new Point(block.topRight),
+                new RGBA(block.color)
+              );
         }
       );
     return blocks;
@@ -404,15 +412,18 @@ export const Playground = (): JSX.Element => {
   };
 
   const gridCodeRef = useRef(null);
-  const grid = useMemo(() =>interpretedResult?.canvas.blocks && getGridByBlocks(interpretedResult.canvas.blocks), [interpretedResult]);
+  const grid = useMemo(
+    () => interpretedResult?.canvas.blocks && getGridByBlocks(interpretedResult.canvas.blocks),
+    [interpretedResult]
+  );
   const onGenerateByGrid = () => {
     const gridCode = gridCodeRef.current!.value;
     try {
-        const grid = JSON.parse(gridCode);
-        const instructions = getGridInstructions(grid);
-        setPlaygroundCode(instructions.map((i) => instructionToString(i)).join("\n"));
+      const grid = JSON.parse(gridCode);
+      const instructions = getGridInstructions(grid);
+      setPlaygroundCode(instructions.map((i) => instructionToString(i)).join("\n"));
     } catch (error) {
-        console.error(error);
+      console.error(error);
     }
   };
 
@@ -612,22 +623,36 @@ export const Playground = (): JSX.Element => {
           <div>Playing command: {playgroundCode.split("\n")[playingLine]}</div>
         )}
         {initialBlocksColors && (
-            <div>
-                Initial colors:
-                {initialBlocksColors.map(color => {
-                    return (
-                        <div key={color.toString()}>
-                            <span style={{ display: 'inline-block', width: 10, height: 10, background: color.toString(), border: '1px solid white', outline: '1px solid black', marginRight: 5 }}></span>
-                            {color.toString()}
-                        </div>
-                    );
-                })}
-            </div>
+          <div>
+            Initial colors:
+            {initialBlocksColors.map((color) => {
+              return (
+                <div key={color.toString()}>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      width: 10,
+                      height: 10,
+                      background: color.toString(),
+                      border: "1px solid white",
+                      outline: "1px solid black",
+                      marginRight: 5,
+                    }}
+                  ></span>
+                  {color.toString()}
+                </div>
+              );
+            })}
+          </div>
         )}
         <details>
-            <summary>grid</summary>
-            <textarea ref={gridCodeRef} style={{ width: 400, height: 200 }} value={JSON.stringify(grid, null, 4)} />
-            <button onClick={onGenerateByGrid}>Generate code</button>
+          <summary>grid</summary>
+          <textarea
+            ref={gridCodeRef}
+            style={{ width: 400, height: 200 }}
+            value={JSON.stringify(grid, null, 4)}
+          />
+          <button onClick={onGenerateByGrid}>Generate code</button>
         </details>
       </div>
       <CommandsPanel
