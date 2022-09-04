@@ -309,7 +309,7 @@ public class Screen
                 for (int x = left; x < right ; x++)
                 for (int y = bottom; y < top ; y++)
                     diff += ab.ColorAt(x, y).DiffTo(Pixels[x, y]);
-                return diff;
+                return diff * Alpha;
             default:
                 throw new Exception(block.ToString());
         }

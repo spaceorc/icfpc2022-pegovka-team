@@ -602,8 +602,8 @@ public class Canvas
         var diff = 0.0;
         foreach (var block in Blocks.Values)
         {
-            foreach (var simpleBlock in block.GetChildren())
-                diff += screen.DiffTo(simpleBlock);
+            foreach (AtomicBlock atomicBlock in block.GetChildren())
+                diff += screen.DiffTo(atomicBlock);
         }
 
         return (int)Math.Round(diff);
