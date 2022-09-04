@@ -83,6 +83,7 @@ public static class Rotator
                 {
                     var v1 = FlipUpsideDown(b.BottomLeft);
                     var v2 = FlipUpsideDown(b.TopRight);
+                    //TODO Fix PngBlock
                     return b with
                     {
                         BottomLeft = new V(v1.X, v2.Y),
@@ -108,6 +109,7 @@ public static class Rotator
                 {
                     var v1 = RotateCCW(b.BottomLeft);
                     var v2 = RotateCCW(b.TopRight);
+                    //TODO Fix PngBlock
                     return b with
                     {
                         BottomLeft = new V(v2.X, v1.Y),

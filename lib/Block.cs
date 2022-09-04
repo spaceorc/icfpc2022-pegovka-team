@@ -43,16 +43,23 @@ public abstract record Block
         var top = Math.Min(bottomLeft.Y+height, Top);
         return left < right && bottom < top;
     }
-    public abstract IEnumerable<SimpleBlock> GetChildren();
+    public abstract IEnumerable<AtomicBlock> GetChildren();
     public Block MoveTo(Block other) => MoveTo(other.BottomLeft, other.TopRight);
     public abstract Block MoveTo(V bottomLeft, V topRight);
 
     public abstract bool IsFilledWithColor(Rgba color, V bottomLeft, int width, int height, double colorTolerance);
 }
 
-public record SimpleBlock(string Id, V BottomLeft, V TopRight, Rgba Color) : Block(Id, BottomLeft, TopRight)
+public abstract record AtomicBlock(string Id, V BottomLeft, V TopRight) : Block(Id, BottomLeft, TopRight)
 {
-    public override IEnumerable<SimpleBlock> GetChildren() => new[] { this };
+    public abstract AtomicBlock Cut(string newBlockId, V newBottomLeft, V newTopRight);
+
+    public abstract Rgba ColorAt(int x, int y);
+}
+
+public record PngBlock(string Id, V BottomLeft, V TopRight, V PngBottomLeft, Rgba[,] SourcePng) : AtomicBlock(Id, BottomLeft, TopRight)
+{
+    public override IEnumerable<AtomicBlock> GetChildren() => new[] { this };
 
     public override Block MoveTo(V bottomLeft, V topRight)
     {
@@ -61,12 +68,73 @@ public record SimpleBlock(string Id, V BottomLeft, V TopRight, Rgba Color) : Blo
 
         return this with {BottomLeft = bottomLeft, TopRight = topRight};
     }
+
+    public override bool IsFilledWithColor(Rgba color, V bottomLeft, int width, int height, double colorTolerance)
+    {
+        for (int dx = 0; dx < width; dx++)
+        for (int dy = 0; dy < height; dy++)
+        {
+            var localP = bottomLeft + new V(dx, dy) - BottomLeft;
+            if (localP.X >= 0
+                && localP.X < Width
+                && localP.Y >= 0
+                && localP.Y < Height)
+            {
+                var pngP = localP + PngBottomLeft;
+                var sourcePngPixel = SourcePng[pngP.X, pngP.Y];
+                if (sourcePngPixel.DiffTo(color) > colorTolerance) return false;
+            }
+        }
+        return true;
+    }
+
+    public override PngBlock Cut(string newBlockId, V newBottomLeft, V newTopRight)
+    {
+        return this with
+        {
+            Id = newBlockId,
+            BottomLeft = newBottomLeft,
+            TopRight = newTopRight,
+            PngBottomLeft = PngBottomLeft + newBottomLeft - BottomLeft
+        };
+    }
+
+    public override Rgba ColorAt(int x, int y)
+    {
+        var v = PngBottomLeft + new V(x, y) - BottomLeft;
+        return SourcePng[v.X, v.Y];
+    }
+}
+
+public record SimpleBlock(string Id, V BottomLeft, V TopRight, Rgba Color) : AtomicBlock(Id, BottomLeft, TopRight)
+{
+    public override IEnumerable<AtomicBlock> GetChildren() => new[] { this };
+
+    public override Block MoveTo(V bottomLeft, V topRight)
+    {
+        if (topRight - bottomLeft != Size)
+            throw new Exception("topRight - bottomLeft != Size");
+
+        return this with {BottomLeft = bottomLeft, TopRight = topRight};
+    }
+    public override SimpleBlock Cut(string newBlockId, V newBottomLeft, V newTopRight)
+    {
+        return this with
+        {
+            Id = newBlockId,
+            BottomLeft = newBottomLeft,
+            TopRight = newTopRight,
+        };
+    }
+
+    public override Rgba ColorAt(int x, int y) => Color;
+
     public override bool IsFilledWithColor(Rgba color, V bottomLeft, int width, int height, double colorTolerance) => color.DiffTo(Color) <= colorTolerance;
 }
 
-public record ComplexBlock(string Id, V BottomLeft, V TopRight, SimpleBlock[] Children) : Block(Id, BottomLeft, TopRight)
+public record ComplexBlock(string Id, V BottomLeft, V TopRight, AtomicBlock[] Children) : Block(Id, BottomLeft, TopRight)
 {
-    public override IEnumerable<SimpleBlock> GetChildren() => Children;
+    public override IEnumerable<AtomicBlock> GetChildren() => Children;
 
     public override Block MoveTo(V bottomLeft, V topRight)
     {
@@ -78,11 +146,11 @@ public record ComplexBlock(string Id, V BottomLeft, V TopRight, SimpleBlock[] Ch
         {
             BottomLeft = bottomLeft,
             TopRight = topRight,
-            Children = Children.Select(x => (SimpleBlock)x.MoveTo(x.BottomLeft + diff, x.TopRight + diff)).ToArray()
+            Children = Children.Select(x => (AtomicBlock)x.MoveTo(x.BottomLeft + diff, x.TopRight + diff)).ToArray()
         };
     }
     public override bool IsFilledWithColor(Rgba color, V bottomLeft, int width, int height, double colorTolerance)
     {
-        return !Children.Any(child => child.IntersectsWith(bottomLeft, width, height) && child.Color.DiffTo(color) > colorTolerance);
+        return !Children.Any(child => child.IntersectsWith(bottomLeft, width, height) && !child.IsFilledWithColor(color, bottomLeft, width, height, colorTolerance));
     }
 }

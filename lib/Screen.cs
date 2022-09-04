@@ -15,7 +15,7 @@ public class Screen
 {
     private const double Alpha = 0.005;
     public Rgba[,] Pixels;
-    public SimpleBlock[] InitialBlocks;
+    public AtomicBlock[] InitialBlocks;
 
     public int Width => Pixels.GetLength(0);
     public int Height => Pixels.GetLength(1);
@@ -28,8 +28,10 @@ public class Screen
         var jsonFile = Path.ChangeExtension(file, ".json");
         if (File.Exists(jsonFile))
         {
-            var json = (JToken)JsonConvert.DeserializeObject(File.ReadAllText(jsonFile))!;
-            var initialBlocks = new List<SimpleBlock>();
+            var json = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(jsonFile))!;
+            var width = (int)json["width"]!;
+            var height = (int)json["height"]!;
+            var initialBlocks = new List<AtomicBlock>();
             foreach (var jToken in json["blocks"]!)
             {
                 var blockId = jToken["blockId"]!.ToString();
@@ -37,11 +39,28 @@ public class Screen
                 var bottom = (int)jToken["bottomLeft"]![1]!;
                 var right = (int)jToken["topRight"]![0]!;
                 var top = (int)jToken["topRight"]![1]!;
-                var r = (int)jToken["color"]![0]!;
-                var g = (int)jToken["color"]![1]!;
-                var b = (int)jToken["color"]![2]!;
-                var a = (int)jToken["color"]![3]!;
-                initialBlocks.Add(new SimpleBlock(blockId, new V(left, bottom), new V(right, top), new Rgba(r,g,b,a)));
+
+                var color = jToken["color"];
+                if (color != null)
+                {
+                    var r = (int)color![0]!;
+                    var g = (int)color![1]!;
+                    var b = (int)color![2]!;
+                    var a = (int)color![3]!;
+                    initialBlocks.Add(new SimpleBlock(blockId, new V(left, bottom), new V(right, top), new Rgba(r, g, b, a)));
+                }
+                else
+                {
+                    var sourcePng = new Rgba[width, height];
+                    var colors = jToken["colors"]!.ToObject<int[][]>()!;
+                    var pngBottomLeft = jToken["pngBottomLeftPoint"]!.ToObject<int[]>()!;
+                    for (int i = 0; i < colors.Length; i++)
+                    {
+                        var pixel = colors[i];
+                        sourcePng[i % 400, i / 400] = new Rgba(pixel[0], pixel[1], pixel[2], pixel[3]);
+                    }
+                    initialBlocks.Add(new PngBlock(blockId, new V(left, bottom), new V(right, top), new V(pngBottomLeft[0], pngBottomLeft[1]), sourcePng));
+                }
             }
             result.InitialBlocks = initialBlocks.ToArray();
         }
@@ -121,11 +140,17 @@ public class Screen
         return DiffTo(block.BottomLeft, block.TopRight, block.Color);
     }
 
+    public double DiffTo(PngBlock block)
+    {
+        return DiffTo(block, block.BottomLeft, block.Width, block.Height);
+    }
+
     public double DiffTo(Block block)
     {
         return block switch
         {
             SimpleBlock sb => DiffTo(sb),
+            PngBlock pb => DiffTo(pb),
             ComplexBlock cb => DiffTo(cb),
             _ => throw new Exception(block.ToString())
         };
@@ -272,13 +297,19 @@ public class Screen
         {
             case ComplexBlock cb:
                 return cb.Children.Sum(c => DiffTo(c, bottomLeft, width, height));
-            case SimpleBlock sb:
-                var left = Math.Max(sb.Left, bottomLeft.X);
-                var right = Math.Min(sb.Right, bottomLeft.X + width);
-                var bottom = Math.Max(sb.Bottom, bottomLeft.Y);
-                var top = Math.Min(sb.Top, bottomLeft.Y + height);
+            case AtomicBlock ab:
+                var left = Math.Max(ab.Left, bottomLeft.X);
+                var right = Math.Min(ab.Right, bottomLeft.X + width);
+                var bottom = Math.Max(ab.Bottom, bottomLeft.Y);
+                var top = Math.Min(ab.Top, bottomLeft.Y + height);
                 if (left >= right || bottom >= top) return 0;
-                return DiffTo(new V(left, bottom), new V(right, top), sb.Color);
+                if (ab is SimpleBlock sb)
+                    return DiffTo(new V(left, bottom), new V(right, top), sb.Color);
+                var diff = 0.0;
+                for (int x = left; x < right ; x++)
+                for (int y = bottom; y < top ; y++)
+                    diff += ab.ColorAt(x, y).DiffTo(Pixels[x, y]);
+                return diff;
             default:
                 throw new Exception(block.ToString());
         }

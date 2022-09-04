@@ -34,18 +34,12 @@ public class Canvas
 
     public int GetScore(Screen screen) => GetSimilarity(screen) + TotalCost;
 
-    public Canvas(int width, int height, IEnumerable<SimpleBlock> blocks)
-    {
-        Width = width;
-        Height = height;
-        var simpleBlocks = blocks as SimpleBlock[] ?? blocks.ToArray();
-        Blocks = simpleBlocks.ToDictionary(x => x.Id, x => (Block)x);
-        TopLevelIdCounter = simpleBlocks.Length - 1;
-    }
-
     public Canvas(Screen problem)
-        : this(problem.Width, problem.Height, problem.InitialBlocks)
     {
+        Width = problem.Width;
+        Height = problem.Height;
+        Blocks = problem.InitialBlocks.ToDictionary(x => x.Id, x => (Block)x);
+        TopLevelIdCounter = problem.InitialBlocks.Length - 1;
     }
 
     public Canvas(int width, int height, Dictionary<string, Block> blocks, int topLevelIdCounter, int totalCost)
@@ -67,7 +61,7 @@ public class Canvas
             case SimpleBlock simpleBlock:
                 Blocks[move.BlockId] = simpleBlock with { Color = move.Color };
                 break;
-
+            case PngBlock:
             case ComplexBlock:
                 Blocks[move.BlockId] = new SimpleBlock(block.Id, block.BottomLeft, block.TopRight, move.Color);
                 break;
@@ -82,27 +76,16 @@ public class Canvas
 
     public static (Block leftBlock, Block rightBlock) PreApplyVCut(Block block, int offset)
     {
-        if (block is SimpleBlock simpleBlock)
+        if (block is AtomicBlock atomicBlock)
         {
-            var leftBlock = new SimpleBlock(
-                block.Id + ".0",
-                block.BottomLeft,
-                new V(offset, block.TopRight.Y),
-                simpleBlock.Color
-            );
-            var rightBlock = new SimpleBlock(
-                block.Id + ".1",
-                new V(offset, block.BottomLeft.Y),
-                block.TopRight,
-                simpleBlock.Color
-            );
+            var leftBlock = atomicBlock.Cut(block.Id + ".0", block.BottomLeft, new V(offset, block.TopRight.Y));
+            var rightBlock = atomicBlock.Cut(block.Id + ".1", new V(offset, block.BottomLeft.Y), block.TopRight);
             return (leftBlock, rightBlock);
         }
-
         if (block is ComplexBlock complexBlock)
         {
-            var leftBlocks = new List<SimpleBlock>();
-            var rightBlocks = new List<SimpleBlock>();
+            var leftBlocks = new List<AtomicBlock>();
+            var rightBlocks = new List<AtomicBlock>();
             foreach (var subBlock in complexBlock.Children)
             {
                 if (subBlock.BottomLeft.X >= offset)
@@ -117,17 +100,15 @@ public class Canvas
                     continue;
                 }
 
-                leftBlocks.Add(new SimpleBlock(
+                leftBlocks.Add(subBlock.Cut(
                     "child",
                     subBlock.BottomLeft,
-                    new V(offset, subBlock.TopRight.Y),
-                    subBlock.Color
+                    new V(offset, subBlock.TopRight.Y)
                 ));
-                rightBlocks.Add(new SimpleBlock(
+                rightBlocks.Add(subBlock.Cut(
                     "child",
                     new V(offset, subBlock.BottomLeft.Y),
-                    subBlock.TopRight,
-                    subBlock.Color
+                    subBlock.TopRight
                 ));
             }
 
@@ -168,27 +149,23 @@ public class Canvas
 
     public static (Block bottomBlock, Block topBlock) PreApplyHCut(Block block, int offset)
     {
-        if (block is SimpleBlock simpleBlock)
+        if (block is AtomicBlock atomicBlock)
         {
-            var bottomBlock = new SimpleBlock(
+            var bottomBlock = atomicBlock.Cut(
                 block.Id + ".0",
                 block.BottomLeft,
-                new V(block.TopRight.X, offset),
-                simpleBlock.Color
-            );
-            var topBlock = new SimpleBlock(
+                new V(block.TopRight.X, offset));
+            var topBlock = atomicBlock.Cut(
                 block.Id + ".1",
                 new V(block.BottomLeft.X, offset),
-                block.TopRight,
-                simpleBlock.Color
-            );
+                block.TopRight);
             return (bottomBlock, topBlock);
         }
 
         if (block is ComplexBlock complexBlock)
         {
-            var bottomBlocks = new List<SimpleBlock>();
-            var topBlocks = new List<SimpleBlock>();
+            var bottomBlocks = new List<AtomicBlock>();
+            var topBlocks = new List<AtomicBlock>();
             foreach (var subBlock in complexBlock.Children)
             {
                 if (subBlock.BottomLeft.Y >= offset)
@@ -203,18 +180,14 @@ public class Canvas
                     continue;
                 }
 
-                bottomBlocks.Add(new SimpleBlock(
+                bottomBlocks.Add(subBlock.Cut(
                     "child",
                     subBlock.BottomLeft,
-                    new V(subBlock.TopRight.X, offset),
-                    subBlock.Color
-                ));
-                topBlocks.Add(new SimpleBlock(
+                    new V(subBlock.TopRight.X, offset)));
+                topBlocks.Add(subBlock.Cut(
                     "child",
                     new V(subBlock.BottomLeft.X, offset),
-                    subBlock.TopRight,
-                    subBlock.Color
-                ));
+                    subBlock.TopRight));
             }
 
             var bottomBlock2 = new ComplexBlock(
@@ -374,38 +347,32 @@ public class Canvas
     {
         switch (block)
         {
-            case SimpleBlock simpleBlock:
-                var bottomLeftBlock = new SimpleBlock(
+            case AtomicBlock atomicBlock:
+                var bottomLeftBlock = atomicBlock.Cut(
                     block.Id + ".0",
                     block.BottomLeft,
-                    point,
-                    simpleBlock.Color
-                );
-                var bottomRightBlock = new SimpleBlock(
+                    point);
+                var bottomRightBlock = atomicBlock.Cut(
                     block.Id + ".1",
                     new V(point.X, block.BottomLeft.Y),
-                    new V(block.TopRight.X, point.Y),
-                    simpleBlock.Color
+                    new V(block.TopRight.X, point.Y)
                 );
-                var topRightBlock = new SimpleBlock(
+                var topRightBlock = atomicBlock.Cut(
                     block.Id + ".2",
                     point,
-                    block.TopRight,
-                    simpleBlock.Color
+                    block.TopRight
                 );
-                var topLeftBlock = new SimpleBlock(
+                var topLeftBlock = atomicBlock.Cut(
                     block.Id + ".3",
                     new V(block.BottomLeft.X, point.Y),
-                    new V(point.X, block.TopRight.Y),
-                    simpleBlock.Color
+                    new V(point.X, block.TopRight.Y)
                 );
                 return (bottomLeftBlock, bottomRightBlock, topLeftBlock, topRightBlock);
-
             case ComplexBlock complexBlock:
-                var bottomLeftBlocks = new List<SimpleBlock>();
-                var bottomRightBlocks = new List<SimpleBlock>();
-                var topRightBlocks = new List<SimpleBlock>();
-                var topLeftBlocks = new List<SimpleBlock>();
+                var bottomLeftBlocks = new List<AtomicBlock>();
+                var bottomRightBlocks = new List<AtomicBlock>();
+                var topRightBlocks = new List<AtomicBlock>();
+                var topLeftBlocks = new List<AtomicBlock>();
                 foreach (var subBlock in complexBlock.Children)
                 {
                     // ReSharper disable once InvalidXmlDocComment
@@ -453,32 +420,24 @@ public class Canvas
                     if (point.IsInside(subBlock.BottomLeft, subBlock.TopRight))
                     {
                         if (subBlock.BottomLeft.X != point.X && subBlock.BottomLeft.Y != point.Y)
-                            bottomLeftBlocks.Add(new SimpleBlock(
-                                "bl_child",
-                                subBlock.BottomLeft,
-                                point,
-                                subBlock.Color
-                            ));
+                            bottomLeftBlocks.Add(subBlock.Cut("bl_child", subBlock.BottomLeft, point));
                         if (subBlock.TopRight.X != point.X && subBlock.BottomLeft.Y != point.Y)
-                            bottomRightBlocks.Add(new SimpleBlock(
+                            bottomRightBlocks.Add(subBlock.Cut(
                                 "br_child",
                                 new V(point.X, subBlock.BottomLeft.Y),
-                                new V(subBlock.TopRight.X, point.Y),
-                                subBlock.Color
+                                new V(subBlock.TopRight.X, point.Y)
                             ));
                         if (subBlock.TopRight.X != point.X && subBlock.TopRight.Y != point.Y)
-                            topRightBlocks.Add(new SimpleBlock(
+                            topRightBlocks.Add(subBlock.Cut(
                                 "tr_child",
                                 point,
-                                subBlock.TopRight,
-                                subBlock.Color
+                                subBlock.TopRight
                             ));
                         if (subBlock.BottomLeft.X != point.X && subBlock.TopRight.Y != point.Y)
-                            topLeftBlocks.Add(new SimpleBlock(
+                            topLeftBlocks.Add(subBlock.Cut(
                                 "tl_child",
                                 new V(subBlock.BottomLeft.X, point.Y),
-                                new V(point.X, subBlock.TopRight.Y),
-                                subBlock.Color
+                                new V(point.X, subBlock.TopRight.Y)
                             ));
                         continue;
                     }
@@ -489,18 +448,16 @@ public class Canvas
                         && point.Y < subBlock.BottomLeft.Y)
                     {
                         if (subBlock.BottomLeft.X != point.X)
-                            topLeftBlocks.Add(new SimpleBlock(
+                            topLeftBlocks.Add(subBlock.Cut(
                                 "case2_tl_child",
                                 subBlock.BottomLeft,
-                                new V(point.X, subBlock.TopRight.Y),
-                                subBlock.Color
+                                new V(point.X, subBlock.TopRight.Y)
                             ));
                         if (subBlock.TopRight.X != point.X)
-                            topRightBlocks.Add(new SimpleBlock(
+                            topRightBlocks.Add(subBlock.Cut(
                                 "case2_tr_child",
                                 new V(point.X, subBlock.BottomLeft.Y),
-                                subBlock.TopRight,
-                                subBlock.Color
+                                subBlock.TopRight
                             ));
                         continue;
                     }
@@ -511,18 +468,16 @@ public class Canvas
                         && point.Y > subBlock.TopRight.Y)
                     {
                         if (subBlock.BottomLeft.X != point.X)
-                            bottomLeftBlocks.Add(new SimpleBlock(
+                            bottomLeftBlocks.Add(subBlock.Cut(
                                 "case8_bl_child",
                                 subBlock.BottomLeft,
-                                new V(point.X, subBlock.TopRight.Y),
-                                subBlock.Color
+                                new V(point.X, subBlock.TopRight.Y)
                             ));
                         if (subBlock.TopRight.X != point.X)
-                            bottomRightBlocks.Add(new SimpleBlock(
+                            bottomRightBlocks.Add(subBlock.Cut(
                                 "case8_br_child",
                                 new V(point.X, subBlock.BottomLeft.Y),
-                                subBlock.TopRight,
-                                subBlock.Color
+                                subBlock.TopRight
                             ));
                         continue;
                     }
@@ -533,18 +488,16 @@ public class Canvas
                         && point.X < subBlock.BottomLeft.X)
                     {
                         if (subBlock.BottomLeft.Y != point.Y)
-                            bottomRightBlocks.Add(new SimpleBlock(
+                            bottomRightBlocks.Add(subBlock.Cut(
                                 "case4_br_child",
                                 subBlock.BottomLeft,
-                                new V(subBlock.TopRight.X, point.Y),
-                                subBlock.Color
+                                new V(subBlock.TopRight.X, point.Y)
                             ));
                         if (subBlock.TopRight.Y != point.Y)
-                            topRightBlocks.Add(new SimpleBlock(
+                            topRightBlocks.Add(subBlock.Cut(
                                 "case4_tr_child",
                                 new V(subBlock.BottomLeft.X, point.Y),
-                                subBlock.TopRight,
-                                subBlock.Color
+                                subBlock.TopRight
                             ));
                         continue;
                     }
@@ -555,18 +508,16 @@ public class Canvas
                         && point.X > subBlock.TopRight.X)
                     {
                         if (subBlock.BottomLeft.Y != point.Y)
-                            bottomLeftBlocks.Add(new SimpleBlock(
+                            bottomLeftBlocks.Add(subBlock.Cut(
                                 "case6_bl_child",
                                 subBlock.BottomLeft,
-                                new V(subBlock.TopRight.X, point.Y),
-                                subBlock.Color
+                                new V(subBlock.TopRight.X, point.Y)
                             ));
                         if (subBlock.TopRight.Y != point.Y)
-                            topLeftBlocks.Add(new SimpleBlock(
+                            topLeftBlocks.Add(subBlock.Cut(
                                 "case6_br_child",
                                 new V(subBlock.BottomLeft.X, point.Y),
-                                subBlock.TopRight,
-                                subBlock.Color
+                                subBlock.TopRight
                             ));
                         continue;
                     }
@@ -625,12 +576,12 @@ public class Canvas
         var screen = new Screen(Width, Height);
         foreach (var block in Blocks.Values)
         {
-            foreach (var simpleBlock in block.GetChildren())
+            foreach (var atomicBlock in block.GetChildren())
             {
-                for (int x = simpleBlock.BottomLeft.X; x < simpleBlock.TopRight.X; x++)
-                for (int y = simpleBlock.BottomLeft.Y; y < simpleBlock.TopRight.Y; y++)
+                for (int x = atomicBlock.BottomLeft.X; x < atomicBlock.TopRight.X; x++)
+                for (int y = atomicBlock.BottomLeft.Y; y < atomicBlock.TopRight.Y; y++)
                 {
-                    screen.Pixels[x, y] = simpleBlock.Color;
+                    screen.Pixels[x, y] = atomicBlock.ColorAt(x, y);
                 }
             }
         }
@@ -638,9 +589,9 @@ public class Canvas
         return screen;
     }
 
-    public SimpleBlock[] Flatten()
+    public AtomicBlock[] Flatten()
     {
-        var result = new List<SimpleBlock>();
+        var result = new List<AtomicBlock>();
         foreach (var block in Blocks.Values)
             result.AddRange(block.GetChildren());
         return result.ToArray();
