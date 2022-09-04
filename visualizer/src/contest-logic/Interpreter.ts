@@ -624,8 +624,6 @@ export class Interpreter {
 
     // Processing Starts
     if (block1.size.equals(block2.size)) {
-      block1.id = blockId2;
-      block2.id = blockId1;
 
       const diffX = block1.bottomLeft.px - block2.bottomLeft.px;
       const diffY = block1.bottomLeft.py - block2.bottomLeft.py;
@@ -665,8 +663,8 @@ export class Interpreter {
         });
       }
 
-      context.blocks.set(blockId1, block2);
-      context.blocks.set(blockId2, block1);
+      context.blocks.set(blockId2, block2);
+      context.blocks.set(blockId1, block1);
       return new InterpreterResult(context, cost);
     } else {
       throw Error(
