@@ -76,6 +76,16 @@ public static class Rotator
         for (int y = 0; y < problem.Height; y++)
             pixels[x, y] = problem.Pixels[x, ScreenSize - y - 1];
 
+        var sourcePng = problem.InitialBlocks.OfType<PngBlock>().Select(x => x.SourcePng).SingleOrDefault();
+        if (sourcePng != null)
+        {
+            var pngPixels = new Rgba[ScreenSize, ScreenSize];
+            for (int x = 0; x < sourcePng.GetLength(0); x++)
+            for (int y = 0; y < sourcePng.GetLength(1); y++)
+                pngPixels[x, y] = sourcePng[x, ScreenSize - y - 1];
+            sourcePng = pngPixels;
+        }
+
         return new Screen(pixels)
         {
             InitialBlocks = problem.InitialBlocks.Select(
@@ -83,12 +93,22 @@ public static class Rotator
                 {
                     var v1 = FlipUpsideDown(b.BottomLeft);
                     var v2 = FlipUpsideDown(b.TopRight);
-                    //TODO Fix PngBlock
-                    return b with
+                    b = b with
                     {
                         BottomLeft = new V(v1.X, v2.Y),
                         TopRight = new V(v2.X, v1.Y),
                     };
+                    if (b is PngBlock pngBlock)
+                    {
+                        if (pngBlock.BottomLeft != V.Zero)
+                            throw new Exception("pngBlock.BottomLeft != V.Zero");
+                        b = pngBlock with
+                        {
+                            SourcePng = sourcePng!,
+                        };
+                    }
+
+                    return b;
                 }).ToArray()
         };
     }
@@ -102,6 +122,17 @@ public static class Rotator
             pixels[ScreenSize - y - 1, x] = problem.Pixels[x, y];
         }
 
+        var sourcePng = problem.InitialBlocks.OfType<PngBlock>().Select(x => x.SourcePng).SingleOrDefault();
+        if (sourcePng != null)
+        {
+            var pngPixels = new Rgba[ScreenSize, ScreenSize];
+            for (int x = 0; x < sourcePng.GetLength(0); x++)
+            for (int y = 0; y < sourcePng.GetLength(1); y++)
+                pngPixels[ScreenSize - y - 1, x] = sourcePng[x, y];
+            sourcePng = pngPixels;
+        }
+
+
         return new Screen(pixels)
         {
             InitialBlocks = problem.InitialBlocks.Select(
@@ -109,12 +140,21 @@ public static class Rotator
                 {
                     var v1 = RotateCCW(b.BottomLeft);
                     var v2 = RotateCCW(b.TopRight);
-                    //TODO Fix PngBlock
-                    return b with
+                    b = b with
                     {
                         BottomLeft = new V(v2.X, v1.Y),
                         TopRight = new V(v1.X, v2.Y),
                     };
+                    if (b is PngBlock pngBlock)
+                    {
+                        if (pngBlock.BottomLeft != V.Zero)
+                            throw new Exception("pngBlock.BottomLeft != V.Zero");
+                        b = pngBlock with
+                        {
+                            SourcePng = sourcePng!,
+                        };
+                    }
+                    return b;
                 }).ToArray()
         };
     }
