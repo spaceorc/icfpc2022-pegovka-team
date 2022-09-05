@@ -43,7 +43,7 @@ namespace enhancer
 
                         solution.SolverMeta.Enhanced_By.Add("enchancer");
                         SolutionRepo.Submit(solution);
-                    }
+                    } else Console.WriteLine($"skipping enchancer for solution {solution.SolverId} for problem {solution.ProblemId} with meta {solution.SolverMeta}");
 
                     // enhancer 2
                     if (!solution.SolverMeta.Enhanced_By.Contains("enchancer2"))
@@ -61,7 +61,7 @@ namespace enhancer
 
                         solution.SolverMeta.Enhanced_By.Add("enchancer2");
                         SolutionRepo.Submit(solution);
-                    }
+                    } else Console.WriteLine($"skipping enchancer2 for solution {solution.SolverId} for problem {solution.ProblemId} with meta {solution.SolverMeta}");
                 });
 
                 Console.WriteLine("sleeping");
