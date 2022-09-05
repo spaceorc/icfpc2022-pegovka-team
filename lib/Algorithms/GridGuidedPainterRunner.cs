@@ -27,20 +27,20 @@ public class GridGuidedPainterResult
 
 public static class GridGuidedPainterRunner
 {
-    public static GridGuidedPainterResult Solve(int problemId, int rows, int cols, int orientation = 0, bool useSwapperPreprocessor = false)
+    public static GridGuidedPainterResult Solve(int problemId, int rows, int cols, int orientation = 0, int swapperPreprocessorN = 0)
     {
         var originalProblem = Screen.LoadProblem(problemId);
         return Solve(problemId, originalProblem, rows, cols, orientation);
     }
 
-    public static GridGuidedPainterResult Solve(int problemId, Screen originalProblem, int rows, int cols, int orientation = 0, bool useSwapperPreprocessor = false)
+    public static GridGuidedPainterResult Solve(int problemId, Screen originalProblem, int rows, int cols, int orientation = 0, int swapperPreprocessorN = 0)
     {
         var problemBeforePreprocessor = Rotator.Rotate(originalProblem, orientation);
         var problem = problemBeforePreprocessor;
         int[] preprocessorRows = null!;
 
-        if (useSwapperPreprocessor)
-            (problem, preprocessorRows) = SwapperPreprocessor.Preprocess(problemBeforePreprocessor, 4);
+        if (swapperPreprocessorN != 0)
+            (problem, preprocessorRows) = SwapperPreprocessor.Preprocess(problemBeforePreprocessor, swapperPreprocessorN);
 
 
         var grid = GridBuilder.BuildRegularGrid(problem, rows, cols);
@@ -55,7 +55,7 @@ public static class GridGuidedPainterRunner
         (grid, _) = GridBuilder.OptimizeRowHeights(problem, grid);
         (grid, _) = GridBuilder.OptimizeCellWidths(problem, grid);
 
-        // problem.ToImage($"{problemId}-grid-{rows}-{cols}-{orientation}-{useSwapperPreprocessor}.png", grid);
+        // problem.ToImage($"{problemId}-grid-{rows}-{cols}-{orientation}-{swapperPreprocessorN}.png", grid);
 
         GridGuidedPainterResult? bestResult = null;
         foreach (var colorTolerance in new[]{0, 1, 2, 4, 8, 16, 32, 48})
@@ -67,7 +67,7 @@ public static class GridGuidedPainterRunner
             }
         }
 
-        if (useSwapperPreprocessor)
+        if (swapperPreprocessorN != 0)
         {
             var moves = bestResult!.Moves.ToList();
             moves.AddRange(SwapperPreprocessor.Postprocess(preprocessorRows, bestResult!.Canvas));

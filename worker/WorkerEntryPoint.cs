@@ -16,19 +16,18 @@ public static class WorkerEntryPoint
     {
         var args = new[]
         {
-            // (7, 13),
-            (13, 13),
-            (40, 40),
+            (7, 13),  // with [0, 2, 3, 5, 7] preprocessorN
+            (13, 13), // with [0, 2, 3, 5, 7] preprocessorN
+            // (40, 40)
         };
 
         var works = Enumerable.Range(1, 40)
             .SelectMany(problemId => args.Select(a => new { problemId, rows = a.Item1, cols = a.Item2 }))
             .SelectMany(a => Enumerable.Range(0, 8).Select(o => new { a.problemId, a.rows, a.cols, orientation = o }))
-            .SelectMany(a => new[]{false, true}.Select(prep => new { a.problemId, a.rows, a.cols, a.orientation, useSwapperPreprocessor = prep }))
+            .SelectMany(a => new[]{0, 2, 3, 5, 7}.Select(prep => new { a.problemId, a.rows, a.cols, a.orientation, swapperPreprocessorN = prep }))
             .Where(x => x.problemId is <= 25 or >= 36)
             .Where(x => x.problemId is <= 25 or >= 36)
             .Where(x => x.orientation is 0 or 1)
-            .Where(x => x.useSwapperPreprocessor)
             .ToArray();
 
         Console.WriteLine($"Total: {works.Length}");
@@ -50,7 +49,7 @@ public static class WorkerEntryPoint
                     var rows = w.rows;
                     var cols = w.cols;
 
-                    var res = GridGuidedPainterRunner.Solve(problemId, rows, cols, w.orientation, w.useSwapperPreprocessor);
+                    var res = GridGuidedPainterRunner.Solve(problemId, rows, cols, w.orientation, w.swapperPreprocessorN);
                     var score = res.Score;
 
                     long prevBestScore = -1;
@@ -64,9 +63,9 @@ public static class WorkerEntryPoint
                     }
 
                     if (score < prevBestScore)
-                        Console.WriteLine($"BEST! {localCurrent + 1}/{works.Length} submitted score={prevBestScore}->{score} problem={problemId} rows={rows} cols={cols} o={w.orientation} prep={w.useSwapperPreprocessor}");
+                        Console.WriteLine($"BEST! {localCurrent + 1}/{works.Length} submitted score={prevBestScore}->{score} problem={problemId} rows={rows} cols={cols} o={w.orientation} prep={w.swapperPreprocessorN}");
                     else
-                        Console.WriteLine($"{localCurrent + 1}/{works.Length} submitted score={prevBestScore}->{score} problem={problemId} rows={rows} cols={cols} o={w.orientation} prep={w.useSwapperPreprocessor}");
+                        Console.WriteLine($"{localCurrent + 1}/{works.Length} submitted score={prevBestScore}->{score} problem={problemId} rows={rows} cols={cols} o={w.orientation} prep={w.swapperPreprocessorN}");
 
 
                     // File.WriteAllText(Path.Combine(FileHelper.FindDirectoryUpwards("worker-solutions"), $"{problemId}-grid-{rows}-{cols}-{w.orientation}.txt"), res.Moves.StrJoin("\n"));
@@ -78,7 +77,7 @@ public static class WorkerEntryPoint
                                 problemId,
                                 score,
                                 res.Moves.StrJoin("\n"),
-                                new SolverMeta { Description = $"{rows}*{cols} colTolerance={res.ColorTolerance} orientation={w.orientation} prep={w.useSwapperPreprocessor}" },
+                                new SolverMeta { Description = $"{rows}*{cols} colTolerance={res.ColorTolerance} orientation={w.orientation} prep={w.swapperPreprocessorN}" },
                                 "GridGuidedPainter"));
                     }
                     catch(Exception e)
