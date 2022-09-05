@@ -92,7 +92,7 @@ public static class SolutionRepo
 {
     public static async Task SubmitAsync(ContestSolution solution)
     {
-        Console.WriteLine("SubmitAsync");
+        // Console.WriteLine("SubmitAsync");
         var client = await CreateTableClient();
         var response = await client.SessionExec(async session =>
 
@@ -134,7 +134,7 @@ public static class SolutionRepo
 
     public static async Task<List<(long problemId, long score)>> GetBestScoreByProblemId()
     {
-        Console.WriteLine("GetBestScoreByProblemId");
+        // Console.WriteLine("GetBestScoreByProblemId");
         var ans = new List<(long, long)>();
         var client = await CreateTableClient();
         var response = await client.SessionExec(async session =>
@@ -159,7 +159,7 @@ public static class SolutionRepo
 
     public static async Task<List<(long problemId, string solverId, long score)>> GetBestScoreByProblemIdAndSolverId(List<string> ignoreSolverPrefixes)
     {
-        Console.WriteLine("GetBestScoreByProblemIdAndSolverId");
+        // Console.WriteLine("GetBestScoreByProblemIdAndSolverId");
         var ans = new List<(long, string, long)>();
         var client = await CreateTableClient();
         var ignoreClause = ignoreSolverPrefixes.StrJoin("|");
@@ -186,7 +186,7 @@ public static class SolutionRepo
 
     public static async Task<ContestSolution> GetSolutionByProblemIdAndScore(long problemId, long scoreEstimated)
     {
-        Console.WriteLine("GetSolutionByProblemIdAndScore");
+        // Console.WriteLine("GetSolutionByProblemIdAndScore");
         var client = await CreateTableClient();
         var response = await client.SessionExec(async session =>
 
@@ -214,7 +214,7 @@ public static class SolutionRepo
 
     public static async Task<ContestSolution> GetSolutionByProblemIdAndSolverIdAndScore(long problemId, string solverId, long scoreEstimated)
     {
-        Console.WriteLine("GetSolutionByProblemIdAndSolverIdAndScore");
+        // Console.WriteLine("GetSolutionByProblemIdAndSolverIdAndScore");
         var client = await CreateTableClient();
         var response = await client.SessionExec(async session =>
 
@@ -244,7 +244,7 @@ public static class SolutionRepo
 
     public static async Task<ContestSolution?> GetBestSolutionBySolverId(long problemId, string solverId)
     {
-        Console.WriteLine($"GetBestSolutionBySolverId {problemId} {solverId}");
+        // Console.WriteLine($"GetBestSolutionBySolverId {problemId} {solverId}");
         var client = await CreateTableClient();
         var response = await client.SessionExec(async session =>
 
@@ -274,7 +274,7 @@ public static class SolutionRepo
 
     public static async Task<ContestSolution?> GetBestSolutionByProblemId(long problemId)
     {
-        Console.WriteLine("GetBestSolutionByProblemId");
+        // Console.WriteLine("GetBestSolutionByProblemId");
         var client = await CreateTableClient();
         var response = await client.SessionExec(async session =>
 
@@ -329,7 +329,7 @@ public static class SolutionRepo
 
     public static async Task<string[]> GetAllSolvers(long problemId)
     {
-        Console.WriteLine("GetAllSolvers");
+        // Console.WriteLine("GetAllSolvers");
         var client = await CreateTableClient();
         var response = await client.SessionExec(async session =>
 
