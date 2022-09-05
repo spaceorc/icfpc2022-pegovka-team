@@ -35,10 +35,11 @@ public class YDBRatingVisualizerApplication : VostokScheduledApplication
     {
         environment.Log.Info("Start updating..");
         var bestStats = SolutionRepo.GetAllBestStats().GetAwaiter().GetResult();
+        var bestMetaStats = SolutionRepo.GetAllBestMetaStats().GetAwaiter().GetResult();
         environment.Log.Info("Start executing stats builder..");
         BuildStats(bestStats);
         environment.Log.Info("Start executing better stats builder..");
-        BuildBestStat(bestStats);
+        BuildBestStat(bestStats, bestMetaStats);
         environment.Log.Info("Finished updating");
     }
 
@@ -94,17 +95,18 @@ public class YDBRatingVisualizerApplication : VostokScheduledApplication
         builder.Execute();
     }
 
-    public void BuildBestStat(List<SolutionRepo.ProblemStat> bestStats)
+    public void BuildBestStat(List<SolutionRepo.ProblemStat> bestStats, List<SolutionRepo.ProblemStatWithMeta> problemStatWithMetas)
     {
         var spreadSheet = gsClient.GetSpreadsheet(secrets!.SpreadSheetId!);
         var sheet = spreadSheet.GetSheetByName(secrets.BetterSpreadSheetName!);
 
-        var baseDict = new Dictionary<long, List<(long?, string?)>>();
-        var e1Dict = new Dictionary<long, List<(long?, string?)>>();
-        var e2Dict = new Dictionary<long, List<(long?, string?)>>();
+        var baseDict = new Dictionary<long, List<(long?, string?, string?)>>();
+        var e1Dict = new Dictionary<long, List<(long?, string?, string?)>>();
+        var e2Dict = new Dictionary<long, List<(long?, string?, string?)>>();
 
         var api = new Api();
         var serverResults = api.GetResults();
+        var metasDict = problemStatWithMetas.ToDictionary(s => s.problem_id, s => s.solver_meta);
 
         foreach (var (prId, score, solverId) in bestStats)
         {
@@ -113,18 +115,18 @@ public class YDBRatingVisualizerApplication : VostokScheduledApplication
 
             if (solverId.EndsWith(E2))
             {
-                var el = (score, id: solverId.Replace(E2, ""));
-                e2Dict.AddOrUpdate(prId, new List<(long?, string?)> {el}, upd => upd.Add(el));
+                var el = (score, id: solverId.Replace(E2, ""), metasDict.ContainsKey(prId) ? metasDict[prId] : " ");
+                e2Dict.AddOrUpdate(prId, new List<(long?, string?, string?)> {el}, upd => upd.Add(el));
             }
             else if (solverId.EndsWith(E))
             {
-                var el = (score, id: solverId.Replace(E, ""));
-                e1Dict.AddOrUpdate(prId, new List<(long?, string?)> {el}, upd => upd.Add(el));
+                var el = (score, id: solverId.Replace(E, ""), metasDict.ContainsKey(prId) ? metasDict[prId] : " ");
+                e1Dict.AddOrUpdate(prId, new List<(long?, string?, string?)> {el}, upd => upd.Add(el));
             }
             else
             {
-                var el = (score, id: solverId);
-                baseDict.AddOrUpdate(prId, new List<(long?, string?)> {el}, upd => upd.Add(el));
+                var el = (score, id: solverId, metasDict.ContainsKey(prId) ? metasDict[prId] : " ");
+                baseDict.AddOrUpdate(prId, new List<(long?, string?, string?)> {el}, upd => upd.Add(el));
             }
         }
 
@@ -173,7 +175,9 @@ public class YDBRatingVisualizerApplication : VostokScheduledApplication
             data.Add(FormatLine(solverId, new List<string> {" ", "Ench2"}, e2Dict, maxProblemId).Append("Ench2").ToList());
         }
 
-        static List<string> FormatLine(string solverId, List<string> result, Dictionary<long, List<(long?, string?)>> dict, long maxProblemId)
+        data.Add(GetBestDescription());
+
+        static List<string> FormatLine(string solverId, List<string> result, Dictionary<long, List<(long?, string?, string?)>> dict, long maxProblemId)
         {
             for (int problemId = 1; problemId <= maxProblemId; problemId++)
             {
@@ -186,12 +190,56 @@ public class YDBRatingVisualizerApplication : VostokScheduledApplication
             return result;
         }
 
+        List<string> GetBestDescription()
+        {
+            var result = new List<string> { " ", " " };
+
+            for (var problemId = 0; problemId < maxProblemId; problemId++)
+            {
+                var minScore = double.PositiveInfinity;
+                string? minDescription = null!;
+
+                if (baseDict.ContainsKey(problemId) && baseDict[problemId].Any())
+                {
+                    var (baseScore, _, baseDescription) = baseDict[problemId].MinBy(e => e.Item1);
+                    if (baseScore < minScore)
+                    {
+                        minScore = baseScore.Value;
+                        minDescription = baseDescription;
+                    }
+                }
+
+                if (e1Dict.ContainsKey(problemId) && baseDict[problemId].Any())
+                {
+                    var (e1Score, _, e1Description) = e1Dict[problemId].MinBy(e => e.Item1);
+                    if (e1Score < minScore)
+                    {
+                        minScore = e1Score.Value;
+                        minDescription = e1Description;
+                    }
+                }
+
+                if (e2Dict.ContainsKey(problemId) && baseDict[problemId].Any())
+                {
+                    var (e2Score, _, e2Description) = e2Dict[problemId].MinBy(e => e.Item1);
+                    if (e2Score < minScore)
+                    {
+                        minScore = e2Score.Value;
+                        minDescription = e2Description;
+                    }
+                }
+                result.Add(minDescription ?? " ");
+            }
+
+            return result;
+        }
+
         var builder = sheet.Edit();
         builder.ClearAll().WriteRange((0, 0), data);
         builder.Execute();
     }
 
-    public static IEnumerable<string> GetBestSolvers(long prId, Dictionary<long, List<(long?, string?)>> dict)
+    public static IEnumerable<string> GetBestSolvers(long prId, Dictionary<long, List<(long?, string?, string?)>> dict)
     {
         return dict.ContainsKey(prId)
             ? dict[prId]
@@ -200,6 +248,25 @@ public class YDBRatingVisualizerApplication : VostokScheduledApplication
                 .Take(1)
                 .Select(e => e.Item2!)
             : Enumerable.Empty<string>();
+    }
+
+    public static List<string> FormatLine(long prId, List<string> result, Dictionary<long, List<(long?, string?, string?)>> dict, string solverType)
+    {
+        var top3 = dict.ContainsKey(prId)
+            ? dict[prId]
+                .Where(e => e.Item1.HasValue && e.Item2 != null)
+                .OrderBy(e => e.Item1)
+                .Take(3)
+                .ToArray()
+            : Array.Empty<(long?, string?, string?)>();
+
+        result.Add(solverType);
+        foreach (var (score, solver, _) in top3)
+        {
+            result.Add(score!.Value.ToString());
+            result.Add(solver!);
+        }
+        return result;
     }
 
     public static List<string> FormatLine(long prId, List<string> result, Dictionary<long, List<(long?, string?)>> dict, string solverType)
