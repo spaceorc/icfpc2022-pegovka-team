@@ -26,7 +26,8 @@ public static class WorkerEntryPoint
             .SelectMany(a => Enumerable.Range(0, 8).Select(o => new { a.problemId, a.rows, a.cols, orientation = o }))
             .SelectMany(a => new[]{false, true}.Select(prep => new { a.problemId, a.rows, a.cols, a.orientation, useSwapperPreprocessor = prep }))
             .Where(x => x.problemId is <= 25 or >= 36)
-            .Where(x => x.orientation is 0 or 1)
+            .Where(x => x.problemId is <= 25 or >= 36)
+            // .Where(x => x.orientation is 0 or 1)
             .Where(x => x.useSwapperPreprocessor)
             .ToArray();
 
