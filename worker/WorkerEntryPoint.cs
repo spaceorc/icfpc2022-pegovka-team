@@ -47,16 +47,16 @@ public static class WorkerEntryPoint
          */
         var args = new[]
         {
-            (19, 19),
-            (17, 17),
-            (15, 15),
-            (13, 13),
+            (19, 30),
+            (17, 30),
+            (15, 30),
+            (13, 30),
         };
 
         var works = Enumerable.Range(1, 40)
             .SelectMany(problemId => args.Select(a => new { problemId, rows = a.Item1, cols = a.Item2 }))
             .SelectMany(a => Enumerable.Range(0, 8).Select(o => new { a.problemId, a.rows, a.cols, orientation = o }))
-            .SelectMany(a => new[] { 0, 4, 8, 10 }.Select(o => new { a.problemId, a.rows, a.cols, a.orientation, swapperPreprocessorN = o }))
+            .SelectMany(a => new[] { 0, 4 }.Select(o => new { a.problemId, a.rows, a.cols, a.orientation, swapperPreprocessorN = o }))
             .Where(x =>
             {
                 if (new[] { 7, 10, 12, 38 }.Contains(x.problemId))
