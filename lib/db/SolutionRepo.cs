@@ -79,7 +79,7 @@ public class SolverMeta
 
     public override string ToString()
     {
-        return $"{nameof(Previous_Score)}: {Previous_Score}, {nameof(Previous_SolverName)}: {Previous_SolverName}, {Description}";
+        return $"{nameof(Previous_Score)}: {Previous_Score}, {nameof(Previous_SolverName)}: {Previous_SolverName}, {Description}, {nameof(Enhanced_By)}: {(Enhanced_By == null ? "" : string.Join(" ", Enhanced_By!))}";
     }
 
     public string ToJson()
@@ -331,6 +331,8 @@ public static class SolutionRepo
     }
 
     public record ProblemStat(long problem_id, long? best_score, string? solver_id);
+    public record ProblemStatWithMeta(long problem_id, long? best_score, string? solver_meta);
+
 
     public static async Task<List<ProblemStat>> GetAllBestStats()
     {
@@ -354,6 +356,40 @@ public static class SolutionRepo
             var solverId = (string?)row["solver_id"] ?? throw new ArgumentException();
             var bestScore = (long?) row["best_score"] ?? throw new ArgumentException();
             ans.Add(new ProblemStat(problemId, bestScore, solverId));
+        }
+        return ans;
+    }
+
+    public static async Task<List<ProblemStatWithMeta>> GetAllBestMetaStats()
+    {
+        var client = await CreateTableClient();
+        var response = await client.SessionExec(async session =>
+
+            await session.ExecuteDataQuery(
+                query: @$"
+                SELECT
+  problem_id, solver_meta, score_estimated
+FROM (
+  SELECT
+    problem_id, solver_meta, score_estimated,
+    ROW_NUMBER() OVER(PARTITION BY problem_id ORDER BY score_estimated) AS row_number
+  FROM Solutions
+)
+WHERE row_number = 1;",
+                txControl: TxControl.BeginSerializableRW().Commit(),
+                parameters: new Dictionary<string, YdbValue>
+                {
+                }
+            ));
+        response.Status.EnsureSuccess();
+        var ans = new List<ProblemStatWithMeta>();
+        var queryResponse = (ExecuteDataQueryResponse) response;
+        foreach (var row in queryResponse.Result.ResultSets[0].Rows)
+        {
+            var problemId = (long?) row["problem_id"] ?? throw new ArgumentException();
+            var solverMeta = row["solver_meta"].GetOptionalJson();
+            var bestScore = (long?) row["score_estimated"] ?? throw new ArgumentException();
+            ans.Add(new ProblemStatWithMeta(problemId, bestScore, solverMeta));
         }
         return ans;
     }

@@ -113,6 +113,7 @@ public class SolutionRepoTests
             if (sol == null)
                 continue;
             File.WriteAllText(Path.Combine(path, $"sol-{problemId}-{sol.SolverId}-{sol.ScoreEstimated}.txt"),sol.Solution);
+            File.WriteAllText(Path.Combine(path, $"sol-{problemId}-{sol.SolverId}-meta.txt"),sol.SolverMeta.ToString());
         }
     }
 
@@ -154,5 +155,7 @@ public class SolutionRepoTests
     {
         var stats = SolutionRepo.GetAllBestStats().GetAwaiter().GetResult();
         Console.WriteLine(string.Join("\n", stats.Select(e => $"{e.problem_id} {e.best_score} {e.solver_id}")));
+        // var f = SolutionRepo.GetAllBestMetaStats().GetAwaiter().GetResult();
+        // Console.WriteLine(string.Join("\n", f.Select(e => $"{e.problem_id} {e.best_score} {e.solver_meta}")));
     }
 }
