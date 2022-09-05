@@ -27,7 +27,7 @@ public class GridGuidedPainter
         return (ms, score);
     }
 
-    public (List<Move> moves, int, Canvas canvas) GetBestResultWithCanvas()
+    public (List<Move> moves, int score, Canvas canvas) GetBestResultWithCanvas()
     {
         var start = V.Zero;
         var rowBottomLeft = start;

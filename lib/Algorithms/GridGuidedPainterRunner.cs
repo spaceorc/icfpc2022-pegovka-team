@@ -30,6 +30,11 @@ public static class GridGuidedPainterRunner
     public static GridGuidedPainterResult Solve(int problemId, int rows, int cols, int orientation = 0)
     {
         var originalProblem = Screen.LoadProblem(problemId);
+        return Solve(problemId, originalProblem, rows, cols, orientation);
+    }
+
+    public static GridGuidedPainterResult Solve(int problemId, Screen originalProblem, int rows, int cols, int orientation = 0)
+    {
         var problem = Rotator.Rotate(originalProblem, orientation);
 
         var grid = GridBuilder.BuildRegularGrid(problem, rows, cols);
