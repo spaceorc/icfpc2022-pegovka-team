@@ -17,7 +17,7 @@ public class SolutionRepo2
 
     public async Task SubmitAsync(ContestSolution solution)
     {
-        Console.WriteLine("SubmitAsync");
+        // Console.WriteLine("SubmitAsync");
         var response = await client.SessionExec(async session =>
 
             await session.ExecuteDataQuery(
@@ -58,7 +58,7 @@ public class SolutionRepo2
 
     public  async Task<List<(long problemId, long score)>> GetBestScoreByProblemId()
     {
-        Console.WriteLine("GetBestScoreByProblemId");
+        // Console.WriteLine("GetBestScoreByProblemId");
         var ans = new List<(long, long)>();
         var response = await client.SessionExec(async session =>
 
@@ -82,7 +82,7 @@ public class SolutionRepo2
 
     public  async Task<List<(long problemId, string solverId, long score)>> GetBestScoreByProblemIdAndSolverId(List<string> ignoreSolverPrefixes)
     {
-        Console.WriteLine("GetBestScoreByProblemIdAndSolverId");
+        // Console.WriteLine("GetBestScoreByProblemIdAndSolverId");
         var ans = new List<(long, string, long)>();
         var ignoreClause = ignoreSolverPrefixes.StrJoin("|");
         var response = await client.SessionExec(async session =>
@@ -108,7 +108,7 @@ public class SolutionRepo2
 
     public  async Task<ContestSolution> GetSolutionByProblemIdAndScore(long problemId, long scoreEstimated)
     {
-        Console.WriteLine("GetSolutionByProblemIdAndScore");
+        // Console.WriteLine("GetSolutionByProblemIdAndScore");
         var response = await client.SessionExec(async session =>
 
             await session.ExecuteDataQuery(
@@ -156,7 +156,7 @@ public class SolutionRepo2
 
             ));
         response.Status.EnsureSuccess();
-        Console.WriteLine(sw.Elapsed);
+        // Console.WriteLine(sw.Elapsed);
         var queryResponse = (ExecuteDataQueryResponse) response;
         var row = queryResponse.Result.ResultSets[0].Rows.First();
 
@@ -166,7 +166,7 @@ public class SolutionRepo2
 
     public  async Task<ContestSolution?> GetBestSolutionBySolverId(long problemId, string solverId)
     {
-        Console.WriteLine($"GetBestSolutionBySolverId {problemId} {solverId}");
+        // Console.WriteLine($"GetBestSolutionBySolverId {problemId} {solverId}");
         var response = await client.SessionExec(async session =>
 
             await session.ExecuteDataQuery(
@@ -195,7 +195,7 @@ public class SolutionRepo2
 
     public  async Task<List<ContestSolution>> GetAllSolutions()
     {
-        Console.WriteLine("GetAllSolutions");
+        // Console.WriteLine("GetAllSolutions");
         var response = await client.SessionExec(async session =>
 
             await session.ExecuteDataQuery(
@@ -203,14 +203,14 @@ public class SolutionRepo2
                 txControl: TxControl.BeginStaleRO().Commit()
             ));
         response.Status.EnsureSuccess();
-        Console.WriteLine("Done");
+        // Console.WriteLine("Done");
         var queryResponse = (ExecuteDataQueryResponse) response;
         return queryResponse.Result.ResultSets[0].Rows.Select(r => new ContestSolution(r)).ToList();
     }
 
     public  async Task<ContestSolution?> GetBestSolutionByProblemId(long problemId)
     {
-        Console.WriteLine("GetBestSolutionByProblemId");
+        // Console.WriteLine("GetBestSolutionByProblemId");
         var response = await client.SessionExec(async session =>
 
             await session.ExecuteDataQuery(
@@ -236,7 +236,7 @@ public class SolutionRepo2
 
     public  async Task<string[]> GetAllSolvers(long problemId)
     {
-        Console.WriteLine("GetAllSolvers");
+        // Console.WriteLine("GetAllSolvers");
         var response = await client.SessionExec(async session =>
 
             await session.ExecuteDataQuery(
@@ -310,7 +310,7 @@ public class SolutionRepo2
 
     private  async Task<TableClient> CreateTableClient()
     {
-        Console.WriteLine("CreateTableClient");
+        // Console.WriteLine("CreateTableClient");
         var settings = new Settings();
         var config = new DriverConfig(
             endpoint: settings.YdbEndpoint,
