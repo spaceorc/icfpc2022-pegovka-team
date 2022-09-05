@@ -12,7 +12,7 @@ public static class SwapperPreprocessor
         if (400 % n != 0)
             throw new Exception("(400 % n) != 0");
 
-        var grid = GridBuilder.BuildRegularGrid(problem, n, n);
+        var grid = GridBuilder.BuildRegularGrid(problem, n, 40);
         (grid, _) = GridBuilder.OptimizeCellWidths(problem, grid);
         (grid, _) = GridBuilder.OptimizeCellsViaMerge(problem, grid);
 
