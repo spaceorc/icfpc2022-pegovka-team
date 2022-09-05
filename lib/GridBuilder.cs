@@ -377,30 +377,7 @@ public static class GridBuilder
 
     public static double EstimateGrid(Screen problem, Grid grid)
     {
-        Interlocked.Increment(ref estimations);
-        var bottom = 0;
-        var totalEstimation = 0.0;
-        foreach (var row in grid.Rows)
-        {
-            var leftToRight = row.Cells[0].Width <= row.Cells.Last().Width;
-            var left = 0;
-            foreach (var cell in row.Cells)
-            {
-                var block = new SimpleBlock("", new V(left, bottom), new V(left + cell.Width, bottom + row.Height), new Rgba(0, 0, 0, 0));
-                var color = problem.GetAverageColor(block);
-                block = block with { Color = color };
-                var similarity = problem.DiffTo(block);
-                var estimation = leftToRight
-                    ? similarity + 6*400.0 * 400 / ((400 - block.Left)*(400 - block.Bottom))
-                    : similarity + 6*400.0 * 400 / (block.Right*(400 - block.Bottom));
-                totalEstimation += estimation;
-                left += cell.Width;
-            }
-
-            bottom += row.Height;
-        }
-
-        return totalEstimation;
+        return EstimateGridRegion(problem, grid, V.Zero, new V(400, 400));
     }
 
     public static double EstimateGridRegion(Screen problem, Grid grid, V bottomLeft, V topRight)
@@ -415,8 +392,9 @@ public static class GridBuilder
 
             if (bottom + row.Height > bottomLeft.Y)
             {
-                var leftToRight = row.Cells[0].Width <= row.Cells.Last().Width;
                 var left = 0;
+                var rowEstimationL2R = 0.0;
+                var rowEstimationR2L = 0.0;
                 foreach (var cell in row.Cells)
                 {
                     if (left >= topRight.X)
@@ -434,19 +412,26 @@ public static class GridBuilder
 
                         var color = problem.GetAverageColor(bl, tr);
                         var similarity = problem.DiffTo(bl, tr, color);
-                        var estimation = leftToRight
-                            ? similarity + 6 * 400.0 * 400 / ((400 - l) * (400 - b))
-                            : similarity + 6 * 400.0 * 400 / (r * (400 - b));
+                        rowEstimationL2R += EstimateCell(true, similarity, l, b, r);
+                        rowEstimationR2L += EstimateCell(false, similarity, l, b, r);
 
-                        totalEstimation += estimation;
                         left += cell.Width;
                     }
                 }
+                totalEstimation += Math.Min(rowEstimationL2R, rowEstimationR2L);
             }
 
             bottom += row.Height;
         }
 
         return totalEstimation;
+    }
+
+    private static double EstimateCell(bool leftToRight, double similarity, int l, int b, int r)
+    {
+        var estimation = leftToRight
+            ? similarity + 5 * 400.0 * 400 / ((400 - l) * (400 - b))
+            : similarity + 5 * 400.0 * 400 / (r * (400 - b));
+        return estimation;
     }
 }

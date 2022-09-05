@@ -40,10 +40,11 @@ public static class GridGuidedPainterRunner
         (grid, _) = GridBuilder.OptimizeRowsViaMerge(problem, grid);
         (grid, _) = GridBuilder.OptimizeRowHeights(problem, grid);
         (grid, _) = GridBuilder.OptimizeCellWidths(problem, grid);
+        (grid, _) = GridBuilder.OptimizeCellsViaMerge(problem, grid);
         (grid, _) = GridBuilder.OptimizeRowHeights(problem, grid);
         (grid, _) = GridBuilder.OptimizeCellWidths(problem, grid);
 
-        //problem.ToImage($"{problemId}-grid-{rows}-{cols}-{orientation}.png", grid);
+        problem.ToImage($"{problemId}-grid-{rows}-{cols}-{orientation}.png", grid);
 
         GridGuidedPainterResult? bestResult = null;
         foreach (var colorTolerance in new[]{0, 1, 2, 4, 8, 16, 32, 48})

@@ -23,15 +23,15 @@ public static class WorkerEntryPoint
         var works = Enumerable.Range(1, 40)
             .SelectMany(problemId => args.Select(a => new { problemId, rows = a.Item1, cols = a.Item2 }))
             .SelectMany(a => Enumerable.Range(0, 8).Select(o => new { a.problemId, a.rows, a.cols, orientation = o }))
-            .Where(x => x.problemId <= 25)
-            .Where(x => x.orientation < 4)
+            .Where(x => x.problemId is <= 25 or >= 36)
+            .Where(x => x.orientation >= 4)
             .ToArray();
 
         Console.WriteLine($"Total: {works.Length}");
         var current = 0;
 
         var tasks = new List<Task>();
-        for (int i = 0; i < 94; i++)
+        for (int i = 0; i < 90; i++)
         {
             tasks.Add(Task.Run(() =>
             {
