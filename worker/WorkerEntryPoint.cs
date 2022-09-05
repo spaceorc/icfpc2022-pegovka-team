@@ -17,14 +17,14 @@ public static class WorkerEntryPoint
         var args = new[]
         {
             (7, 13),  // with [0, 2, 3, 5, 7] preprocessorN
-            (13, 13), // with [0, 2, 3, 5, 7] preprocessorN
+            // (13, 13),
             // (40, 40)
         };
 
         var works = Enumerable.Range(1, 40)
             .SelectMany(problemId => args.Select(a => new { problemId, rows = a.Item1, cols = a.Item2 }))
             .SelectMany(a => Enumerable.Range(0, 8).Select(o => new { a.problemId, a.rows, a.cols, orientation = o }))
-            .SelectMany(a => new[]{0, 2, 3, 5, 7}.Select(prep => new { a.problemId, a.rows, a.cols, a.orientation, swapperPreprocessorN = prep }))
+            .SelectMany(a => new[]{4, 7, 9}.Select(prep => new { a.problemId, a.rows, a.cols, a.orientation, swapperPreprocessorN = prep }))
             .Where(x => x.problemId is <= 25 or >= 36)
             .Where(x => x.problemId is <= 25 or >= 36)
             .Where(x => x.orientation is 0 or 1)
