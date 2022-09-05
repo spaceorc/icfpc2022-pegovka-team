@@ -16,8 +16,8 @@ public static class WorkerEntryPoint
     {
         var args = new[]
         {
-            (13, 40, 0),
-            (13, 40, 2),
+            (17, 40, 0),
+            (17, 40, 3),
             // (13, 13),
             // (40, 40)
         };
