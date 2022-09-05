@@ -6,7 +6,7 @@ namespace enhancer
 {
     internal static class Program
     {
-        private static SolutionRepo2 SolutionRepo = new SolutionRepo2();
+        // private static SolutionRepo2 SolutionRepo = new SolutionRepo2();
         private static void Main(string[] args)
         {
             var excludedAlgoPrefixes = new HashSet<string> { "Layers", "Simple" };
