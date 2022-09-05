@@ -16,16 +16,16 @@ public static class WorkerEntryPoint
     {
         var args = new[]
         {
-            (7, 13, 7),
-            (7, 13, 9),
+            (13, 40, 7),
+            (13, 40, 9),
             // (13, 13),
             // (40, 40)
         };
 
-        var works = Enumerable.Range(1, 10)
+        var works = Enumerable.Range(1, 40)
             .SelectMany(problemId => args.Select(a => new { problemId, rows = a.Item1, cols = a.Item2, swapperPreprocessorN = a.Item3 }))
             .SelectMany(a => Enumerable.Range(0, 8).Select(o => new { a.problemId, a.rows, a.cols, orientation = o, a.swapperPreprocessorN }))
-            .Where(x => x.problemId is <= 25 or >= 36)
+            .Where(x => x.problemId <= 25)
             // .Where(x => x.orientation is 0 or 1)
             .ToArray();
 
@@ -33,7 +33,7 @@ public static class WorkerEntryPoint
         var current = 0;
 
         var tasks = new List<Task>();
-        for (int i = 0; i < 90; i++)
+        for (int i = 0; i < 96; i++)
         {
             tasks.Add(Task.Run(() =>
             {
@@ -49,12 +49,13 @@ public static class WorkerEntryPoint
                     var cols = w.cols;
 
                     var res = GridGuidedPainterRunner.Solve(problemId, rows, cols, w.orientation, w.swapperPreprocessorN);
+                    const string solverId = "GridGuidedPainter";
                     var score = res.Score;
 
                     long prevBestScore = -1;
                     try
                     {
-                        prevBestScore = SolutionRepo.GetBestSolutionByProblemId(problemId).GetAwaiter().GetResult()!.ScoreEstimated;
+                        prevBestScore = SolutionRepo.GetBestSolutionBySolverId(problemId, solverId).GetAwaiter().GetResult()!.ScoreEstimated;
                     }
                     catch (Exception e)
                     {
@@ -69,20 +70,21 @@ public static class WorkerEntryPoint
 
                     // File.WriteAllText(Path.Combine(FileHelper.FindDirectoryUpwards("worker-solutions"), $"{problemId}-grid-{rows}-{cols}-{w.orientation}.txt"), res.Moves.StrJoin("\n"));
 
-                    try
-                    {
-                        SolutionRepo.Submit(
-                            new ContestSolution(
-                                problemId,
-                                score,
-                                res.Moves.StrJoin("\n"),
-                                new SolverMeta { Description = $"{rows}*{cols} colTolerance={res.ColorTolerance} orientation={w.orientation} prep={w.swapperPreprocessorN}" },
-                                "GridGuidedPainter"));
-                    }
-                    catch(Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
+                    if (score < prevBestScore)
+                        try
+                        {
+                            SolutionRepo.Submit(
+                                new ContestSolution(
+                                    problemId,
+                                    score,
+                                    res.Moves.StrJoin("\n"),
+                                    new SolverMeta { Description = $"{rows}*{cols} colTolerance={res.ColorTolerance} orientation={w.orientation} prep={w.swapperPreprocessorN}" },
+                                    solverId));
+                        }
+                        catch(Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
                 }
             }));
         }
