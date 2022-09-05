@@ -299,6 +299,34 @@ public static class SolutionRepo
         return ans;
     }
 
+    public static async Task<List<ContestSolution>> GetSolutionsByProblemId(long problemId)
+    {
+        var client = await CreateTableClient();
+        var response = await client.SessionExec(async session =>
+
+            await session.ExecuteDataQuery(
+                query: @"
+                DECLARE $problem_id AS Int64;
+
+                SELECT * FROM Solutions WHERE problem_id=$problem_id ORDER BY score_estimated",
+                txControl: TxControl.BeginSerializableRW().Commit(),
+                parameters: new Dictionary<string, YdbValue>
+                {
+                    { "$problem_id", YdbValue.MakeInt64(problemId)},
+                }
+
+            ));
+        response.Status.EnsureSuccess();
+        var queryResponse = (ExecuteDataQueryResponse) response;
+        var result = new List<ContestSolution>();
+        foreach (var row in queryResponse.Result.ResultSets[0].Rows)
+        {
+            result.Add(new ContestSolution(row));
+
+        }
+        return result;
+    }
+
     public static async Task<string[]> GetAllSolvers(long problemId)
     {
         Console.WriteLine("GetAllSolvers");

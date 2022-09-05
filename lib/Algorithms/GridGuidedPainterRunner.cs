@@ -48,7 +48,7 @@ public static class GridGuidedPainterRunner
         (grid, _) = GridBuilder.OptimizeRowHeights(problem, grid);
         (grid, _) = GridBuilder.OptimizeCellWidths(problem, grid);
         (grid, _) = GridBuilder.OptimizeCellsViaMerge(problem, grid);
-        (grid, _) = GridBuilder.OptimizeRowsViaMerge(problem, grid);
+        // (grid, _) = GridBuilder.OptimizeRowsViaMerge(problem, grid);
         (grid, _) = GridBuilder.OptimizeRowHeights(problem, grid);
         (grid, _) = GridBuilder.OptimizeCellWidths(problem, grid);
         (grid, _) = GridBuilder.OptimizeCellsViaMerge(problem, grid);

@@ -13,7 +13,7 @@ public class SwapperPreprocessorTests
     [Test]
     public void Run()
     {
-        var problem = Screen.LoadProblem(22);
+        var problem = Screen.LoadProblem(2);
         problem.ToImage(Path.Combine(FileHelper.FindDirectoryUpwards("tests"), "swapper_0.png"));
 
 

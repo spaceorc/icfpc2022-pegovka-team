@@ -7,6 +7,7 @@ using lib;
 using lib.Algorithms;
 using lib.api;
 using lib.db;
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace tests;
@@ -115,6 +116,69 @@ public class SolutionRepoTests
             File.WriteAllText(Path.Combine(path, $"sol-{problemId}-{sol.SolverId}-{sol.ScoreEstimated}.txt"),sol.Solution);
             File.WriteAllText(Path.Combine(path, $"sol-{problemId}-{sol.SolverId}-meta.txt"),sol.SolverMeta.ToString());
         }
+    }
+
+    [Test]
+    [Explicit]
+    public void SaveSolutionsWithMeta()
+    {
+        var path = FileHelper.FindDirectoryUpwards("solutions-with-meta");
+        for (int problemId = 1; problemId <= 40; problemId++)
+        {
+            var problemPath = Path.Combine(path, $"problem{problemId}");
+            if (!Directory.Exists(problemPath))
+                continue;
+
+            var metas = Directory.GetFiles(problemPath, "meta*");
+            if (metas.Length == 0)
+                continue;
+
+            var best = metas.OrderBy(x =>
+            {
+                var name = Path.GetFileNameWithoutExtension(x);
+                var split = name.Split("-", 3);
+                return int.Parse(split[1]);
+            }).First();
+            var sol = File.ReadAllText(best).FromJson<SolverMeta>();
+            if (best.Contains("enchanced") && !string.IsNullOrEmpty(sol.Previous_SolverName))
+            {
+                best = Path.Combine(path, $"problem{problemId}", $"meta-{sol.Previous_Score}-{sol.Previous_SolverName}.txt");
+                sol = File.ReadAllText(best).FromJson<SolverMeta>();
+            }
+
+            if (!best.Contains("GridGuidedPainter"))
+                continue;
+
+            if (sol.Description?.Contains("20*20") == true)
+                continue;
+            if (sol.Description?.Contains("40*40") == true)
+                continue;
+            if (sol.Description?.Contains("19*19") == true)
+                continue;
+            if (sol.Description?.Contains("17*17") == true)
+                continue;
+            if (sol.Description?.Contains("MergeAll") == true)
+                continue;
+
+            // if (sol.Description?.Contains("17*17") != true)
+            //     continue;
+
+
+            Console.Out.WriteLine($"problem {problemId}, {Path.GetFileNameWithoutExtension(best)}, sol: {sol}");
+        }
+
+        // var path = FileHelper.FindDirectoryUpwards("solutions-with-meta");
+        // var prIds = ScreenRepo.GetProblemIds();
+        // foreach (var problemId in prIds)
+        // {
+        //     var sols = SolutionRepo.GetSolutionsByProblemId(problemId).GetAwaiter().GetResult();
+        //     Directory.CreateDirectory(Path.Combine(path, $@"problem{problemId}"));
+        //     foreach (var sol in sols)
+        //     {
+        //         File.WriteAllText(Path.Combine(path, $"meta-{sol.ScoreEstimated}-{sol.SolverId}.txt"), sol.SolverMeta.ToJson());
+        //         File.WriteAllText(Path.Combine(path, $"sol-{sol.ScoreEstimated}-{sol.SolverId}.txt"), sol.Solution);
+        //     }
+        // }
     }
 
     [Test]

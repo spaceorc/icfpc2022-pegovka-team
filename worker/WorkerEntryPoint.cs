@@ -12,20 +12,67 @@ namespace worker;
 
 public static class WorkerEntryPoint
 {
+    // public static async Task Main_load()
+    // {
+    //     var path = FileHelper.FindDirectoryUpwards("solutions-with-meta");
+    //     var prIds = ScreenRepo.GetProblemIds();
+    //     foreach (var problemId in new[] { 30 })
+    //     {
+    //         Console.Write($"Problem: {problemId}...");
+    //
+    //         Directory.CreateDirectory(Path.Combine(path, $"problem{problemId}"));
+    //
+    //         var sols = await SolutionRepo.GetSolutionsByProblemId(problemId);
+    //
+    //         foreach (var sol in sols)
+    //         {
+    //             File.WriteAllText(Path.Combine(path, $"problem{problemId}", $"meta-{sol.ScoreEstimated}-{sol.SolverId}.txt"), sol.SolverMeta.ToJson());
+    //             File.WriteAllText(Path.Combine(path, $"problem{problemId}", $"sol-{sol.ScoreEstimated}-{sol.SolverId}.txt"), sol.Solution);
+    //         }
+    //
+    //         Console.WriteLine($"{sols.Count} solutions");
+    //
+    //         await Task.Delay(TimeSpan.FromSeconds(10));
+    //     }
+    // }
+
     public static void Main()
     {
+        /*
+         * 19*19 - 7,10,12,38
+         * 17*17 - 9,11,37
+         * 15*15 - 18
+         * 13*13 - 17,36,39
+         *
+         */
         var args = new[]
         {
-            (17, 40, 0),
-            (17, 40, 3),
-            // (13, 13),
-            // (40, 40)
+            (19, 19),
+            (17, 17),
+            (15, 15),
+            (13, 13),
         };
 
         var works = Enumerable.Range(1, 40)
-            .SelectMany(problemId => args.Select(a => new { problemId, rows = a.Item1, cols = a.Item2, swapperPreprocessorN = a.Item3 }))
-            .SelectMany(a => Enumerable.Range(0, 8).Select(o => new { a.problemId, a.rows, a.cols, orientation = o, a.swapperPreprocessorN }))
-            .Where(x => x.problemId <= 25)
+            .SelectMany(problemId => args.Select(a => new { problemId, rows = a.Item1, cols = a.Item2 }))
+            .SelectMany(a => Enumerable.Range(0, 8).Select(o => new { a.problemId, a.rows, a.cols, orientation = o }))
+            .SelectMany(a => new[] { 0, 4, 8, 10 }.Select(o => new { a.problemId, a.rows, a.cols, a.orientation, swapperPreprocessorN = o }))
+            .Where(x =>
+            {
+                if (new[] { 7, 10, 12, 38 }.Contains(x.problemId))
+                    return x.rows == 19;
+
+                if (new[] { 9, 11, 37 }.Contains(x.problemId))
+                    return x.rows == 17;
+
+                if (new[] { 18 }.Contains(x.problemId))
+                    return x.rows == 15;
+
+                if (new[] { 17, 36, 39 }.Contains(x.problemId))
+                    return x.rows == 13;
+
+                return false;
+            })
             // .Where(x => x.orientation is 0 or 1)
             .ToArray();
 
@@ -70,7 +117,7 @@ public static class WorkerEntryPoint
 
                     // File.WriteAllText(Path.Combine(FileHelper.FindDirectoryUpwards("worker-solutions"), $"{problemId}-grid-{rows}-{cols}-{w.orientation}.txt"), res.Moves.StrJoin("\n"));
 
-                    if (score < prevBestScore)
+                    // if (score < prevBestScore)
                         try
                         {
                             SolutionRepo.Submit(
