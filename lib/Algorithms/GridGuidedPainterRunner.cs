@@ -27,15 +27,21 @@ public class GridGuidedPainterResult
 
 public static class GridGuidedPainterRunner
 {
-    public static GridGuidedPainterResult Solve(int problemId, int rows, int cols, int orientation = 0)
+    public static GridGuidedPainterResult Solve(int problemId, int rows, int cols, int orientation = 0, bool useSwapperPreprocessor = false)
     {
         var originalProblem = Screen.LoadProblem(problemId);
         return Solve(problemId, originalProblem, rows, cols, orientation);
     }
 
-    public static GridGuidedPainterResult Solve(int problemId, Screen originalProblem, int rows, int cols, int orientation = 0)
+    public static GridGuidedPainterResult Solve(int problemId, Screen originalProblem, int rows, int cols, int orientation = 0, bool useSwapperPreprocessor = false)
     {
-        var problem = Rotator.Rotate(originalProblem, orientation);
+        var problemBeforePreprocessor = Rotator.Rotate(originalProblem, orientation);
+        var problem = problemBeforePreprocessor;
+        int[] preprocessorRows = null!;
+
+        if (useSwapperPreprocessor)
+            (problem, preprocessorRows) = SwapperPreprocessor.Preprocess(problemBeforePreprocessor, 4);
+
 
         var grid = GridBuilder.BuildRegularGrid(problem, rows, cols);
 
@@ -49,7 +55,7 @@ public static class GridGuidedPainterRunner
         (grid, _) = GridBuilder.OptimizeRowHeights(problem, grid);
         (grid, _) = GridBuilder.OptimizeCellWidths(problem, grid);
 
-        problem.ToImage($"{problemId}-grid-{rows}-{cols}-{orientation}.png", grid);
+        // problem.ToImage($"{problemId}-grid-{rows}-{cols}-{orientation}-{useSwapperPreprocessor}.png", grid);
 
         GridGuidedPainterResult? bestResult = null;
         foreach (var colorTolerance in new[]{0, 1, 2, 4, 8, 16, 32, 48})
@@ -61,7 +67,14 @@ public static class GridGuidedPainterRunner
             }
         }
 
-        var rMoves = Rotator.RotateBack(problem, bestResult!.Moves.ToList(), orientation);
+        if (useSwapperPreprocessor)
+        {
+            var moves = bestResult!.Moves.ToList();
+            moves.AddRange(SwapperPreprocessor.Postprocess(preprocessorRows, bestResult!.Canvas));
+            bestResult = new GridGuidedPainterResult(moves, rows, cols, bestResult.ColorTolerance, problemBeforePreprocessor.GetScore(moves), orientation, bestResult!.Canvas);
+        }
+
+        var rMoves = Rotator.RotateBack(problemBeforePreprocessor, bestResult!.Moves.ToList(), orientation);
         var rCanvas = new Canvas(originalProblem);
         foreach (var rMove in rMoves)
             rCanvas.Apply(rMove);
