@@ -26,8 +26,7 @@ public static class WorkerEntryPoint
             .SelectMany(problemId => args.Select(a => new { problemId, rows = a.Item1, cols = a.Item2, swapperPreprocessorN = a.Item3 }))
             .SelectMany(a => Enumerable.Range(0, 8).Select(o => new { a.problemId, a.rows, a.cols, orientation = o, a.swapperPreprocessorN }))
             .Where(x => x.problemId is <= 25 or >= 36)
-            .Where(x => x.problemId is <= 25 or >= 36)
-            .Where(x => x.orientation is 0 or 1)
+            // .Where(x => x.orientation is 0 or 1)
             .ToArray();
 
         Console.WriteLine($"Total: {works.Length}");
