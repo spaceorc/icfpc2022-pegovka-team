@@ -17,7 +17,7 @@ public static class WorkerEntryPoint
         var args = new[]
         {
             // (7, 13),
-            //(20, 20),
+            (13, 13),
             (40, 40),
         };
 
@@ -27,7 +27,7 @@ public static class WorkerEntryPoint
             .SelectMany(a => new[]{false, true}.Select(prep => new { a.problemId, a.rows, a.cols, a.orientation, useSwapperPreprocessor = prep }))
             .Where(x => x.problemId is <= 25 or >= 36)
             .Where(x => x.problemId is <= 25 or >= 36)
-            // .Where(x => x.orientation is 0 or 1)
+            .Where(x => x.orientation is 0 or 1)
             .Where(x => x.useSwapperPreprocessor)
             .ToArray();
 
